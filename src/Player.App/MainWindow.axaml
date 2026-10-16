@@ -1,0 +1,13 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:app="using:Player.App"
+        x:Class="Player.App.MainWindow"
+        Title="Nuvora Player" Width="1280" Height="760" MinWidth="560" MinHeight="315"
+        WindowStartupLocation="CenterScreen" Background="{DynamicResource Bg}"
+        ExtendClientAreaToDecorationsHint="True" ExtendClientAreaChromeHints="NoChrome" ExtendClientAreaTitleBarHeightHint="-1">
+  <!-- No system chrome: the title bar is drawn by OverlayWindow (logo, title, window buttons). -->
+  <Panel>
+    <app:VideoHost x:Name="PreviewVideo" Width="176" Height="100" HorizontalAlignment="Left" VerticalAlignment="Top" />
+    <app:VideoHost x:Name="Video" />
+  </Panel>
+</Window>

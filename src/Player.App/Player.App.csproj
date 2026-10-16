@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <AssemblyName>NuvoraPlayer</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.22" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.22" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.22" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.13" />
+    <ProjectReference Include="..\Player.Core\Player.Core.csproj" />
+    <ProjectReference Include="..\Player.Enhancement\Player.Enhancement.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Fonts & Shaders: embedded for the UI, and copied next to the exe for libass / libmpv. -->
+    <AvaloniaResource Include="Assets\**" />
+    <None Update="Assets\Fonts\*.ttf" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Assets\Shaders\*.glsl" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Put libmpv-2.dll into /lib (see README); it is copied next to the exe. -->
+    <None Include="..\..\lib\*.dll" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

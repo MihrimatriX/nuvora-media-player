@@ -1,0 +1,353 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:app="using:Player.App"
+        x:Class="Player.App.OverlayWindow"
+        x:DataType="app:PlayerViewModel"
+        Title="Nuvora Player" SystemDecorations="None" ShowInTaskbar="False" CanResize="False"
+        Background="Transparent" TransparencyLevelHint="Transparent">
+  <Window.Styles>
+    <!-- Auto-hiding chrome: 180 ms fade -->
+    <Style Selector="Panel#Chrome, Border#Header">
+      <Setter Property="Transitions">
+        <Transitions><DoubleTransition Property="Opacity" Duration="0:0:0.18" /></Transitions>
+      </Setter>
+    </Style>
+    <Style Selector="Panel#Chrome.hidden, Border#Header.hidden">
+      <Setter Property="Opacity" Value="0" />
+      <Setter Property="IsHitTestVisible" Value="False" />
+    </Style>
+
+    <!-- Header variants: over video (52), start screen (44), solid behind panels/settings (44). -->
+    <Style Selector="Border#Header">
+      <Setter Property="Height" Value="52" />
+      <Setter Property="Background" Value="Transparent" />
+    </Style>
+    <Style Selector="Border#Header.start">
+      <Setter Property="Height" Value="44" />
+    </Style>
+    <Style Selector="Border#Header.solid">
+      <Setter Property="Height" Value="44" />
+      <Setter Property="Background" Value="{DynamicResource HeaderBg}" />
+      <Setter Property="BorderBrush" Value="{DynamicResource Line}" />
+      <Setter Property="BorderThickness" Value="0,0,0,1" />
+    </Style>
+    <Style Selector="Border#Header:not(.solid):not(.start) Button.win">
+      <Setter Property="Foreground" Value="{DynamicResource Fg}" />
+    </Style>
+  </Window.Styles>
+
+  <Panel x:Name="Root" DragDrop.AllowDrop="True">
+    <!-- Near-transparent, so the whole video area receives mouse input instead of passing it through. -->
+    <Border x:Name="HitArea" Background="#01000000" />
+
+    <app:StartView IsVisible="{Binding IsIdle}" />
+
+    <!-- ================= Interactive Before/After Split-Screen Comparison ================= -->
+    <Canvas x:Name="SplitOverlay" IsVisible="{Binding IsSplitCompare}">
+      <!-- Left badge: ÖNCE (Original) -->
+      <Border x:Name="SplitLeftBadge" Canvas.Top="64" Padding="12,6" CornerRadius="999"
+              Background="#D90E1016" BorderBrush="{DynamicResource Line3}" BorderThickness="1"
+              BoxShadow="0 8 24 0 #66000000" IsHitTestVisible="False">
+        <StackPanel Orientation="Horizontal" Spacing="7">
+          <TextBlock Text="ÖNCE" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Fg3}" VerticalAlignment="Center" />
+          <Border Width="3" Height="3" CornerRadius="2" Background="{DynamicResource Fg4}" VerticalAlignment="Center" />
+          <TextBlock Text="Orijinal" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource Fg}" VerticalAlignment="Center" />
+        </StackPanel>
+      </Border>
+
+      <!-- Right badge: SONRA (Enhanced) -->
+      <Border x:Name="SplitRightBadge" Canvas.Top="64" Padding="12,5,8,5" CornerRadius="999"
+              Background="#D90E1016" BorderBrush="{DynamicResource Accent}" BorderThickness="1"
+              BoxShadow="0 8 24 0 #66000000">
+        <StackPanel Orientation="Horizontal" Spacing="7">
+          <Ellipse Width="7" Height="7" Fill="{DynamicResource Accent}" VerticalAlignment="Center" />
+          <TextBlock Text="SONRA" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Accent}" VerticalAlignment="Center" />
+          <Border Width="3" Height="3" CornerRadius="2" Background="{DynamicResource Fg4}" VerticalAlignment="Center" />
+          <TextBlock Text="{Binding AfterBadgeText}" FontSize="12" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center" />
+          <Button Width="20" Height="20" CornerRadius="10" Margin="2,0,0,0" Background="{DynamicResource Fill5}"
+                  Command="{Binding ToggleSplitCompareCommand}" ToolTip.Tip="Karşılaştırmayı kapat (C)">
+            <Viewbox Width="10" Height="10"><Path Classes="bold" Data="{StaticResource IcoClose}" /></Viewbox>
+          </Button>
+        </StackPanel>
+      </Border>
+
+      <!-- Full-height interactive divider bar & center handle -->
+      <Panel x:Name="SplitTrack" Width="44" Background="#01000000" Cursor="SizeWestEast"
+             ToolTip.Tip="Önce / Sonra karşılaştırmak için sağa veya sola sürükleyin (Çift tık: Ortala)">
+        <Border Width="4" HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="#40000000" IsHitTestVisible="False" />
+        <Border Width="2" HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="#F2FFFFFF" IsHitTestVisible="False" />
+        <Border x:Name="SplitKnob" Width="44" Height="44" CornerRadius="22" HorizontalAlignment="Center" VerticalAlignment="Center"
+                Background="#E60E1016" BorderBrush="White" BorderThickness="2"
+                BoxShadow="0 8 24 0 #80000000, 0 0 0 5 #406D5AE6" IsHitTestVisible="False">
+          <Viewbox Classes="i20">
+            <Path Classes="bold" Data="{StaticResource IcoSplitArrows}" Stroke="White" />
+          </Viewbox>
+        </Border>
+      </Panel>
+    </Canvas>
+
+    <!-- Instant full-screen bypass pill (shown while holding '\') -->
+    <Border HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,64,0,0" Padding="14,6" CornerRadius="999"
+            Background="#D90E1016" BorderBrush="{DynamicResource Line3}" BorderThickness="1"
+            BoxShadow="0 8 24 0 #66000000" IsVisible="{Binding IsBypassed}" IsHitTestVisible="False">
+      <StackPanel Orientation="Horizontal" Spacing="8">
+        <Ellipse Width="7" Height="7" Fill="{DynamicResource Fg3}" VerticalAlignment="Center" />
+        <TextBlock Text="ORİJİNAL GÖRÜNTÜ" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource Fg}" VerticalAlignment="Center" />
+      </StackPanel>
+    </Border>
+
+    <!-- OSD toast notification (volume, speed, loop, screenshot, delays, etc.) -->
+    <Border x:Name="OsdPill" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,58,0,0" Padding="18,8" CornerRadius="999"
+            Background="#E60E1016" BorderBrush="{DynamicResource Line3}" BorderThickness="1"
+            BoxShadow="0 12 32 0 #80000000" IsVisible="False" IsHitTestVisible="False">
+      <Border.Transitions>
+        <Transitions>
+          <DoubleTransition Property="Opacity" Duration="0:0:0.18" />
+        </Transitions>
+      </Border.Transitions>
+      <TextBlock x:Name="OsdText" Classes="mono" FontSize="13" FontWeight="Bold" Foreground="White" />
+    </Border>
+
+    <!-- Technical OSD stats card ('I' shortcut or right-click menu) -->
+    <Border HorizontalAlignment="Left" VerticalAlignment="Top" Margin="20,60,0,0" Padding="14,10" CornerRadius="14"
+            Background="#D90E1016" BorderBrush="{DynamicResource Line3}" BorderThickness="1"
+            IsVisible="{Binding ShowStats}" IsHitTestVisible="False">
+      <StackPanel Spacing="4">
+        <TextBlock Text="Medya ve Oynatma Bilgisi" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource Accent}" />
+        <TextBlock Classes="mono" Text="{Binding StatsSummary}" FontSize="11.5" LineHeight="18" Foreground="{DynamicResource Fg}" />
+      </StackPanel>
+    </Border>
+
+    <!-- ================= Playback chrome ================= -->
+    <Panel x:Name="Chrome" IsVisible="{Binding !IsIdle}">
+      <Border Height="120" VerticalAlignment="Top" IsHitTestVisible="False" IsVisible="{Binding !IsSheetOpen}">
+        <Border.Background>
+          <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Color="#9E05060A" Offset="0" />
+            <GradientStop Color="#0005060A" Offset="1" />
+          </LinearGradientBrush>
+        </Border.Background>
+      </Border>
+      <Border Height="260" VerticalAlignment="Bottom" IsHitTestVisible="False" IsVisible="{Binding !IsSheetOpen}">
+        <Border.Background>
+          <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Color="#0005060A" Offset="0" />
+            <GradientStop Color="#9905060A" Offset="1" />
+          </LinearGradientBrush>
+        </Border.Background>
+      </Border>
+
+      <!-- Thin progress line while the Görüntü & Ses panel covers the bar -->
+      <ProgressBar Classes="thin" Background="#24FFFFFF" VerticalAlignment="Bottom" Margin="24,0,24,18"
+                   Maximum="{Binding Duration}" Value="{Binding Position, Mode=OneWay}" IsVisible="{Binding IsPanelOpen}" />
+
+      <!-- Bottom bar -->
+      <Border x:Name="Bar" VerticalAlignment="Bottom" MaxWidth="1020" Margin="24,0,24,24" Padding="18,14,18,10"
+              CornerRadius="24" Background="#D90E1016" BorderBrush="{DynamicResource Line3}" BorderThickness="1"
+              BoxShadow="inset 0 1 0 0 #0FFFFFFF, 0 24 60 0 #66000000" IsVisible="{Binding !IsSheetOpen}">
+        <StackPanel>
+          <Grid ColumnDefinitions="*,Auto" Margin="2,0">
+            <TextBlock FontSize="12" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" VerticalAlignment="Bottom">
+              <Run Text="{Binding ChapterPrefix}" Foreground="{DynamicResource Fg2}" />
+              <Run Text="{Binding ChapterName}" Foreground="{DynamicResource Fg}" />
+            </TextBlock>
+            <Button Grid.Column="1" Classes="link" Command="{Binding ToggleTimeModeCommand}"
+                    ToolTip.Tip="Toplam süre / Kalan süre değiştir">
+              <TextBlock>
+                <Run Classes="mono" Text="{Binding PositionText}" Foreground="{DynamicResource Fg}" />
+                <Run Classes="mono" Text="{Binding RightTimeText, StringFormat=' {0}'}" Foreground="{DynamicResource Fg4}" />
+              </TextBlock>
+            </Button>
+          </Grid>
+
+          <!-- Seek bar: rail, buffer, hover track, A-B loop bar, chapter gaps, hover marker + SmartSeek preview card -->
+          <Grid x:Name="SeekHost" Height="24" Margin="0,6,0,0" Background="Transparent">
+            <Border Height="6" CornerRadius="3" Background="#24FFFFFF" VerticalAlignment="Center" IsHitTestVisible="False" />
+            <Border x:Name="BufferBar" Height="6" CornerRadius="3" Background="#3DFFFFFF" HorizontalAlignment="Left"
+                    VerticalAlignment="Center" Width="0" IsHitTestVisible="False" />
+            <Border x:Name="HoverTrack" Height="6" CornerRadius="3" Background="#29FFFFFF" HorizontalAlignment="Left"
+                    VerticalAlignment="Center" Width="0" IsVisible="False" IsHitTestVisible="False" />
+            <Border x:Name="AbLoopBar" Height="6" CornerRadius="2" Background="{DynamicResource AccentTint}"
+                    BorderBrush="{DynamicResource Accent}" BorderThickness="1" HorizontalAlignment="Left"
+                    VerticalAlignment="Center" Width="0" IsVisible="False" IsHitTestVisible="False" />
+            <Slider x:Name="SeekBar" Classes="seek" Minimum="0" Maximum="{Binding Duration}" Value="{Binding Position}"
+                    AutomationProperties.Name="Oynatma konumu" />
+            <Canvas x:Name="Ticks" IsHitTestVisible="False" />
+            <Border x:Name="HoverLine" Width="2" Height="18" CornerRadius="1" Background="White" HorizontalAlignment="Left"
+                    VerticalAlignment="Center" IsVisible="False" IsHitTestVisible="False" />
+            <Canvas IsHitTestVisible="False">
+              <!-- SmartSeek floating preview card -->
+              <Border x:Name="HoverBubble" Canvas.Top="-156" CornerRadius="12" Background="#EB0E1016"
+                      BorderBrush="{DynamicResource Line3}" BorderThickness="1"
+                      BoxShadow="0 14 36 0 #80000000" IsVisible="False">
+                <StackPanel Margin="5">
+                  <Border Width="176" Height="99" CornerRadius="8" ClipToBounds="True" Background="#181B24">
+                    <Panel>
+                      <Viewbox Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.3">
+                        <Path Data="{StaticResource IcoScreen}" />
+                      </Viewbox>
+                      <Image x:Name="HoverThumb" Width="176" Height="99" Stretch="UniformToFill" />
+                    </Panel>
+                  </Border>
+                  <Grid Margin="4,5,4,2" ColumnDefinitions="Auto,*,Auto">
+                    <Border CornerRadius="6" Background="#33FFFFFF" Padding="6,2">
+                      <TextBlock x:Name="HoverText" Classes="mono" FontSize="11" FontWeight="Bold" Foreground="White" />
+                    </Border>
+                    <TextBlock x:Name="HoverDelta" Grid.Column="1" Classes="mono" FontSize="10.5" Foreground="{DynamicResource Fg3}"
+                               Margin="8,0,0,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                    <TextBlock x:Name="HoverChapter" Grid.Column="2" FontSize="10.5" FontWeight="SemiBold" Foreground="{DynamicResource Accent}"
+                               HorizontalAlignment="Right" VerticalAlignment="Center" MaxWidth="70" TextTrimming="CharacterEllipsis" />
+                  </Grid>
+                </StackPanel>
+              </Border>
+            </Canvas>
+          </Grid>
+
+          <Grid ColumnDefinitions="*,Auto,*" Margin="0,4,0,0">
+            <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
+              <Button Classes="icon" Click="OnOpenFile" ToolTip.Tip="Dosya aç (Ctrl+O)" AutomationProperties.Name="Dosya aç">
+                <Viewbox Classes="i19"><Path Data="{StaticResource IcoFolder}" /></Viewbox>
+              </Button>
+              <Button Classes="icon" Click="OnTracks" ToolTip.Tip="Altyazı ve parçalar" AutomationProperties.Name="Altyazı ve parçalar">
+                <Viewbox Classes="i19"><Path Data="{StaticResource IcoSubs}" /></Viewbox>
+              </Button>
+              <Button Classes="icon" Classes.on="{Binding IsPanelOpen}" Command="{Binding TogglePanelCommand}"
+                      ToolTip.Tip="Görüntü ve ses (E)" AutomationProperties.Name="Görüntü ve ses">
+                <Viewbox Classes="i19"><Path Data="{StaticResource IcoTune}" /></Viewbox>
+              </Button>
+              <Button Classes="icon" Classes.on="{Binding IsSplitCompare}" Command="{Binding ToggleSplitCompareCommand}"
+                      ToolTip.Tip="Önce / Sonra karşılaştırma çubuğu (C)" AutomationProperties.Name="Önce ve sonra karşılaştırma">
+                <Viewbox Classes="i19"><Path Data="{StaticResource IcoCompare}" /></Viewbox>
+              </Button>
+              <Button Classes="icon" Command="{Binding ScreenshotCommand}" ToolTip.Tip="Kare yakala (S)" AutomationProperties.Name="Kare yakala">
+                <Viewbox Classes="i19"><Path Data="{StaticResource IcoCamera}" /></Viewbox>
+              </Button>
+              <Button Classes="icon" Classes.on="{Binding IsLoopActive}" Click="OnLoop"
+                      ToolTip.Tip="{Binding LoopLabel}" AutomationProperties.Name="Tekrarlama ve A-B döngüsü">
+                <Viewbox Classes="i18"><Path Data="{StaticResource IcoRepeat}" /></Viewbox>
+              </Button>
+              <Button Classes="icon" Classes.on="{Binding IsFilled}" Click="OnAspectMenu"
+                      ToolTip.Tip="En-boy oranı ve döndürme (A / Z)" AutomationProperties.Name="En-boy oranı">
+                <Viewbox Classes="i18"><Path Data="{StaticResource IcoFit}" /></Viewbox>
+              </Button>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+              <Button Classes="round" Command="{Binding SeekBackCommand}" ToolTip.Tip="Geri sar (←)" AutomationProperties.Name="Geri sar">
+                <Viewbox Classes="i22">
+                  <Panel Width="24" Height="24">
+                    <Path Data="{StaticResource IcoBack}" />
+                    <TextBlock x:Name="BackStepText" Text="10" FontSize="7.5" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,2,0,0" />
+                  </Panel>
+                </Viewbox>
+              </Button>
+              <Button Classes="round" Command="{Binding PreviousCommand}" ToolTip.Tip="Önceki dosya (PgUp)" AutomationProperties.Name="Önceki dosya">
+                <Viewbox Classes="i20"><Path Classes="fill" Data="{StaticResource IcoPrev}" /></Viewbox>
+              </Button>
+              <Button Classes="play" Command="{Binding TogglePauseCommand}" ToolTip.Tip="Oynat / duraklat (Boşluk)" AutomationProperties.Name="Oynat veya duraklat">
+                <Viewbox Classes="i20">
+                  <Panel>
+                    <Path Classes="fill" IsVisible="{Binding !IsPaused}" Data="{StaticResource IcoPause}" />
+                    <Path Classes="fill" IsVisible="{Binding IsPaused}" Data="{StaticResource IcoPlay}" />
+                  </Panel>
+                </Viewbox>
+              </Button>
+              <Button Classes="round" Command="{Binding NextCommand}" ToolTip.Tip="Sonraki dosya (PgDn)" AutomationProperties.Name="Sonraki dosya">
+                <Viewbox Classes="i20"><Path Classes="fill" Data="{StaticResource IcoNext}" /></Viewbox>
+              </Button>
+              <Button Classes="round" Command="{Binding SeekForwardCommand}" ToolTip.Tip="İleri sar (→)" AutomationProperties.Name="İleri sar">
+                <Viewbox Classes="i22">
+                  <Panel Width="24" Height="24">
+                    <Path Data="{StaticResource IcoFwd}" />
+                    <TextBlock x:Name="FwdStepText" Text="10" FontSize="7.5" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,2,0,0" />
+                  </Panel>
+                </Viewbox>
+              </Button>
+            </StackPanel>
+
+            <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" HorizontalAlignment="Right" VerticalAlignment="Center">
+              <Button Classes="chip" Classes.on="{Binding SmoothMotion}" Margin="0,0,4,0"
+                      Content="{Binding FpsBadge}" IsVisible="{Binding SmoothMotion}"
+                      Click="OnFpsMenu" ToolTip.Tip="Hedef kare hızı (G)" AutomationProperties.Name="Hedef kare hızı" />
+              <Button Classes="chip" Margin="0,0,4,0" Content="{Binding SpeedText}" Click="OnSpeed" ToolTip.Tip="Oynatma hızı"
+                      AutomationProperties.Name="Oynatma hızı" />
+              <Button Classes="icon" Click="OnPlaylist" ToolTip.Tip="Oynatma listesi" AutomationProperties.Name="Oynatma listesi">
+                <Viewbox Classes="i19"><Path Data="{StaticResource IcoList}" /></Viewbox>
+              </Button>
+              <Button Classes="icon" Command="{Binding ToggleMuteCommand}" ToolTip.Tip="Sessiz (M)" AutomationProperties.Name="Sessiz">
+                <Viewbox Classes="i19">
+                  <Panel>
+                    <Path Data="{StaticResource IcoSpeaker}" />
+                    <Path IsVisible="{Binding !IsMuted}" Data="{StaticResource IcoWaves}" />
+                    <Path IsVisible="{Binding IsMuted}" Data="{StaticResource IcoMuteX}" />
+                  </Panel>
+                </Viewbox>
+              </Button>
+              <Slider x:Name="VolumeSlider" Classes="volume" Width="72" Margin="2,0,6,0" Minimum="0" Maximum="{Binding VolumeMax}" Value="{Binding Volume}"
+                      VerticalAlignment="Center" AutomationProperties.Name="Ses düzeyi" />
+              <Button Classes="icon" Click="OnFullScreen" ToolTip.Tip="Tam ekran (F)" AutomationProperties.Name="Tam ekran">
+                <Viewbox Classes="i19"><Path Data="{StaticResource IcoFullscreen}" /></Viewbox>
+              </Button>
+            </StackPanel>
+          </Grid>
+        </StackPanel>
+      </Border>
+    </Panel>
+
+    <app:AvPanel Margin="0,44,0,0" IsVisible="{Binding IsPanelOpen}" />
+
+    <!-- ================= Header (custom title bar) ================= -->
+    <Border x:Name="Header" VerticalAlignment="Top" Classes.solid="{Binding IsSheetOpen}" Classes.start="{Binding IsIdle}"
+            PointerPressed="OnHeaderPressed" DoubleTapped="OnHeaderDoubleTapped">
+      <Grid ColumnDefinitions="*,Auto,*">
+        <StackPanel Orientation="Horizontal" Spacing="9" Margin="18,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False">
+          <Border Width="20" Height="20" CornerRadius="6" Background="{DynamicResource Accent}">
+            <Path Data="M10 5L15 14H5Z" Stroke="White" StrokeThickness="1.8" StrokeJoin="Round" />
+          </Border>
+          <TextBlock Text="Nuvora Player" FontSize="15" FontWeight="Bold" VerticalAlignment="Center" />
+        </StackPanel>
+
+        <StackPanel Grid.Column="1" Spacing="1" VerticalAlignment="Center" IsVisible="{Binding ShowTitleBlock}" IsHitTestVisible="False">
+          <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="Bold" HorizontalAlignment="Center" MaxWidth="560" TextTrimming="CharacterEllipsis" />
+          <TextBlock Classes="mono" Text="{Binding TechInfo}" FontSize="11.5" Foreground="{DynamicResource Fg2}" HorizontalAlignment="Center" />
+        </StackPanel>
+        <Border Grid.Column="1" Padding="12,4" CornerRadius="999" Background="{DynamicResource Fill3}" VerticalAlignment="Center"
+                IsVisible="{Binding ShowFileChip}" IsHitTestVisible="False">
+          <TextBlock Text="{Binding FileChip}" FontSize="13" Foreground="{DynamicResource Fg3}" MaxWidth="520" TextTrimming="CharacterEllipsis" />
+        </Border>
+
+        <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,6,0">
+          <Button Height="30" Padding="12,0" Margin="0,0,6,0" CornerRadius="15" Background="#800E1016" BorderBrush="{DynamicResource Line3}"
+                  BorderThickness="1" FontSize="12" IsVisible="{Binding ShowTitleBlock}" Command="{Binding TogglePanelCommand}"
+                  ToolTip.Tip="Görüntü &amp; Ses paneli (E)" AutomationProperties.Name="Görüntü iyileştirme">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Panel Width="13" Height="13" VerticalAlignment="Center">
+                <Ellipse Fill="{DynamicResource AccentHalo}" />
+                <Ellipse Width="7" Height="7" Fill="{DynamicResource Accent}" />
+              </Panel>
+              <TextBlock Text="{Binding EnhanceLabel}" VerticalAlignment="Center" />
+            </StackPanel>
+          </Button>
+          <Button Classes="win" Command="{Binding ToggleStatsCommand}" ToolTip.Tip="Medya istatistikleri (I)"
+                  IsVisible="{Binding !IsIdle}" AutomationProperties.Name="Medya istatistikleri">
+            <Viewbox Classes="i16"><Path Data="{StaticResource IcoInfo}" /></Viewbox>
+          </Button>
+          <Button Classes="win" Command="{Binding OpenSettingsCommand}" ToolTip.Tip="Ayarlar (Ctrl+,)" AutomationProperties.Name="Ayarlar">
+            <Viewbox Width="17" Height="17"><Path Data="{StaticResource IcoGear}" /></Viewbox>
+          </Button>
+          <Button Classes="win" Click="OnMinimize" AutomationProperties.Name="Küçült">
+            <Viewbox Classes="i16"><Path Data="{StaticResource IcoMin}" /></Viewbox>
+          </Button>
+          <Button Classes="win" Click="OnMaximize" AutomationProperties.Name="Büyüt">
+            <Viewbox Classes="i14"><Path Data="{StaticResource IcoMax}" /></Viewbox>
+          </Button>
+          <Button Classes="win" Click="OnClose" AutomationProperties.Name="Kapat">
+            <Viewbox Classes="i16"><Path Data="{StaticResource IcoClose}" /></Viewbox>
+          </Button>
+        </StackPanel>
+      </Grid>
+    </Border>
+
+    <app:SettingsView x:Name="Settings" IsVisible="{Binding IsSettingsOpen}" />
+  </Panel>
+</Window>

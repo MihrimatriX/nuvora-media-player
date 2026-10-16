@@ -1,0 +1,142 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:app="using:Player.App"
+             x:Class="Player.App.StartView"
+             x:DataType="app:PlayerViewModel">
+  <Panel>
+    <!-- Ambient background: the design's blurred dusk sky at 42 % brightness. -->
+    <Border>
+      <Border.Background>
+        <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+          <GradientStop Color="#090B16" Offset="0" />
+          <GradientStop Color="#171930" Offset="0.38" />
+          <GradientStop Color="#352536" Offset="0.62" />
+          <GradientStop Color="#523A33" Offset="0.8" />
+          <GradientStop Color="#1E1A2A" Offset="1" />
+        </LinearGradientBrush>
+      </Border.Background>
+    </Border>
+    <Border>
+      <Border.Background>
+        <RadialGradientBrush Center="70%,62%" GradientOrigin="70%,62%" RadiusX="38%" RadiusY="48%">
+          <GradientStop Color="#4DB98F66" Offset="0" />
+          <GradientStop Color="#00B98F66" Offset="1" />
+        </RadialGradientBrush>
+      </Border.Background>
+    </Border>
+
+    <Grid Margin="36,58,36,32" RowDefinitions="*,Auto" ColumnDefinitions="*,340" RowSpacing="26" ColumnSpacing="20">
+      <!-- Continue watching -->
+      <Border CornerRadius="24" ClipToBounds="True" MinHeight="300" BoxShadow="0 30 70 0 #73000000">
+        <Panel>
+          <Border>
+            <Border.Background>
+              <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                <GradientStop Color="#151B33" Offset="0" />
+                <GradientStop Color="#3B3D6B" Offset="0.45" />
+                <GradientStop Color="#9A6A86" Offset="0.72" />
+                <GradientStop Color="#2E2A4A" Offset="1" />
+              </LinearGradientBrush>
+            </Border.Background>
+          </Border>
+          <Image Source="{Binding Hero.Thumbnail}" Stretch="UniformToFill" IsVisible="{Binding Hero.HasThumbnail, FallbackValue=False}" />
+          <Border Height="230" VerticalAlignment="Bottom">
+            <Border.Background>
+              <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                <GradientStop Color="#0006070C" Offset="0" />
+                <GradientStop Color="#D906070C" Offset="1" />
+              </LinearGradientBrush>
+            </Border.Background>
+          </Border>
+          <Border BorderBrush="{DynamicResource Line2}" BorderThickness="1" CornerRadius="24" />
+
+          <StackPanel Margin="28,0,28,26" VerticalAlignment="Bottom" Spacing="10">
+            <Border HorizontalAlignment="Left" Padding="10,4" CornerRadius="999" Background="#24FFFFFF">
+              <TextBlock Text="{Binding HasHero, Converter={x:Static app:StartView.PillText}}" FontSize="12" FontWeight="Bold" />
+            </Border>
+            <TextBlock Text="{Binding Hero.Title, FallbackValue='Nuvora Player'}" FontSize="34" FontWeight="Bold" LetterSpacing="-0.5"
+                       TextTrimming="CharacterEllipsis" />
+            <TextBlock Text="{Binding Hero.HeroSubtitle, FallbackValue='Bir video aç ya da pencereye sürükle. Codec paketi gerekmez.'}"
+                       FontSize="14" Foreground="#D2D7DE" />
+            <ProgressBar Classes="thin" Maximum="1" Value="{Binding Hero.Progress, FallbackValue=0}" Margin="0,4,0,6"
+                         IsVisible="{Binding HasHero}" />
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <Button Classes="pill white" Command="{Binding OpenRecentCommand}" CommandParameter="{Binding Hero}" IsVisible="{Binding HasHero}">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <Viewbox Classes="i18"><Path Classes="fill" Data="{StaticResource IcoPlay}" /></Viewbox>
+                  <TextBlock Text="Devam et" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
+              <Button Classes="pill glass" Content="Baştan başlat" Command="{Binding PlayFromStartCommand}" CommandParameter="{Binding Hero}"
+                      IsVisible="{Binding HasHero}" />
+            </StackPanel>
+          </StackPanel>
+        </Panel>
+      </Border>
+
+      <!-- Drop zone -->
+      <Panel Grid.Column="1">
+        <Border CornerRadius="24" Background="#730E1016" />
+        <Rectangle RadiusX="24" RadiusY="24" Stroke="#33FFFFFF" StrokeThickness="1.5" StrokeDashArray="3,3" />
+        <StackPanel VerticalAlignment="Center" Margin="24" Spacing="14">
+          <Border Width="64" Height="64" CornerRadius="20" HorizontalAlignment="Center" Background="{DynamicResource AccentSoft}"
+                  BorderBrush="{DynamicResource AccentHalo}" BorderThickness="1">
+            <Viewbox Classes="i28">
+              <Path Data="{StaticResource IcoUpload}" Stroke="White" StrokeThickness="1.7" />
+            </Viewbox>
+          </Border>
+          <TextBlock Text="Sürükle ve bırak" FontSize="19" FontWeight="Bold" HorizontalAlignment="Center" />
+          <TextBlock Text="MKV, MP4, AVI, MTS, WebM ve dahası.&#10;Codec paketi gerekmez." TextAlignment="Center"
+                     FontSize="13" LineHeight="20" Foreground="#B8BFC9" />
+          <TextBlock Text="{Binding ErrorText}" IsVisible="{Binding ErrorText, Converter={x:Static ObjectConverters.IsNotNull}}"
+                     TextAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource Danger}" FontSize="12" />
+          <StackPanel Spacing="8" Margin="0,6,0,0">
+            <Button Classes="pill accent" HorizontalAlignment="Stretch" Click="OnOpenFile">
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="Dosya aç" VerticalAlignment="Center" />
+                <Border Padding="7,1" CornerRadius="6" Background="#33FFFFFF" VerticalAlignment="Center">
+                  <TextBlock Classes="mono" Text="{Binding OpenKeyText}" FontSize="11.5" />
+                </Border>
+              </StackPanel>
+            </Button>
+            <Button Classes="pill" HorizontalAlignment="Stretch" Content="Klasör aç" Click="OnOpenFolder" />
+          </StackPanel>
+        </StackPanel>
+      </Panel>
+
+      <!-- Recently played -->
+      <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Spacing="14" IsVisible="{Binding HasRecentCards}">
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBlock Text="Son oynatılanlar" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" />
+          <Button Grid.Column="1" Classes="link" Content="Tümünü gör" Click="OnAllRecents" IsVisible="{Binding HasMoreRecents}" />
+        </Grid>
+        <ItemsControl ItemsSource="{Binding RecentCards}" Margin="0,0,-20,0">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate><UniformGrid Columns="3" /></ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="app:RecentItem">
+              <Button Margin="0,0,20,0" Padding="8" CornerRadius="18" Background="#730E1016" BorderBrush="#12FFFFFF" BorderThickness="1"
+                      HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                      Command="{Binding $parent[ItemsControl].((app:PlayerViewModel)DataContext).OpenRecentCommand}" CommandParameter="{Binding}">
+                <Grid ColumnDefinitions="150,*" ColumnSpacing="14">
+                  <Border Width="150" Height="84" CornerRadius="12" ClipToBounds="True" Background="#2A2F38">
+                    <Panel>
+                      <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" />
+                      <ProgressBar Classes="thin" Height="3" MinHeight="3" Maximum="1" Value="{Binding Progress}" Background="#80000000"
+                                   VerticalAlignment="Bottom" Margin="6" />
+                    </Panel>
+                  </Border>
+                  <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                    <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding Subtitle}" FontSize="12" FontWeight="Normal" Foreground="{DynamicResource Fg3}" />
+                  </StackPanel>
+                </Grid>
+              </Button>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+    </Grid>
+  </Panel>
+</UserControl>
