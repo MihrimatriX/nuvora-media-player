@@ -49,9 +49,9 @@
               Background="#D90E1016" BorderBrush="{DynamicResource Line3}" BorderThickness="1"
               BoxShadow="0 8 24 0 #66000000" IsHitTestVisible="False">
         <StackPanel Orientation="Horizontal" Spacing="7">
-          <TextBlock Text="ÖNCE" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Fg3}" VerticalAlignment="Center" />
+          <TextBlock Text="{app:T player.before}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Fg3}" VerticalAlignment="Center" />
           <Border Width="3" Height="3" CornerRadius="2" Background="{DynamicResource Fg4}" VerticalAlignment="Center" />
-          <TextBlock Text="Orijinal" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource Fg}" VerticalAlignment="Center" />
+          <TextBlock Text="{app:T player.original}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource Fg}" VerticalAlignment="Center" />
         </StackPanel>
       </Border>
 
@@ -61,11 +61,11 @@
               BoxShadow="0 8 24 0 #66000000">
         <StackPanel Orientation="Horizontal" Spacing="7">
           <Ellipse Width="7" Height="7" Fill="{DynamicResource Accent}" VerticalAlignment="Center" />
-          <TextBlock Text="SONRA" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Accent}" VerticalAlignment="Center" />
+          <TextBlock Text="{app:T player.after}" FontSize="11" FontWeight="Bold" Foreground="{DynamicResource Accent}" VerticalAlignment="Center" />
           <Border Width="3" Height="3" CornerRadius="2" Background="{DynamicResource Fg4}" VerticalAlignment="Center" />
           <TextBlock Text="{Binding AfterBadgeText}" FontSize="12" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center" />
           <Button Width="20" Height="20" CornerRadius="10" Margin="2,0,0,0" Background="{DynamicResource Fill5}"
-                  Command="{Binding ToggleSplitCompareCommand}" ToolTip.Tip="Karşılaştırmayı kapat (C)">
+                  Command="{Binding ToggleSplitCompareCommand}" ToolTip.Tip="{app:T player.closeComparisonC}">
             <Viewbox Width="10" Height="10"><Path Classes="bold" Data="{StaticResource IcoClose}" /></Viewbox>
           </Button>
         </StackPanel>
@@ -73,7 +73,7 @@
 
       <!-- Full-height interactive divider bar & center handle -->
       <Panel x:Name="SplitTrack" Width="44" Background="#01000000" Cursor="SizeWestEast"
-             ToolTip.Tip="Önce / Sonra karşılaştırmak için sağa veya sola sürükleyin (Çift tık: Ortala)">
+             ToolTip.Tip="{app:T player.dragLeftOrRightTo}">
         <Border Width="4" HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="#40000000" IsHitTestVisible="False" />
         <Border Width="2" HorizontalAlignment="Center" VerticalAlignment="Stretch" Background="#F2FFFFFF" IsHitTestVisible="False" />
         <Border x:Name="SplitKnob" Width="44" Height="44" CornerRadius="22" HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -92,7 +92,7 @@
             BoxShadow="0 8 24 0 #66000000" IsVisible="{Binding IsBypassed}" IsHitTestVisible="False">
       <StackPanel Orientation="Horizontal" Spacing="8">
         <Ellipse Width="7" Height="7" Fill="{DynamicResource Fg3}" VerticalAlignment="Center" />
-        <TextBlock Text="ORİJİNAL GÖRÜNTÜ" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource Fg}" VerticalAlignment="Center" />
+        <TextBlock Text="{app:T player.originalIMAGE}" FontSize="11.5" FontWeight="Bold" Foreground="{DynamicResource Fg}" VerticalAlignment="Center" />
       </StackPanel>
     </Border>
 
@@ -113,7 +113,7 @@
             Background="#D90E1016" BorderBrush="{DynamicResource Line3}" BorderThickness="1"
             IsVisible="{Binding ShowStats}" IsHitTestVisible="False">
       <StackPanel Spacing="4">
-        <TextBlock Text="Medya ve Oynatma Bilgisi" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource Accent}" />
+        <TextBlock Text="{app:T player.mediaAndPlaybackInfo}" FontSize="12" FontWeight="Bold" Foreground="{DynamicResource Accent}" />
         <TextBlock Classes="mono" Text="{Binding StatsSummary}" FontSize="11.5" LineHeight="18" Foreground="{DynamicResource Fg}" />
       </StackPanel>
     </Border>
@@ -152,7 +152,7 @@
               <Run Text="{Binding ChapterName}" Foreground="{DynamicResource Fg}" />
             </TextBlock>
             <Button Grid.Column="1" Classes="link" Command="{Binding ToggleTimeModeCommand}"
-                    ToolTip.Tip="Toplam süre / Kalan süre değiştir">
+                    ToolTip.Tip="{app:T player.toggleTotalRemainingTime}">
               <TextBlock>
                 <Run Classes="mono" Text="{Binding PositionText}" Foreground="{DynamicResource Fg}" />
                 <Run Classes="mono" Text="{Binding RightTimeText, StringFormat=' {0}'}" Foreground="{DynamicResource Fg4}" />
@@ -171,7 +171,7 @@
                     BorderBrush="{DynamicResource Accent}" BorderThickness="1" HorizontalAlignment="Left"
                     VerticalAlignment="Center" Width="0" IsVisible="False" IsHitTestVisible="False" />
             <Slider x:Name="SeekBar" Classes="seek" Minimum="0" Maximum="{Binding Duration}" Value="{Binding Position}"
-                    AutomationProperties.Name="Oynatma konumu" />
+                    AutomationProperties.Name="{app:T player.playbackPosition}" />
             <Canvas x:Name="Ticks" IsHitTestVisible="False" />
             <Border x:Name="HoverLine" Width="2" Height="18" CornerRadius="1" Background="White" HorizontalAlignment="Left"
                     VerticalAlignment="Center" IsVisible="False" IsHitTestVisible="False" />
@@ -205,35 +205,35 @@
 
           <Grid ColumnDefinitions="*,Auto,*" Margin="0,4,0,0">
             <StackPanel Orientation="Horizontal" Spacing="2" VerticalAlignment="Center">
-              <Button Classes="icon" Click="OnOpenFile" ToolTip.Tip="Dosya aç (Ctrl+O)" AutomationProperties.Name="Dosya aç">
+              <Button Classes="icon" Click="OnOpenFile" ToolTip.Tip="{app:T player.openFileCtrlO}" AutomationProperties.Name="{app:T start.openFile}">
                 <Viewbox Classes="i19"><Path Data="{StaticResource IcoFolder}" /></Viewbox>
               </Button>
-              <Button Classes="icon" Click="OnTracks" ToolTip.Tip="Altyazı ve parçalar" AutomationProperties.Name="Altyazı ve parçalar">
+              <Button Classes="icon" Click="OnTracks" ToolTip.Tip="{app:T player.subtitlesAndTracks}" AutomationProperties.Name="{app:T player.subtitlesAndTracks}">
                 <Viewbox Classes="i19"><Path Data="{StaticResource IcoSubs}" /></Viewbox>
               </Button>
               <Button Classes="icon" Classes.on="{Binding IsPanelOpen}" Command="{Binding TogglePanelCommand}"
-                      ToolTip.Tip="Görüntü ve ses (E)" AutomationProperties.Name="Görüntü ve ses">
+                      ToolTip.Tip="{app:T player.pictureAndSoundE}" AutomationProperties.Name="{app:T player.pictureAndSound}">
                 <Viewbox Classes="i19"><Path Data="{StaticResource IcoTune}" /></Viewbox>
               </Button>
               <Button Classes="icon" Classes.on="{Binding IsSplitCompare}" Command="{Binding ToggleSplitCompareCommand}"
-                      ToolTip.Tip="Önce / Sonra karşılaştırma çubuğu (C)" AutomationProperties.Name="Önce ve sonra karşılaştırma">
+                      ToolTip.Tip="{app:T player.beforeAfterComparisonSliderC}" AutomationProperties.Name="{app:T player.beforeAndAfterComparison}">
                 <Viewbox Classes="i19"><Path Data="{StaticResource IcoCompare}" /></Viewbox>
               </Button>
-              <Button Classes="icon" Command="{Binding ScreenshotCommand}" ToolTip.Tip="Kare yakala (S)" AutomationProperties.Name="Kare yakala">
+              <Button Classes="icon" Command="{Binding ScreenshotCommand}" ToolTip.Tip="{app:T player.captureFrameS}" AutomationProperties.Name="{app:T player.captureFrame}">
                 <Viewbox Classes="i19"><Path Data="{StaticResource IcoCamera}" /></Viewbox>
               </Button>
               <Button Classes="icon" Classes.on="{Binding IsLoopActive}" Click="OnLoop"
-                      ToolTip.Tip="{Binding LoopLabel}" AutomationProperties.Name="Tekrarlama ve A-B döngüsü">
+                      ToolTip.Tip="{Binding LoopLabel}" AutomationProperties.Name="{app:T player.repeatAndABLoop}">
                 <Viewbox Classes="i18"><Path Data="{StaticResource IcoRepeat}" /></Viewbox>
               </Button>
               <Button Classes="icon" Classes.on="{Binding IsFilled}" Click="OnAspectMenu"
-                      ToolTip.Tip="En-boy oranı ve döndürme (A / Z)" AutomationProperties.Name="En-boy oranı">
+                      ToolTip.Tip="{app:T player.aspectRatioAndRotationA}" AutomationProperties.Name="{app:T player.aspectRatio}">
                 <Viewbox Classes="i18"><Path Data="{StaticResource IcoFit}" /></Viewbox>
               </Button>
             </StackPanel>
 
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
-              <Button Classes="round" Command="{Binding SeekBackCommand}" ToolTip.Tip="Geri sar (←)" AutomationProperties.Name="Geri sar">
+              <Button Classes="round" Command="{Binding SeekBackCommand}" ToolTip.Tip="{app:T player.rewind}" AutomationProperties.Name="{app:T player.rewind2}">
                 <Viewbox Classes="i22">
                   <Panel Width="24" Height="24">
                     <Path Data="{StaticResource IcoBack}" />
@@ -241,10 +241,10 @@
                   </Panel>
                 </Viewbox>
               </Button>
-              <Button Classes="round" Command="{Binding PreviousCommand}" ToolTip.Tip="Önceki dosya (PgUp)" AutomationProperties.Name="Önceki dosya">
+              <Button Classes="round" Command="{Binding PreviousCommand}" ToolTip.Tip="{app:T player.previousFilePgUp}" AutomationProperties.Name="{app:T player.previousFile}">
                 <Viewbox Classes="i20"><Path Classes="fill" Data="{StaticResource IcoPrev}" /></Viewbox>
               </Button>
-              <Button Classes="play" Command="{Binding TogglePauseCommand}" ToolTip.Tip="Oynat / duraklat (Boşluk)" AutomationProperties.Name="Oynat veya duraklat">
+              <Button Classes="play" Command="{Binding TogglePauseCommand}" ToolTip.Tip="{app:T player.playPauseSpace}" AutomationProperties.Name="{app:T player.playOrPause}">
                 <Viewbox Classes="i20">
                   <Panel>
                     <Path Classes="fill" IsVisible="{Binding !IsPaused}" Data="{StaticResource IcoPause}" />
@@ -252,10 +252,10 @@
                   </Panel>
                 </Viewbox>
               </Button>
-              <Button Classes="round" Command="{Binding NextCommand}" ToolTip.Tip="Sonraki dosya (PgDn)" AutomationProperties.Name="Sonraki dosya">
+              <Button Classes="round" Command="{Binding NextCommand}" ToolTip.Tip="{app:T player.nextFilePgDn}" AutomationProperties.Name="{app:T player.nextFile}">
                 <Viewbox Classes="i20"><Path Classes="fill" Data="{StaticResource IcoNext}" /></Viewbox>
               </Button>
-              <Button Classes="round" Command="{Binding SeekForwardCommand}" ToolTip.Tip="İleri sar (→)" AutomationProperties.Name="İleri sar">
+              <Button Classes="round" Command="{Binding SeekForwardCommand}" ToolTip.Tip="{app:T player.fastForward}" AutomationProperties.Name="{app:T player.fastForward2}">
                 <Viewbox Classes="i22">
                   <Panel Width="24" Height="24">
                     <Path Data="{StaticResource IcoFwd}" />
@@ -268,13 +268,13 @@
             <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" HorizontalAlignment="Right" VerticalAlignment="Center">
               <Button Classes="chip" Classes.on="{Binding SmoothMotion}" Margin="0,0,4,0"
                       Content="{Binding FpsBadge}" IsVisible="{Binding SmoothMotion}"
-                      Click="OnFpsMenu" ToolTip.Tip="Hedef kare hızı (G)" AutomationProperties.Name="Hedef kare hızı" />
-              <Button Classes="chip" Margin="0,0,4,0" Content="{Binding SpeedText}" Click="OnSpeed" ToolTip.Tip="Oynatma hızı"
-                      AutomationProperties.Name="Oynatma hızı" />
-              <Button Classes="icon" Click="OnPlaylist" ToolTip.Tip="Oynatma listesi" AutomationProperties.Name="Oynatma listesi">
+                      Click="OnFpsMenu" ToolTip.Tip="{app:T player.targetFrameRateG}" AutomationProperties.Name="{app:T player.targetFrameRate}" />
+              <Button Classes="chip" Margin="0,0,4,0" Content="{Binding SpeedText}" Click="OnSpeed" ToolTip.Tip="{app:T player.playbackSpeed}"
+                      AutomationProperties.Name="{app:T player.playbackSpeed}" />
+              <Button Classes="icon" Click="OnPlaylist" ToolTip.Tip="{app:T player.playlist}" AutomationProperties.Name="{app:T player.playlist}">
                 <Viewbox Classes="i19"><Path Data="{StaticResource IcoList}" /></Viewbox>
               </Button>
-              <Button Classes="icon" Command="{Binding ToggleMuteCommand}" ToolTip.Tip="Sessiz (M)" AutomationProperties.Name="Sessiz">
+              <Button Classes="icon" Command="{Binding ToggleMuteCommand}" ToolTip.Tip="{app:T player.muteM}" AutomationProperties.Name="{app:T player.mute}">
                 <Viewbox Classes="i19">
                   <Panel>
                     <Path Data="{StaticResource IcoSpeaker}" />
@@ -284,8 +284,8 @@
                 </Viewbox>
               </Button>
               <Slider x:Name="VolumeSlider" Classes="volume" Width="72" Margin="2,0,6,0" Minimum="0" Maximum="{Binding VolumeMax}" Value="{Binding Volume}"
-                      VerticalAlignment="Center" AutomationProperties.Name="Ses düzeyi" />
-              <Button Classes="icon" Click="OnFullScreen" ToolTip.Tip="Tam ekran (F)" AutomationProperties.Name="Tam ekran">
+                      VerticalAlignment="Center" AutomationProperties.Name="{app:T player.volume}" />
+              <Button Classes="icon" Click="OnFullScreen" ToolTip.Tip="{app:T player.fullScreenF}" AutomationProperties.Name="{app:T player.fullScreen}">
                 <Viewbox Classes="i19"><Path Data="{StaticResource IcoFullscreen}" /></Viewbox>
               </Button>
             </StackPanel>
@@ -319,7 +319,7 @@
         <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="2" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,6,0">
           <Button Height="30" Padding="12,0" Margin="0,0,6,0" CornerRadius="15" Background="#800E1016" BorderBrush="{DynamicResource Line3}"
                   BorderThickness="1" FontSize="12" IsVisible="{Binding ShowTitleBlock}" Command="{Binding TogglePanelCommand}"
-                  ToolTip.Tip="Görüntü &amp; Ses paneli (E)" AutomationProperties.Name="Görüntü iyileştirme">
+                  ToolTip.Tip="{app:T player.pictureSoundPanelE}" AutomationProperties.Name="{app:T player.pictureEnhancement}">
             <StackPanel Orientation="Horizontal" Spacing="8">
               <Panel Width="13" Height="13" VerticalAlignment="Center">
                 <Ellipse Fill="{DynamicResource AccentHalo}" />
@@ -328,20 +328,20 @@
               <TextBlock Text="{Binding EnhanceLabel}" VerticalAlignment="Center" />
             </StackPanel>
           </Button>
-          <Button Classes="win" Command="{Binding ToggleStatsCommand}" ToolTip.Tip="Medya istatistikleri (I)"
-                  IsVisible="{Binding !IsIdle}" AutomationProperties.Name="Medya istatistikleri">
+          <Button Classes="win" Command="{Binding ToggleStatsCommand}" ToolTip.Tip="{app:T player.mediaStatisticsI}"
+                  IsVisible="{Binding !IsIdle}" AutomationProperties.Name="{app:T player.mediaStatistics}">
             <Viewbox Classes="i16"><Path Data="{StaticResource IcoInfo}" /></Viewbox>
           </Button>
-          <Button Classes="win" Command="{Binding OpenSettingsCommand}" ToolTip.Tip="Ayarlar (Ctrl+,)" AutomationProperties.Name="Ayarlar">
+          <Button Classes="win" Command="{Binding OpenSettingsCommand}" ToolTip.Tip="{app:T player.settingsCtrl}" AutomationProperties.Name="{app:T player.settings}">
             <Viewbox Width="17" Height="17"><Path Data="{StaticResource IcoGear}" /></Viewbox>
           </Button>
-          <Button Classes="win" Click="OnMinimize" AutomationProperties.Name="Küçült">
+          <Button Classes="win" Click="OnMinimize" AutomationProperties.Name="{app:T player.minimize}">
             <Viewbox Classes="i16"><Path Data="{StaticResource IcoMin}" /></Viewbox>
           </Button>
-          <Button Classes="win" Click="OnMaximize" AutomationProperties.Name="Büyüt">
+          <Button Classes="win" Click="OnMaximize" AutomationProperties.Name="{app:T player.maximize}">
             <Viewbox Classes="i14"><Path Data="{StaticResource IcoMax}" /></Viewbox>
           </Button>
-          <Button Classes="win" Click="OnClose" AutomationProperties.Name="Kapat">
+          <Button Classes="win" Click="OnClose" AutomationProperties.Name="{app:T player.close}">
             <Viewbox Classes="i16"><Path Data="{StaticResource IcoClose}" /></Viewbox>
           </Button>
         </StackPanel>
