@@ -14,8 +14,8 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Version for the dry-run build (SemVer, e.g. 0.1.0-test.1)
-        default: 0.0.0-dryrun
+        description: Version for the dry-run build (SemVer, e.g. 0.1.0-test.1; must be >= 0.0.1)
+        default: 0.0.1-dryrun
         required: true
 
 permissions:
@@ -45,7 +45,7 @@ jobs:
         run: |
           $v = if ('${{ github.ref_type }}' -eq 'tag') { '${{ github.ref_name }}'.TrimStart('v') }
                elseif ('${{ inputs.version }}') { '${{ inputs.version }}' }
-               else { '0.0.0-pr.${{ github.run_number }}' }
+               else { '0.0.1-pr.${{ github.run_number }}' }
           if ($v -notmatch '^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$') { throw "Not a SemVer version: $v" }
           "value=$v" >> $env:GITHUB_OUTPUT
           "publish=$('${{ github.ref_type }}' -eq 'tag')".ToLower() >> $env:GITHUB_OUTPUT
@@ -88,10 +88,13 @@ jobs:
         run: vpk download github --repoUrl $env:REPO_URL --token ${{ github.token }} -o Releases
 
       - name: Pack installer
-        run: >
-          vpk pack --packId NuvoraPlayer --packVersion ${{ steps.version.outputs.value }}
-          --packDir publish --mainExe NuvoraPlayer.exe --packTitle "Nuvora Player" --packAuthors "AFU"
-          --icon src/Player.App/Assets/app.ico --noPortable -o Releases
+        run: |
+          $icon = 'src/Player.App/Assets/app.ico'
+          $iconArgs = if (Test-Path $icon) { @('--icon', $icon) } else { @() } # Setup.exe falls back to Velopack's icon
+          vpk pack --packId NuvoraPlayer --packVersion ${{ steps.version.outputs.value }} `
+            --packDir publish --mainExe NuvoraPlayer.exe --packTitle "Nuvora Player" --packAuthors "AFU" `
+            @iconArgs --noPortable -o Releases
+          if ($LASTEXITCODE -ne 0) { throw "vpk pack failed" }
 
       - name: Upload to draft GitHub release
         if: steps.version.outputs.publish == 'true'
