@@ -36,9 +36,30 @@ public partial class MainWindow : Window
             if (WindowState != WindowState.Normal) WindowState = WindowState.Normal;
             FitToVideo(_videoW * scale, _videoH * scale, allowUpscale: true);
         };
-        PreviewVideo.HandleCreated += wid => vm.StartThumbnailer(wid);
+        // NativeControlHost recreates its HWND if the control is detached and re-attached. mpv cannot move to a
+        // new "wid" at runtime, so a second handle means the video surface is gone: say so instead of
+        // initializing mpv twice (which fails with "Already initialized").
+        var previewStarted = false;
+        PreviewVideo.HandleCreated += wid =>
+        {
+            if (previewStarted)
+            {
+                AppLog.Warn("preview video HWND was recreated; SmartSeek thumbnails stop until restart");
+                return;
+            }
+            previewStarted = true;
+            vm.StartThumbnailer(wid);
+        };
+        var videoStarted = false;
         Video.HandleCreated += wid =>
         {
+            if (videoStarted)
+            {
+                AppLog.Warn("video HWND was recreated after mpv started");
+                vm.ErrorText = "Video yüzeyi yeniden oluşturuldu. Oynatıcıyı yeniden başlatın.";
+                return;
+            }
+            videoStarted = true;
             try
             {
                 vm.Start(wid);
