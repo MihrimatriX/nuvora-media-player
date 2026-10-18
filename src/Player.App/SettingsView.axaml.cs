@@ -15,6 +15,7 @@ public partial class SettingsView : UserControl
     public SettingsView()
     {
         InitializeComponent();
+        Accessibility.LabelRows(this);
         DataContextChanged += (_, _) =>
         {
             if (_vm is not null || DataContext is not PlayerViewModel player) return;
