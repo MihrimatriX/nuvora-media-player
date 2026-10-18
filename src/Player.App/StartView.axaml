@@ -56,7 +56,7 @@
             </Border>
             <TextBlock Text="{Binding Hero.Title, FallbackValue='Nuvora Player'}" FontSize="34" FontWeight="Bold" LetterSpacing="-0.5"
                        TextTrimming="CharacterEllipsis" />
-            <TextBlock Text="{Binding Hero.HeroSubtitle, FallbackValue='Bir video aç ya da pencereye sürükle. Codec paketi gerekmez.'}"
+            <TextBlock Text="{Binding HeroSubtitle}"
                        FontSize="14" Foreground="#D2D7DE" />
             <ProgressBar Classes="thin" Maximum="1" Value="{Binding Hero.Progress, FallbackValue=0}" Margin="0,4,0,6"
                          IsVisible="{Binding HasHero}" />
@@ -64,10 +64,10 @@
               <Button Classes="pill white" Command="{Binding OpenRecentCommand}" CommandParameter="{Binding Hero}" IsVisible="{Binding HasHero}">
                 <StackPanel Orientation="Horizontal" Spacing="10">
                   <Viewbox Classes="i18"><Path Classes="fill" Data="{StaticResource IcoPlay}" /></Viewbox>
-                  <TextBlock Text="Devam et" VerticalAlignment="Center" />
+                  <TextBlock Text="{app:T start.continue}" VerticalAlignment="Center" />
                 </StackPanel>
               </Button>
-              <Button Classes="pill glass" Content="Baştan başlat" Command="{Binding PlayFromStartCommand}" CommandParameter="{Binding Hero}"
+              <Button Classes="pill glass" Content="{app:T start.startOver}" Command="{Binding PlayFromStartCommand}" CommandParameter="{Binding Hero}"
                       IsVisible="{Binding HasHero}" />
             </StackPanel>
           </StackPanel>
@@ -85,21 +85,21 @@
               <Path Data="{StaticResource IcoUpload}" Stroke="White" StrokeThickness="1.7" />
             </Viewbox>
           </Border>
-          <TextBlock Text="Sürükle ve bırak" FontSize="19" FontWeight="Bold" HorizontalAlignment="Center" />
-          <TextBlock Text="MKV, MP4, AVI, MTS, WebM ve dahası.&#10;Codec paketi gerekmez." TextAlignment="Center"
+          <TextBlock Text="{app:T start.dragAndDrop}" FontSize="19" FontWeight="Bold" HorizontalAlignment="Center" />
+          <TextBlock Text="{app:T start.mkvMP4AVIMTSWebM}" TextAlignment="Center"
                      FontSize="13" LineHeight="20" Foreground="#B8BFC9" />
           <TextBlock Text="{Binding ErrorText}" IsVisible="{Binding ErrorText, Converter={x:Static ObjectConverters.IsNotNull}}"
                      TextAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource Danger}" FontSize="12" />
           <StackPanel Spacing="8" Margin="0,6,0,0">
             <Button Classes="pill accent" HorizontalAlignment="Stretch" Click="OnOpenFile">
               <StackPanel Orientation="Horizontal" Spacing="10">
-                <TextBlock Text="Dosya aç" VerticalAlignment="Center" />
+                <TextBlock Text="{app:T start.openFile}" VerticalAlignment="Center" />
                 <Border Padding="7,1" CornerRadius="6" Background="#33FFFFFF" VerticalAlignment="Center">
                   <TextBlock Classes="mono" Text="{Binding OpenKeyText}" FontSize="11.5" />
                 </Border>
               </StackPanel>
             </Button>
-            <Button Classes="pill" HorizontalAlignment="Stretch" Content="Klasör aç" Click="OnOpenFolder" />
+            <Button Classes="pill" HorizontalAlignment="Stretch" Content="{app:T start.openFolder}" Click="OnOpenFolder" />
           </StackPanel>
         </StackPanel>
       </Panel>
@@ -143,7 +143,7 @@
               <Viewbox Classes="i18"><Path Data="{StaticResource IcoPlay}" Fill="{DynamicResource Accent}" /></Viewbox>
             </Border>
             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-              <TextBlock Classes="statLabel" Text="Toplam izleme" />
+              <TextBlock Classes="statLabel" Text="{app:T start.totalWatch}" />
               <TextBlock Classes="statValue" Text="{Binding TotalWatchTimeText}" />
               <TextBlock Classes="mono statDetail" Text="{Binding TotalRecentCount, StringFormat='{}{0} medya dosyası'}" Foreground="{DynamicResource Accent}" />
             </StackPanel>
@@ -155,7 +155,7 @@
               <Viewbox Classes="i18"><Path Data="{StaticResource IcoScreen}" Stroke="#06B6D4" /></Viewbox>
             </Border>
             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-              <TextBlock Classes="statLabel" Text="Donanım hızlandırma" />
+              <TextBlock Classes="statLabel" Text="{app:T start.hwAccel}" />
               <TextBlock Classes="statValue" Text="{Binding GpuDisplayName}" />
               <TextBlock Classes="mono statDetail" Text="{Binding HwdecDisplayName}" Foreground="#06B6D4" />
             </StackPanel>
@@ -167,7 +167,7 @@
               <Viewbox Classes="i18"><Path Data="{StaticResource IcoWaves}" Stroke="#10B981" /></Viewbox>
             </Border>
             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-              <TextBlock Classes="statLabel" Text="Ses çıkışı" />
+              <TextBlock Classes="statLabel" Text="{app:T start.audioOutput}" />
               <TextBlock Classes="statValue" Text="{Binding AudioBackendDisplayName}" />
               <TextBlock Classes="mono statDetail" Text="{Binding AudioDeviceDisplayName}" Foreground="#10B981" />
             </StackPanel>
@@ -179,7 +179,7 @@
               <Viewbox Classes="i18"><Path Data="{StaticResource IcoGear}" Stroke="#F59E0B" /></Viewbox>
             </Border>
             <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
-              <TextBlock Classes="statLabel" Text="Oynatma çekirdeği" />
+              <TextBlock Classes="statLabel" Text="{app:T start.engine}" />
               <TextBlock Classes="statValue" Text="{Binding MpvEngineDisplayName}" />
               <TextBlock Classes="mono statDetail" Text="{Binding FfmpegDisplayName}" Foreground="#F59E0B" />
             </StackPanel>
@@ -190,8 +190,8 @@
       <!-- Recently played -->
       <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Spacing="14" IsVisible="{Binding HasRecentCards}">
         <Grid ColumnDefinitions="*,Auto">
-          <TextBlock Text="Son oynatılanlar" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" />
-          <Button Grid.Column="1" Classes="link" Content="Tümünü gör" Click="OnAllRecents" IsVisible="{Binding HasMoreRecents}" />
+          <TextBlock Text="{app:T start.recentlyPlayed}" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" />
+          <Button Grid.Column="1" Classes="link" Content="{app:T start.seeAll}" Click="OnAllRecents" IsVisible="{Binding HasMoreRecents}" />
         </Grid>
         <ItemsControl ItemsSource="{Binding RecentCards}" Margin="0,0,-20,0">
           <ItemsControl.ItemsPanel>

@@ -2,8 +2,11 @@ using Player.App;
 
 namespace Player.Core.Tests;
 
+[Collection(nameof(LocTests))]
 public class SystemInfoTests
 {
+    public SystemInfoTests() => Loc.SetLanguage("tr");
+
     [Theory]
     [InlineData(false, "auto-safe", "d3d11va", "Yazılım (CPU)")]
     [InlineData(true, "auto-safe", null, "Otomatik (auto-safe)")]

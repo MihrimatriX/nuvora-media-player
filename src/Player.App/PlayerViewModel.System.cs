@@ -6,7 +6,7 @@ public sealed partial class PlayerViewModel
     // mpv clears these when playback stops, so the last real value is kept for the idle screen.
     string? _lastHwdec, _lastAo;
 
-    public string GpuDisplayName => string.IsNullOrWhiteSpace(Gpu?.Name) ? "Ekran kartı algılanamadı" : Gpu.Name;
+    public string GpuDisplayName => string.IsNullOrWhiteSpace(Gpu?.Name) ? Loc.T("sys.gpuUnknown") : Gpu.Name;
     public string HwdecDisplayName => SystemInfo.Decoder(_settings.HardwareDecoding, _settings.HwdecMode, _lastHwdec);
     public string HwdecDetail => SystemInfo.DecoderDetail(_settings.HardwareDecoding, _lastHwdec, Raw("current-vo") ?? _settings.VideoOutput);
     public string AudioBackendDisplayName => SystemInfo.AudioOutput(_lastAo, _settings.AudioExclusive);
@@ -54,32 +54,32 @@ public static class SystemInfo
     /// <summary>Decoder actually used last ("d3d11va" → "D3D11VA"), else the configured mode.</summary>
     public static string Decoder(bool hwEnabled, string mode, string? lastUsed)
     {
-        if (!hwEnabled) return "Yazılım (CPU)";
-        if (lastUsed is null) return mode.StartsWith("auto", StringComparison.Ordinal) ? $"Otomatik ({mode})" : mode.ToUpperInvariant();
-        if (lastUsed == "no") return "Yazılım (CPU)";
-        return lastUsed.EndsWith("-copy", StringComparison.Ordinal) ? lastUsed[..^5].ToUpperInvariant() + " (kopya)" : lastUsed.ToUpperInvariant();
+        if (!hwEnabled) return Loc.T("sys.software");
+        if (lastUsed is null) return mode.StartsWith("auto", StringComparison.Ordinal) ? Loc.F("sys.autoMode", mode) : mode.ToUpperInvariant();
+        if (lastUsed == "no") return Loc.T("sys.software");
+        return lastUsed.EndsWith("-copy", StringComparison.Ordinal) ? Loc.F("sys.copy", lastUsed[..^5].ToUpperInvariant()) : lastUsed.ToUpperInvariant();
     }
 
     public static string DecoderDetail(bool hwEnabled, string? lastUsed, string vo)
     {
-        var state = !hwEnabled ? "Donanım çözme kapalı"
-            : lastUsed is null ? "Henüz video oynatılmadı"
-            : lastUsed == "no" ? "Son videoda donanım kullanılamadı"
-            : "Son videoda kullanıldı";
+        var state = !hwEnabled ? Loc.T("sys.hwOff")
+            : lastUsed is null ? Loc.T("sys.notPlayedYet")
+            : lastUsed == "no" ? Loc.T("sys.hwUnavailable")
+            : Loc.T("sys.hwUsed");
         return $"{state} · {vo}";
     }
 
-    /// <summary>"wasapi" + exclusive → "WASAPI · Özel kip". Unknown until mpv opens an audio output.</summary>
+    /// <summary>"wasapi" + exclusive → "WASAPI · Exclusive". Unknown until mpv opens an audio output.</summary>
     public static string AudioOutput(string? ao, bool exclusive)
     {
-        var name = ao is null ? (OperatingSystem.IsWindows() ? "WASAPI" : "Otomatik") : ao.ToUpperInvariant();
-        return $"{name} · {(exclusive ? "Özel kip" : "Paylaşımlı")}";
+        var name = ao is null ? (OperatingSystem.IsWindows() ? "WASAPI" : Loc.T("sys.auto")) : ao.ToUpperInvariant();
+        return $"{name} · {(exclusive ? Loc.T("sys.exclusive") : Loc.T("sys.shared"))}";
     }
 
     public static string WatchTime(double totalSeconds)
     {
-        if (totalSeconds < 60) return "0 dk";
+        if (totalSeconds < 60) return Loc.F("sys.minutes", 0);
         var t = TimeSpan.FromSeconds(totalSeconds);
-        return t.TotalHours >= 1 ? $"{(int)t.TotalHours} sa {t.Minutes} dk" : $"{t.Minutes} dk";
+        return t.TotalHours >= 1 ? Loc.F("sys.hoursMinutes", (int)t.TotalHours, t.Minutes) : Loc.F("sys.minutes", t.Minutes);
     }
 }

@@ -36,7 +36,7 @@ public partial class SettingsView : UserControl
             var swatch = new Button { Background = Brush.Parse(hex) };
             swatch.Classes.Add("swatch");
             swatch.Classes.Set("on", string.Equals(Vm.Draft.Accent, hex, StringComparison.OrdinalIgnoreCase));
-            Avalonia.Automation.AutomationProperties.SetName(swatch, SettingsViewModel.AccentNames[i]);
+            Avalonia.Automation.AutomationProperties.SetName(swatch, Loc.T(SettingsViewModel.AccentNames[i]));
             swatch.Click += (_, _) =>
             {
                 Vm.Set(s => s.Accent = hex);
@@ -69,13 +69,10 @@ public partial class SettingsView : UserControl
     void OnBackdrop(object? sender, PointerPressedEventArgs e) => Cancel();
 
     void OnLanguage(object? sender, RoutedEventArgs e) => Menus.Show((Control)sender!,
-    [
-        Menus.Item("Türkçe", true, () => { }),
-        Menus.Item("English (yakında)", false, () => { }, enabled: false),
-    ]);
+        new[] { "auto", "tr", "en" }.Select(lang => Menus.Item(Loc.T($"lang.{lang}"), lang == Vm.Draft.Language, () => Vm.Set(d => d.Language = lang))));
 
     void OnTheme(object? sender, RoutedEventArgs e) => Menus.Show((Control)sender!,
-        SettingsViewModel.Accents.Select((hex, i) => Menus.Item(SettingsViewModel.AccentNames[i],
+        SettingsViewModel.Accents.Select((hex, i) => Menus.Item(Loc.T(SettingsViewModel.AccentNames[i]),
             string.Equals(hex, Vm.Draft.Accent, StringComparison.OrdinalIgnoreCase),
             () =>
             {
@@ -85,13 +82,13 @@ public partial class SettingsView : UserControl
             })));
 
     void OnWheelAction(object? sender, RoutedEventArgs e) => Menus.Show((Control)sender!,
-        SettingsViewModel.WheelActions.Select(w => Menus.Item(w.Label, w.Value == Vm.Draft.WheelAction, () => Vm.Set(d => d.WheelAction = w.Value))));
+        SettingsViewModel.WheelActions.Select(w => Menus.Item(Loc.T(w.Label), w.Value == Vm.Draft.WheelAction, () => Vm.Set(d => d.WheelAction = w.Value))));
 
     void OnLoopMode(object? sender, RoutedEventArgs e) => Menus.Show((Control)sender!,
-        SettingsViewModel.LoopModes.Select(l => Menus.Item(l.Label, l.Value == Vm.Draft.LoopMode, () => Vm.Set(d => d.LoopMode = l.Value))));
+        SettingsViewModel.LoopModes.Select(l => Menus.Item(Loc.T(l.Label), l.Value == Vm.Draft.LoopMode, () => Vm.Set(d => d.LoopMode = l.Value))));
 
     void OnSeekStep(object? sender, RoutedEventArgs e) => Menus.Show((Control)sender!,
-        SettingsViewModel.SeekSteps.Select(s => Menus.Item($"{s} sn", s == Vm.Draft.SeekStepSeconds, () => Vm.Set(d => d.SeekStepSeconds = s))));
+        SettingsViewModel.SeekSteps.Select(s => Menus.Item(Loc.F("unit.seconds", s), s == Vm.Draft.SeekStepSeconds, () => Vm.Set(d => d.SeekStepSeconds = s))));
 
     void OnVolumeStep(object? sender, RoutedEventArgs e) => Menus.Show((Control)sender!,
         SettingsViewModel.VolumeSteps.Select(s => Menus.Item($"%{s}", s == Vm.Draft.VolumeStep, () => Vm.Set(d => d.VolumeStep = s))));
@@ -101,57 +98,57 @@ public partial class SettingsView : UserControl
             Math.Abs(s - Vm.Draft.SubtitleScale) < 0.01, () => Vm.Set(d => d.SubtitleScale = s))));
 
     void OnSubtitlePos(object? sender, RoutedEventArgs e) => Menus.Show((Control)sender!,
-        SettingsViewModel.SubtitlePositions.Select(p => Menus.Item(p.Label, p.Value == Vm.Draft.SubtitlePosition, () => Vm.Set(d => d.SubtitlePosition = p.Value))));
+        SettingsViewModel.SubtitlePositions.Select(p => Menus.Item(Loc.T(p.Label), p.Value == Vm.Draft.SubtitlePosition, () => Vm.Set(d => d.SubtitlePosition = p.Value))));
 
     void OnSubtitleColor(object? sender, RoutedEventArgs e) => Menus.Show((Control)sender!,
-        SettingsViewModel.SubtitleColors.Select(c => Menus.Item(c.Label, c.Value == Vm.Draft.SubtitleColor, () => Vm.Set(d => d.SubtitleColor = c.Value))));
+        SettingsViewModel.SubtitleColors.Select(c => Menus.Item(Loc.T(c.Label), c.Value == Vm.Draft.SubtitleColor, () => Vm.Set(d => d.SubtitleColor = c.Value))));
 
     void OnDefaultPreset(object? sender, RoutedEventArgs e) => Menus.Show((Control)sender!,
-        ImagePresets.All.Select(p => Menus.Item(p.Name, p.Id == Vm.Draft.DefaultPreset, () => Vm.Set(d => d.DefaultPreset = p.Id))));
+        ImagePresets.All.Select(p => Menus.Item(PlayerViewModel.PresetLabel(p), p.Id == Vm.Draft.DefaultPreset, () => Vm.Set(d => d.DefaultPreset = p.Id))));
 
     void OnHwdecMode(object? sender, RoutedEventArgs e) => Menus.Show((Control)sender!,
-        SettingsViewModel.HwdecModes.Select(h => Menus.Item(h.Label, h.Value == Vm.Draft.HwdecMode, () => Vm.Set(d => d.HwdecMode = h.Value))));
+        SettingsViewModel.HwdecModes.Select(h => Menus.Item(Loc.T(h.Label), h.Value == Vm.Draft.HwdecMode, () => Vm.Set(d => d.HwdecMode = h.Value))));
 
     void OnDeinterlaceMode(object? sender, RoutedEventArgs e) => Menus.Show((Control)sender!,
-        SettingsViewModel.DeinterlaceModes.Select(m => Menus.Item(m.Label, m.Value == Vm.Draft.DeinterlaceMode, () => Vm.Set(d =>
+        SettingsViewModel.DeinterlaceModes.Select(m => Menus.Item(Loc.T(m.Label), m.Value == Vm.Draft.DeinterlaceMode, () => Vm.Set(d =>
         {
             d.DeinterlaceMode = m.Value;
             d.Deinterlace = m.Value != "no";
         }))));
 
     void OnScreenFormat(object? sender, RoutedEventArgs e) => Menus.Show((Control)sender!,
-        SettingsViewModel.ScreenFormats.Select(s => Menus.Item(s.Label, s.Value == Vm.Draft.ScreenFormat, () => Vm.Set(d => d.ScreenFormat = s.Value))));
+        SettingsViewModel.ScreenFormats.Select(s => Menus.Item(Loc.T(s.Label), s.Value == Vm.Draft.ScreenFormat, () => Vm.Set(d => d.ScreenFormat = s.Value))));
 
     void OnDisplayFormat43(object? sender, RoutedEventArgs e) => Menus.Show((Control)sender!,
-        SettingsViewModel.DisplayFormats.Select(f => Menus.Item(f.Label, f.Value == Vm.Draft.DisplayFormat43, () => Vm.Set(d => d.DisplayFormat43 = f.Value))));
+        SettingsViewModel.DisplayFormats.Select(f => Menus.Item(Loc.T(f.Label), f.Value == Vm.Draft.DisplayFormat43, () => Vm.Set(d => d.DisplayFormat43 = f.Value))));
 
     void OnDisplayFormat169(object? sender, RoutedEventArgs e) => Menus.Show((Control)sender!,
-        SettingsViewModel.DisplayFormats.Select(f => Menus.Item(f.Label, f.Value == Vm.Draft.DisplayFormat169, () => Vm.Set(d => d.DisplayFormat169 = f.Value))));
+        SettingsViewModel.DisplayFormats.Select(f => Menus.Item(Loc.T(f.Label), f.Value == Vm.Draft.DisplayFormat169, () => Vm.Set(d => d.DisplayFormat169 = f.Value))));
 
     void OnDisplayFormatCinematic(object? sender, RoutedEventArgs e) => Menus.Show((Control)sender!,
-        SettingsViewModel.CinematicFormats.Select(f => Menus.Item(f.Label, f.Value == Vm.Draft.DisplayFormatCinematic, () => Vm.Set(d => d.DisplayFormatCinematic = f.Value))));
+        SettingsViewModel.CinematicFormats.Select(f => Menus.Item(Loc.T(f.Label), f.Value == Vm.Draft.DisplayFormatCinematic, () => Vm.Set(d => d.DisplayFormatCinematic = f.Value))));
 
     void OnVideoOutput(object? sender, RoutedEventArgs e) => Menus.Show((Control)sender!,
-        SettingsViewModel.VideoOutputs.Select(o => Menus.Item(o.Label, o.Value == Vm.Draft.VideoOutput, () => Vm.Set(d => d.VideoOutput = o.Value))));
+        SettingsViewModel.VideoOutputs.Select(o => Menus.Item(Loc.T(o.Label), o.Value == Vm.Draft.VideoOutput, () => Vm.Set(d => d.VideoOutput = o.Value))));
 
     void OnTargetFps(object? sender, RoutedEventArgs e) => Menus.Show((Control)sender!,
-        SettingsViewModel.FpsOptions.Select(f => Menus.Item(f.Label, f.Value == Vm.Draft.TargetFps, () => Vm.Set(d =>
+        SettingsViewModel.FpsOptions.Select(f => Menus.Item(Loc.T(f.Label), f.Value == Vm.Draft.TargetFps, () => Vm.Set(d =>
         {
             d.TargetFps = f.Value;
             d.SmoothMotionByDefault = f.Value != 0;
         }))));
 
     void OnMotionScaler(object? sender, RoutedEventArgs e) => Menus.Show((Control)sender!,
-        SettingsViewModel.MotionScalers.Select(m => Menus.Item(m.Label, m.Value == Vm.Draft.MotionScaler, () => Vm.Set(d => d.MotionScaler = m.Value))));
+        SettingsViewModel.MotionScalers.Select(m => Menus.Item(Loc.T(m.Label), m.Value == Vm.Draft.MotionScaler, () => Vm.Set(d => d.MotionScaler = m.Value))));
 
     void OnToneMapping(object? sender, RoutedEventArgs e) => Menus.Show((Control)sender!,
-        SettingsViewModel.ToneMappings.Select(t => Menus.Item(t.Label, t.Value == Vm.Draft.ToneMapping, () => Vm.Set(d => d.ToneMapping = t.Value))));
+        SettingsViewModel.ToneMappings.Select(t => Menus.Item(Loc.T(t.Label), t.Value == Vm.Draft.ToneMapping, () => Vm.Set(d => d.ToneMapping = t.Value))));
 
     void OnScreenshotFormat(object? sender, RoutedEventArgs e) => Menus.Show((Control)sender!,
         SettingsViewModel.ScreenshotFormats.Select(f => Menus.Item(f.ToUpperInvariant(), f == Vm.Draft.ScreenshotFormat, () => Vm.Set(d => d.ScreenshotFormat = f))));
 
     void OnAudioOutputMode(object? sender, RoutedEventArgs e) => Menus.Show((Control)sender!,
-        SettingsViewModel.AudioOutputModes.Select(a => Menus.Item(a.Label, a.Value == Vm.Draft.AudioOutputMode, () => Vm.Set(d => d.AudioOutputMode = a.Value))));
+        SettingsViewModel.AudioOutputModes.Select(a => Menus.Item(Loc.T(a.Label), a.Value == Vm.Draft.AudioOutputMode, () => Vm.Set(d => d.AudioOutputMode = a.Value))));
 
     void OnAudioDevice(object? sender, RoutedEventArgs e) => Menus.Show((Control)sender!,
         Vm.Player.AudioDevices.Select(d => Menus.Item(d.Description, d.Name == Vm.Draft.AudioDevice, () => Vm.Set(s => s.AudioDevice = d.Name))));
@@ -163,20 +160,20 @@ public partial class SettingsView : UserControl
         Vm.Player.AudioDevices.Select(d => Menus.Item(d.Description, d.Name == Vm.Draft.HdmiDevice, () => Vm.Set(s => s.HdmiDevice = d.Name))));
 
     void OnExportEncoder(object? sender, RoutedEventArgs e) => Menus.Show((Control)sender!,
-        SettingsViewModel.ExportEncoders.Select(enc => Menus.Item(enc.Label, enc.Value == Vm.Draft.ExportEncoder, () => Vm.Set(d => d.ExportEncoder = enc.Value))));
+        SettingsViewModel.ExportEncoders.Select(enc => Menus.Item(Loc.T(enc.Label), enc.Value == Vm.Draft.ExportEncoder, () => Vm.Set(d => d.ExportEncoder = enc.Value))));
 
     void OnExportDeinterlace(object? sender, RoutedEventArgs e) => Menus.Show((Control)sender!,
-        SettingsViewModel.ExportDeinterlaceModes.Select(m => Menus.Item(m.Label, m.Value == Vm.Draft.ExportDeinterlace, () => Vm.Set(d => d.ExportDeinterlace = m.Value))));
+        SettingsViewModel.ExportDeinterlaceModes.Select(m => Menus.Item(Loc.T(m.Label), m.Value == Vm.Draft.ExportDeinterlace, () => Vm.Set(d => d.ExportDeinterlace = m.Value))));
 
     async void OnPickFolder(object? sender, RoutedEventArgs e)
     {
-        var folders = await TopLevel.GetTopLevel(this)!.StorageProvider.OpenFolderPickerAsync(new() { Title = "Kare yakalama klasörü" });
+        var folders = await TopLevel.GetTopLevel(this)!.StorageProvider.OpenFolderPickerAsync(new() { Title = Loc.T("settings.frameCaptureFolder") });
         if (folders.Count > 0 && folders[0].TryGetLocalPath() is { } path) Vm.Set(d => d.ScreenshotDirectory = path);
     }
 
     async void OnPickExportFolder(object? sender, RoutedEventArgs e)
     {
-        var folders = await TopLevel.GetTopLevel(this)!.StorageProvider.OpenFolderPickerAsync(new() { Title = "Dışa aktarma klasörü" });
+        var folders = await TopLevel.GetTopLevel(this)!.StorageProvider.OpenFolderPickerAsync(new() { Title = Loc.T("settings.exportFolder") });
         if (folders.Count > 0 && folders[0].TryGetLocalPath() is { } path) Vm.Set(d => d.ExportDirectory = path);
     }
 }
