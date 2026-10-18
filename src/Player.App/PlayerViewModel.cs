@@ -23,7 +23,7 @@ public sealed partial class PlayerViewModel : ObservableObject
 {
     public static readonly double[] Speeds = [0.25, 0.5, 0.75, 1, 1.25, 1.5, 1.75, 2, 3, 4];
     public static readonly (string Value, string Label)[] AspectRatios =
-        [("auto", "Otomatik"), ("16:9", "16:9 (Geniş)"), ("21:9", "21:9 (Sinema)"), ("4:3", "4:3 (Klasik)"), ("1:1", "1:1 (Kare)")];
+        [("auto", "aspect.auto"), ("16:9", "aspect.wide"), ("21:9", "aspect.cinema"), ("4:3", "aspect.classic"), ("1:1", "aspect.square")]; // labels are Loc keys
     public static readonly int[] Rotations = [0, 90, 180, 270];
 
     static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
@@ -50,7 +50,7 @@ public sealed partial class PlayerViewModel : ObservableObject
     ];
 
     /// <summary>Output devices reported by mpv ("auto" first).</summary>
-    public IReadOnlyList<AudioDeviceInfo> AudioDevices { get; private set; } = [new("auto", "Otomatik")];
+    public IReadOnlyList<AudioDeviceInfo> AudioDevices { get; private set; } = [new("auto", Loc.T("audio.auto"))];
 
     /// <summary>Display size of a newly opened video (once per file), so the window can fit it without black bars.</summary>
     public event Action<double, double>? VideoSizeKnown;
@@ -99,8 +99,10 @@ public sealed partial class PlayerViewModel : ObservableObject
         Normalize = settings.NormalizeByDefault;
         TargetFps = settings.TargetFps != 0 ? settings.TargetFps : (settings.SmoothMotionByDefault ? 60 : 0);
         LoopMode = settings.LoopMode;
+        Loc.SetLanguage(settings.Language);
         _player.PropertyChanged += OnPlayerProperty;
-        _player.PlaybackError += msg => ErrorText = $"Dosya oynatılamadı: {msg}";
+        Loc.LanguageChanged += () => OnPropertyChanged(string.Empty); // every computed label re-reads its text
+        _player.PlaybackError += msg => ErrorText = Loc.F("osd.playbackFailed", msg);
     }
 
     public AppSettings Settings => _settings;
@@ -134,8 +136,8 @@ public sealed partial class PlayerViewModel : ObservableObject
     public double? AbLoopASeconds => double.TryParse(_abA, NumberStyles.Float, CultureInfo.InvariantCulture, out var a) ? a : null;
     public double? AbLoopBSeconds => double.TryParse(_abB, NumberStyles.Float, CultureInfo.InvariantCulture, out var b) ? b : null;
     public string LoopLabel => IsAbLoopActive
-        ? (_abB != "no" ? "A–B Döngüsü" : "A Seçildi…")
-        : LoopMode switch { "file" => "Dosyayı tekrarla", "playlist" => "Listeyi tekrarla", _ => "Tekrar kapalı" };
+        ? Loc.T(_abB != "no" ? "loop.abLoop" : "loop.aSet")
+        : Loc.T(LoopMode switch { "file" => "loop.file", "playlist" => "loop.playlist", _ => "loop.off" });
 
     // ---- sheets ----
     [ObservableProperty, NotifyPropertyChangedFor(nameof(IsSheetOpen), nameof(ShowTitleBlock), nameof(ShowFileChip))]
@@ -171,7 +173,7 @@ public sealed partial class PlayerViewModel : ObservableObject
     public string SpeedText => $"{Speed.ToString("0.0#", CultureInfo.InvariantCulture)}×";
     public string FileChip => _path is null ? "" : Title == Path.GetFileName(_path) ? Title : $"{Title} — {Path.GetFileName(_path)}";
     public string ChapterText => ChapterLabel(ChapterIndex);
-    public string ChapterPrefix => ChapterIndex < 0 || ChapterIndex >= Chapters.Count ? "" : $"Bölüm {ChapterIndex + 1}" + (ChapterName.Length > 0 ? " · " : "");
+    public string ChapterPrefix => ChapterIndex < 0 || ChapterIndex >= Chapters.Count ? "" : Loc.F("chapter.prefix", ChapterIndex + 1) + (ChapterName.Length > 0 ? " · " : "");
     public string ChapterName => ChapterIndex < 0 || ChapterIndex >= Chapters.Count ? "" : Chapters[ChapterIndex].Title ?? "";
     public string OpenKeyText => Shortcuts.Display(Shortcuts.BindingFor(_settings.Shortcuts, "open"));
     public string CompareKeyText => Shortcuts.Display(Shortcuts.BindingFor(_settings.Shortcuts, "compare"));
@@ -200,14 +202,14 @@ public sealed partial class PlayerViewModel : ObservableObject
             var pix = Raw("video-params/hw-pixelformat") ?? Raw("video-params/pixelformat") ?? "—";
             var vcodec = Raw("video-format") is { } v ? $"{CodecName(v)} ({pix})" : "—";
             var fpsText = _sourceFps > 0
-                ? (TargetFps > 0 ? $"{_sourceFps:0.##} fps → {TargetFps} fps (hedef)" : $"{_sourceFps:0.##} fps" + (_outputFps > 0 ? $" (çıkış {_outputFps:0.#} fps)" : ""))
+                ? (TargetFps > 0 ? Loc.F("stats.fpsTarget", _sourceFps.ToString("0.##"), TargetFps) : $"{_sourceFps:0.##} fps" + (_outputFps > 0 ? Loc.F("stats.fpsOutput", _outputFps.ToString("0.#")) : ""))
                 : "—";
-            var hwdec = Raw("hwdec-current") is { Length: > 0 } h && h != "no" ? h : "Yazılım (CPU)";
+            var hwdec = Raw("hwdec-current") is { Length: > 0 } h && h != "no" ? h : Loc.T("stats.software");
             var vo = Raw("current-vo") ?? _settings.VideoOutput;
             var acodec = Raw("audio-codec-name") is { } a
                 ? $"{CodecName(a)} · {ChannelLayout(_channelCount)}" + (_sampleRate > 0 ? $" · {_sampleRate / 1000:0.#} kHz" : "")
                 : "—";
-            return $"Dosya: {file}\nÇözünürlük: {res}\nVideo: {vcodec} · {fpsText}\nKod çözme: {hwdec} · Çıkış: {vo} · Katman: {ActiveLayer}\nSes: {acodec}";
+            return Loc.F("stats.summary", file, res, vcodec, fpsText, hwdec, vo, ActiveLayer, acodec);
         }
     }
 
@@ -301,6 +303,7 @@ public sealed partial class PlayerViewModel : ObservableObject
         ApplyDisplayFormat();
         ApplyLoopMode();
         App.SetAccent(_settings.Accent);
+        Loc.SetLanguage(_settings.Language);
         _settings.Save();
         OnPropertyChanged(nameof(Settings));
         OnPropertyChanged(nameof(OpenKeyText));
@@ -361,13 +364,13 @@ public sealed partial class PlayerViewModel : ObservableObject
     public void SetSpeed(double speed)
     {
         _player.Command("set", "speed", Inv(speed));
-        ShowOsd($"Oynatma Hızı: {speed.ToString("0.##", CultureInfo.InvariantCulture)}×");
+        ShowOsd(Loc.F("osd.speed", speed.ToString("0.##", CultureInfo.InvariantCulture)));
     }
 
     public void SeekRelative(double seconds)
     {
         _player.Command("seek", Inv(seconds), "relative");
-        ShowOsd(seconds > 0 ? $"+{seconds:0} sn" : $"{seconds:0} sn");
+        ShowOsd(Loc.F("osd.seconds", seconds > 0 ? $"+{seconds:0}" : $"{seconds:0}"));
     }
 
     public void SeekToChapter(int index) => _player.Command("set", "chapter", index.ToString(CultureInfo.InvariantCulture));
@@ -388,7 +391,7 @@ public sealed partial class PlayerViewModel : ObservableObject
     {
         _player.Command("add", "volume", Inv(direction * _settings.VolumeStep));
         var targetVol = Math.Clamp(Math.Round(Volume + direction * _settings.VolumeStep), 0, VolumeMax);
-        ShowOsd($"Ses Düzeyi: %{targetVol}");
+        ShowOsd(Loc.F("osd.volume", targetVol));
     }
 
     public void HandleWheel(int direction)
@@ -406,14 +409,14 @@ public sealed partial class PlayerViewModel : ObservableObject
     {
         _settings.SubtitleScale = Math.Clamp(Math.Round(_settings.SubtitleScale + delta, 2), 0.5, 2.5);
         _player.Command("set", "sub-scale", Inv(_settings.SubtitleScale));
-        ShowOsd($"Altyazı Boyutu: %{(_settings.SubtitleScale * 100):0}");
+        ShowOsd(Loc.F("osd.subtitleSize", (_settings.SubtitleScale * 100).ToString("0")));
     }
 
     public void StepSubtitlePos(int delta)
     {
         _settings.SubtitlePosition = Math.Clamp(_settings.SubtitlePosition + delta, 50, 105);
         _player.Command("set", "sub-pos", _settings.SubtitlePosition.ToString(CultureInfo.InvariantCulture));
-        ShowOsd($"Altyazı Konumu: %{_settings.SubtitlePosition}");
+        ShowOsd(Loc.F("osd.subtitlePos", _settings.SubtitlePosition));
     }
 
     [RelayCommand] public void ToggleTimeMode() => ShowRemainingTime = !ShowRemainingTime;
@@ -424,7 +427,7 @@ public sealed partial class PlayerViewModel : ObservableObject
     {
         _settings.AlwaysOnTop = !_settings.AlwaysOnTop;
         _settings.Save();
-        ShowOsd(_settings.AlwaysOnTop ? "Her Zaman Üstte: Açık" : "Her Zaman Üstte: Kapalı");
+        ShowOsd(Loc.T(_settings.AlwaysOnTop ? "osd.onTopOn" : "osd.onTopOff"));
         OnPropertyChanged(nameof(Settings));
     }
 
@@ -442,7 +445,7 @@ public sealed partial class PlayerViewModel : ObservableObject
     {
         LoopMode = mode;
         ApplyLoopMode();
-        ShowOsd(mode switch { "file" => "Tekrar: Dosyayı Tekrarla", "playlist" => "Tekrar: Listeyi Tekrarla", _ => "Tekrar: Kapalı" });
+        ShowOsd(Loc.T(mode switch { "file" => "osd.loopFile", "playlist" => "osd.loopPlaylist", _ => "osd.loopOff" }));
     }
 
     void ApplyLoopMode()
@@ -455,7 +458,7 @@ public sealed partial class PlayerViewModel : ObservableObject
     public void AbLoop()
     {
         _player.Command("ab-loop");
-        ShowOsd(_abA == "no" ? "A–B Döngüsü: A Noktası Belirlendi" : (_abB == "no" ? "A–B Döngüsü: Başlatıldı" : "A–B Döngüsü: Sıfırlandı"));
+        ShowOsd(Loc.T(_abA == "no" ? "osd.abSetA" : (_abB == "no" ? "osd.abStart" : "osd.abReset")));
     }
 
     [RelayCommand]
@@ -469,7 +472,7 @@ public sealed partial class PlayerViewModel : ObservableObject
     {
         AspectRatio = aspect;
         _player.Command("set", "video-aspect-override", aspect == "auto" ? "-1" : aspect);
-        ShowOsd($"En-Boy Oranı: {aspect}");
+        ShowOsd(Loc.F("osd.aspect", aspect));
     }
 
     [RelayCommand]
@@ -479,7 +482,7 @@ public sealed partial class PlayerViewModel : ObservableObject
     {
         Rotation = degrees;
         _player.Command("set", "video-rotate", degrees.ToString(CultureInfo.InvariantCulture));
-        ShowOsd($"Döndürme: {degrees}°");
+        ShowOsd(Loc.F("osd.rotate", degrees));
     }
 
     [RelayCommand]
@@ -561,6 +564,7 @@ public sealed partial class PlayerViewModel : ObservableObject
 
     // ---- recents ----
     public RecentItem? Hero => _settings.Recent.FirstOrDefault();
+    public string HeroSubtitle => Hero?.HeroSubtitle ?? Loc.T("start.heroEmpty");
     public IReadOnlyList<RecentItem> RecentCards => _settings.Recent.Skip(1).Take(3).ToList();
     public IReadOnlyList<RecentItem> AllRecents => _settings.Recent;
     public bool HasHero => Hero is not null;
@@ -585,6 +589,7 @@ public sealed partial class PlayerViewModel : ObservableObject
     void NotifyRecentsChanged()
     {
         OnPropertyChanged(nameof(Hero));
+        OnPropertyChanged(nameof(HeroSubtitle));
         OnPropertyChanged(nameof(RecentCards));
         OnPropertyChanged(nameof(AllRecents));
         OnPropertyChanged(nameof(HasHero));
@@ -678,7 +683,7 @@ public sealed partial class PlayerViewModel : ObservableObject
             case "mpv-version": MpvVersion = value as string ?? ""; break;
             case "audio-device-list":
                 AudioDevices = (value is string d ? JsonSerializer.Deserialize<List<AudioDeviceInfo>>(d, Json) ?? [] : [])
-                    .Select(a => a.Name == "auto" ? a with { Description = "Otomatik" } : a)
+                    .Select(a => a.Name == "auto" ? a with { Description = Loc.T("audio.auto") } : a)
                     .ToList();
                 break;
             case "video-params/dw" or "video-params/dh":
@@ -721,7 +726,7 @@ public sealed partial class PlayerViewModel : ObservableObject
 
     public string ChapterLabel(int index) =>
         index < 0 || index >= Chapters.Count ? ""
-        : Chapters[index].Title is { Length: > 0 } t ? $"Bölüm {index + 1} · {t}" : $"Bölüm {index + 1}";
+        : Chapters[index].Title is { Length: > 0 } t ? $"{Loc.F("chapter.prefix", index + 1)} · {t}" : Loc.F("chapter.prefix", index + 1);
 
     public int ChapterAt(double time)
     {

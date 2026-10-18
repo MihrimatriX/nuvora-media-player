@@ -19,6 +19,7 @@
   <ItemGroup>
     <!-- Fonts & Shaders: embedded for the UI, and copied next to the exe for libass / libmpv. -->
     <AvaloniaResource Include="Assets\**" />
+    <EmbeddedResource Include="Strings\*.json" LogicalName="Player.App.Strings.%(Filename).json" />
     <None Update="Assets\Fonts\*.ttf" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Assets\Shaders\*.glsl" CopyToOutputDirectory="PreserveNewest" />
     <!-- Put libmpv-2.dll into /lib (see README); it is copied next to the exe. -->
