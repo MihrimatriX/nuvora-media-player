@@ -46,7 +46,7 @@ public partial class MainWindow : Window
             catch (Exception e) when (e is DllNotFoundException or InvalidOperationException)
             {
                 vm.ErrorText = e is DllNotFoundException
-                    ? "libmpv-2.dll bulunamadı. README'deki adımlarla lib klasörüne ekleyin."
+                    ? Loc.T("error.libmpvMissing")
                     : e.Message;
             }
         };
