@@ -24,6 +24,8 @@ sealed class FakePlayer : IPlayerService
 #pragma warning disable CS0067 // unused events: the view model only subscribes
     public event Action<string, object?>? PropertyChanged;
     public event Action<string>? PlaybackError;
+    public event Action? SeekCompleted;
+    public event Action<string>? Log;
 #pragma warning restore CS0067
     public void Initialize(nint windowHandle, IReadOnlyDictionary<string, string> options) { }
     public void Observe(string name, PropertyKind kind) { }
