@@ -5,10 +5,19 @@ using CommunityToolkit.Mvvm.Input;
 namespace Player.App;
 
 /// <summary>One speaker of the 5.1 downmix diagram. Index is the input channel (FL FR FC LFE BL BR).</summary>
-public sealed partial class ChannelGain(string label, int index) : ObservableObject
+public sealed partial class ChannelGain : ObservableObject
 {
-    public string Label { get; } = label;
-    public int Index { get; } = index;
+    readonly string _key;
+
+    public ChannelGain(string key, int index)
+    {
+        _key = key;
+        Index = index;
+        Loc.LanguageChanged += () => OnPropertyChanged(nameof(Label));
+    }
+
+    public string Label => Loc.T(_key);
+    public int Index { get; }
     [ObservableProperty] public partial int Gain { get; set; } = 100;
     [ObservableProperty] public partial bool IsSelected { get; set; }
 }
@@ -17,7 +26,7 @@ public sealed partial class ChannelGain(string label, int index) : ObservableObj
 public sealed partial class PlayerViewModel
 {
     public static readonly (string Label, double Value)[] DrcLevels =
-        [("Kapalı", 0), ("Hafif", 0.5), ("Sıkıştırılmış", 1), ("Gece modu", 2)];
+        [("drc.off", 0), ("drc.light", 0.5), ("drc.compressed", 1), ("drc.night", 2)]; // labels are Loc keys
 
     int _channelCount;
 
@@ -30,11 +39,11 @@ public sealed partial class PlayerViewModel
     public IReadOnlyList<ChannelGain> Channels { get; }
     public double VolumeMax => BoostEnabled ? 200 : 100;
     public string BoostText => $"{Volume:0}%";
-    public string DrcLabel => DrcLevels[DrcIndex].Label;
+    public string DrcLabel => Loc.T(DrcLevels[DrcIndex].Label);
     public string AudioDelayText => Ms(AudioDelay);
     public string SubDelayText => Ms(SubDelay);
     public bool DownmixAvailable => _channelCount > 2;
-    public string DownmixTitle => _channelCount > 2 ? $"Stereo downmix · {ChannelLayout(_channelCount)}" : "Stereo downmix · kaynak stereo";
+    public string DownmixTitle => _channelCount > 2 ? Loc.F("downmix.title", ChannelLayout(_channelCount)) : Loc.T("downmix.sourceStereo");
 
     [RelayCommand] void AudioDelayDown() => _player.Command("add", "audio-delay", "-0.05");
     [RelayCommand] void AudioDelayUp() => _player.Command("add", "audio-delay", "0.05");
@@ -68,7 +77,7 @@ public sealed partial class PlayerViewModel
     IReadOnlyList<ChannelGain> CreateChannels()
     {
         // Display order follows the diagram: front row, then rear row.
-        ChannelGain[] list = [new("Sol", 0), new("Merkez", 2), new("Sağ", 1), new("Arka sol", 4), new("Bas (LFE)", 3), new("Arka sağ", 5)];
+        ChannelGain[] list = [new("ch.left", 0), new("ch.center", 2), new("ch.right", 1), new("ch.rearLeft", 4), new("ch.lfe", 3), new("ch.rearRight", 5)];
         list[1].IsSelected = true;
         foreach (var c in list)
             c.PropertyChanged += (_, e) => { if (e.PropertyName == nameof(ChannelGain.Gain)) ApplyDownmix(); };

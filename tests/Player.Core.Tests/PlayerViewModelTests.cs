@@ -2,12 +2,14 @@ using Player.App;
 
 namespace Player.Core.Tests;
 
+// The view model calls Loc.SetLanguage, which is global, so it shares the Loc collection.
+[Collection(nameof(LocTests))]
 public class PlayerViewModelTests
 {
     readonly FakePlayerService _mpv = new();
     readonly PlayerViewModel _vm;
 
-    public PlayerViewModelTests() => _vm = new PlayerViewModel(_mpv, new AppSettings());
+    public PlayerViewModelTests() => _vm = new PlayerViewModel(_mpv, new AppSettings { Language = "tr" });
 
     [Fact]
     public void Scrubbing_SendsOneKeyframeSeekAtATime_ThenExactOnRelease()
