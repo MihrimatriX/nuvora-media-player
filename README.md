@@ -67,10 +67,12 @@ Altyazı dosyasını (.srt/.ass/…) oynatma sırasında pencereye bırakmak onu
 ```
 src/Player.Core         libmpv P/Invoke (MpvNative), MpvPlayer : IPlayerService, Track
 src/Player.Enhancement  DXGI GPU algılama (GpuInfo), görüntü ölçekleyici presetleri (ImagePresets)
+src/Player.Windows      Windows kabuğu: SMTC (MediaSession), görev çubuğu düğmeleri/ilerleme (TaskbarButtons), JumpList
 src/Player.App          Avalonia arayüzü (Manrope + IBM Plex Mono)
   MainWindow            yalnızca video: VideoHost (NativeControlHost → HWND → mpv "wid")
   OverlayWindow         şeffaf, sahipli (owned) pencere: başlık çubuğu, bar, Görüntü & Ses paneli, Ayarlar
   PlayerViewModel       mpv property'leri ↔ UI (.Image.cs ve .Audio.cs parçalı sınıfları)
+  ShellIntegration      PlayerViewModel ↔ Player.Windows köprüsü
 tests/Player.Core.Tests
 ```
 
@@ -82,6 +84,15 @@ tests/Player.Core.Tests
   Event'ler `mpv-events` thread'inde okunuyor ve UI'ın `SynchronizationContext`'ine post ediliyor.
   Kapanışta önce `quit` gönderiliyor (watch-later kaydı için), sonra event thread'i bekleniyor,
   ardından `mpv_terminate_destroy` çağrılıyor. Bunların hepsi video HWND'si yok edilmeden önce oluyor.
+- **Windows entegrasyonu:** Medya tuşları, Windows medya paneli ve kilit ekranı
+  `SystemMediaTransportControls` üzerinden çalışıyor (paketsiz uygulama olduğu için
+  `SystemMediaTransportControlsInterop.GetForWindow` ile ana pencerenin HWND'sine bağlı). Küçük resim
+  araç çubuğu (önceki / oynat-duraklat / sonraki) ve görev çubuğu ilerlemesi `ITaskbarList3` ile,
+  "Son açılanlar" atlama listesi `ICustomDestinationList` ile kuruluyor. COM arayüzleri
+  `[GeneratedComInterface]` ile tanımlı; her parça kendi başına hata verip yalnızca log yazar.
+  Bu yüzden Player.App ve testler `net10.0-windows10.0.19041.0` hedefliyor (en düşük Windows 10 1809);
+  Core ve Enhancement platformdan bağımsız `net10.0` olarak kalıyor. Linux'ta derleme ve testler
+  `EnableWindowsTargeting` sayesinde çalışıyor.
 
 ## Bilinen sınırlamalar
 
