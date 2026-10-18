@@ -495,10 +495,11 @@
                           <TextBlock Classes="label" Text="{app:T settings.audioDelayLipSync}" />
                           <TextBlock Text="{app:T settings.adjustsTheOffsetBetweenSound}" FontSize="11.5" Foreground="{DynamicResource Fg3}" />
                         </StackPanel>
-                        <TextBlock Grid.Column="1" Classes="mono" Text="{Binding LipsyncText}" FontSize="13" Foreground="{DynamicResource Accent}" VerticalAlignment="Center" />
+                        <TextBlock Grid.Column="1" Classes="mono" Text="{Binding LipsyncText}" FontSize="13" Foreground="{DynamicResource AccentText}" VerticalAlignment="Center" />
                         <Button Grid.Column="2" Classes="link" Content="{app:T panel.reset}" FontSize="12" Command="{Binding ResetLipsyncCommand}" VerticalAlignment="Center" />
                       </Grid>
-                      <Slider Minimum="-500" Maximum="500" Value="{Binding LipsyncValue}" />
+                      <Slider Minimum="-500" Maximum="500" Value="{Binding LipsyncValue}" SmallChange="10" LargeChange="50"
+                              AutomationProperties.Name="{app:T settings.audioDelayMs}" />
                     </StackPanel>
                   </Border>
 
