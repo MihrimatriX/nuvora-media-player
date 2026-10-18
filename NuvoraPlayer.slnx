@@ -5,6 +5,7 @@
     <Project Path="src/Player.Enhancement/Player.Enhancement.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Player.App.Tests/Player.App.Tests.csproj" />
     <Project Path="tests/Player.Core.Tests/Player.Core.Tests.csproj" />
   </Folder>
 </Solution>

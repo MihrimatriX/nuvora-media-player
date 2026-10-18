@@ -1,0 +1,7 @@
+{
+  "repo": "zhongfly/mpv-winbuild",
+  "tag": "",
+  "asset": "",
+  "sha256": "",
+  "assetPattern": "^mpv-dev-lgpl-x86_64-\\d{8}-git-[0-9a-f]+\\.7z$"
+}

@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Media.Fonts;
 using Microsoft.Extensions.DependencyInjection;
 using Player.Core;
 
@@ -42,4 +43,14 @@ public partial class App : Application
         r["AccentHalo"] = new SolidColorBrush(c, 0.35);
         r["SystemAccentColor"] = c; // Fluent bits we did not restyle (focus rings, menus)
     }
+}
+
+public static class AppBuilderExtensions
+{
+    /// <summary>Registers the embedded Manrope / IBM Plex Mono collection and makes Manrope the default.
+    /// Shared by the app and the headless UI tests.</summary>
+    public static AppBuilder UseNuvoraFonts(this AppBuilder builder) => builder
+        .ConfigureFonts(fonts => fonts.AddFontCollection(new EmbeddedFontCollection(
+            new Uri("fonts:Nuvora", UriKind.Absolute), new Uri("avares://NuvoraPlayer/Assets/Fonts", UriKind.Absolute))))
+        .With(new FontManagerOptions { DefaultFamilyName = "fonts:Nuvora#Manrope" });
 }

@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  build-test:
+    name: Build & test (Windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ hashFiles('**/*.csproj', 'Directory.Build.props') }}
+          restore-keys: nuget-
+
+      - name: Cache libmpv
+        id: libmpv
+        uses: actions/cache@v4
+        with:
+          path: lib/libmpv-2.dll
+          key: libmpv-${{ hashFiles('scripts/libmpv.json') }}
+
+      - name: Download libmpv (pinned, SHA-256 checked)
+        if: steps.libmpv.outputs.cache-hit != 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ./scripts/get-libmpv.ps1
+
+      - name: Build
+        run: dotnet build NuvoraPlayer.slnx -c Release
+
+      # Tests marked [MpvFact] drive the real libmpv with vo=null/ao=null; UI tests run on Avalonia.Headless.
+      - name: Test
+        run: dotnet test NuvoraPlayer.slnx -c Release --no-build --logger trx --results-directory TestResults
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults/*.trx
+          if-no-files-found: ignore

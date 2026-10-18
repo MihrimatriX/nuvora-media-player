@@ -5,15 +5,22 @@ Kompakt, video odaklı Windows medya oynatıcısı. C# / .NET 10, Avalonia 11, l
 ## Çalıştırma
 
 1. **libmpv-2.dll edin** (x64):
-   - https://github.com/shinchiro/mpv-winbuild-cmake/releases adresinden `mpv-dev-x86_64-*.7z`
-     (CPU'n AVX2 destekliyorsa `x86_64-v3`) indir.
-   - Arşivden `libmpv-2.dll` dosyasını repo kökündeki `lib/` klasörüne koy. Build sırasında exe'nin yanına kopyalanır.
-   - mpv **0.39 veya üstü** gerekli (`autocreate-playlist` için). Daha eski bir sürümle de oynatır, ama klasördeki sonraki dosyaya geçmez.
+   ```
+   pwsh scripts/get-libmpv.ps1
+   ```
+   Betik `scripts/libmpv.json` içinde sabitlenmiş LGPL derlemesini indirir, SHA-256'sını doğrular ve
+   `libmpv-2.dll`'i `lib/` klasörüne koyar. Build sırasında exe'nin yanına kopyalanır. CI ve yayın da aynı DLL'i kullanır.
+   - mpv **0.39 veya üstü** gerekli (`autocreate-playlist` için).
+   - Sürümü yükseltmek için `libmpv.json`'daki `tag`, `asset` ve `sha256` alanlarını boşaltıp betiği çalıştır;
+     yazdırdığı değerleri geri yaz.
 2. Çalıştır:
    ```
    dotnet run --project src/Player.App -- "C:\video.mkv"
    ```
-3. Testler: `dotnet test`
+3. Testler: `dotnet test`. `[MpvFact]` testleri gerçek libmpv'yi `vo=null`/`ao=null` ile sürer ve DLL
+   yoksa atlanır; arayüz testleri (`tests/Player.App.Tests`) Avalonia.Headless ile çalışır.
+
+Her PR ve `main` push'unda GitHub Actions (`.github/workflows/ci.yml`) Windows'ta build ve test çalıştırır.
 
 **Portable mod:** exe'nin yanında `portable` klasörü varsa ayarlar ve kaldığın yer bilgileri oraya,
 yoksa `%AppData%\Nuvora Player` altına yazılır.
