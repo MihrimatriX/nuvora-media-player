@@ -1,6 +1,8 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using Avalonia.Media;
 using Avalonia.Media.Fonts;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,9 +25,24 @@ public partial class App : Application
                 .AddSingleton<PlayerViewModel>()
                 .BuildServiceProvider();
 
-            SetAccent(services.GetRequiredService<AppSettings>().Accent);
-            desktop.MainWindow = new MainWindow(services.GetRequiredService<PlayerViewModel>(), desktop.Args ?? []);
+            var settings = services.GetRequiredService<AppSettings>();
+            var vm = services.GetRequiredService<PlayerViewModel>();
+            SetAccent(settings.Accent);
+            var window = new MainWindow(vm, desktop.Args ?? []);
+            desktop.MainWindow = window;
             desktop.Exit += (_, _) => services.Dispose();
+
+            if (Program.Instance is { } instance)
+            {
+                instance.ArgumentsReceived += args => Dispatcher.UIThread.Post(() =>
+                {
+                    vm.Open(args);
+                    if (window.WindowState == WindowState.Minimized) window.WindowState = WindowState.Normal;
+                    window.Activate();
+                });
+                instance.StartListening();
+            }
+            _ = Updater.CheckAsync(settings);
         }
         base.OnFrameworkInitializationCompleted();
     }
