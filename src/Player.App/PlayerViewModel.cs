@@ -138,13 +138,13 @@ public sealed partial class PlayerViewModel : ObservableObject
         : LoopMode switch { "file" => "Dosyayı tekrarla", "playlist" => "Listeyi tekrarla", _ => "Tekrar kapalı" };
 
     // ---- sheets ----
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsSheetOpen), nameof(ShowTitleBlock), nameof(ShowFileChip))]
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsSheetOpen), nameof(ShowTitleBlock), nameof(ShowFileChip), nameof(IsSidePanelOpen))]
     public partial bool IsPanelOpen { get; set; }
     [ObservableProperty, NotifyPropertyChangedFor(nameof(IsSheetOpen), nameof(ShowTitleBlock), nameof(ShowFileChip))]
     public partial bool IsSettingsOpen { get; set; }
     [ObservableProperty, NotifyPropertyChangedFor(nameof(IsImageTab))] public partial bool IsAudioTab { get; set; }
     public bool IsImageTab { get => !IsAudioTab; set => IsAudioTab = !value; }
-    public bool IsSheetOpen => IsPanelOpen || IsSettingsOpen;
+    public bool IsSheetOpen => IsPanelOpen || IsSettingsOpen || IsPlaylistOpen;
     public bool ShowTitleBlock => !IsIdle && !IsSheetOpen;
     public bool ShowFileChip => !IsIdle && IsSheetOpen;
 
@@ -610,8 +610,8 @@ public sealed partial class PlayerViewModel : ObservableObject
     [RelayCommand] void Screenshot() => _player.Command("screenshot", "video");
     [RelayCommand] void Next() { SaveResumePoint(); _player.Command("playlist-next"); }
     [RelayCommand] void Previous() { SaveResumePoint(); _player.Command("playlist-prev"); }
-    [RelayCommand] void TogglePanel() { IsPanelOpen = !IsPanelOpen; IsSettingsOpen = false; }
-    [RelayCommand] void OpenSettings() { IsSettingsOpen = true; IsPanelOpen = false; }
+    [RelayCommand] void TogglePanel() { IsPanelOpen = !IsPanelOpen; IsSettingsOpen = false; IsPlaylistOpen = false; }
+    [RelayCommand] void OpenSettings() { IsSettingsOpen = true; IsPanelOpen = false; IsPlaylistOpen = false; }
 
     /// <summary>Fit (letterbox) vs fill (crop to window).</summary>
     [RelayCommand]
@@ -643,6 +643,7 @@ public sealed partial class PlayerViewModel : ObservableObject
                 if (IsIdle)
                 {
                     IsPanelOpen = false;
+                    IsPlaylistOpen = false;
                     IsSplitCompare = false;
                 }
                 break;

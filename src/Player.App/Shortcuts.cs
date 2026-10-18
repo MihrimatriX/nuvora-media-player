@@ -34,6 +34,7 @@ public static class Shortcuts
         new("screenshot", "Kare yakala", "S"),
         new("stats", "Medya istatistikleri", "I"),
         new("panel", "Görüntü & Ses paneli", "E"),
+        new("playlist", "Oynatma listesi", "P"),
         new("split-compare", "Önce / Sonra karşılaştırma çubuğu", "C"),
         new("compare", "Orijinali göster (basılı tut)", "\\"),
         new("open", "Dosya aç", "Ctrl+O"),

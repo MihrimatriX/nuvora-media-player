@@ -8,6 +8,7 @@ using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
+using Avalonia.VisualTree;
 using Player.Enhancement;
 
 namespace Player.App;
@@ -312,6 +313,7 @@ public partial class OverlayWindow : Window
         if (e.Key == Key.Escape)
         {
             if (_vm.IsPanelOpen) _vm.IsPanelOpen = false;
+            else if (_vm.IsPlaylistOpen) _vm.IsPlaylistOpen = false;
             else if (_vm.IsSplitCompare) _vm.IsSplitCompare = false;
             else if (Main is { WindowState: WindowState.FullScreen }) ToggleFullScreen();
             else return;
@@ -319,6 +321,10 @@ public partial class OverlayWindow : Window
             return;
         }
         if (e.Key == Key.F11) { ToggleFullScreen(); e.Handled = true; return; } // fixed second key for full screen
+        // List navigation keys belong to the focused playlist (Up/Down would otherwise change the volume).
+        if (_vm.IsPlaylistOpen && e.Source is Visual v && v.FindAncestorOfType<ListBox>(includeSelf: true) is not null
+            && e.Key is Key.Up or Key.Down or Key.Enter or Key.Delete or Key.Home or Key.End or Key.PageUp or Key.PageDown)
+            return;
 
         var action = Shortcuts.Find(_vm.Settings.Shortcuts, e.Key, e.KeySymbol, e.KeyModifiers);
         if (action is null) return;
@@ -348,6 +354,7 @@ public partial class OverlayWindow : Window
             case "screenshot": _vm.ScreenshotCommand.Execute(null); break;
             case "stats": _vm.ToggleStats(); break;
             case "panel": _vm.TogglePanelCommand.Execute(null); break;
+            case "playlist": _vm.TogglePlaylist(); break;
             case "split-compare": _vm.ToggleSplitCompareCommand.Execute(null); break;
             case "open": OpenFiles(); break;
             case "settings": _vm.OpenSettingsCommand.Execute(null); break;
@@ -522,6 +529,22 @@ public partial class OverlayWindow : Window
         _vm.Open(LocalPaths(files));
     }
 
+    /// <summary>Adds files to the end of the playlist without interrupting the current one.</summary>
+    public async void AppendFiles()
+    {
+        var files = await StorageProvider.OpenFilePickerAsync(new()
+        {
+            Title = "Listeye ekle",
+            AllowMultiple = true,
+            FileTypeFilter =
+            [
+                new("Tüm medya dosyaları") { Patterns = FileAssociation.Extensions.Select(x => "*" + x).ToList() },
+                new("Tüm dosyalar") { Patterns = ["*.*"] },
+            ],
+        });
+        _vm.AppendToPlaylist(LocalPaths(files));
+    }
+
     public async void OpenFolder()
     {
         // mpv expands a directory into a playlist itself.
@@ -614,12 +637,6 @@ public partial class OverlayWindow : Window
         ShowMenu((Control)sender!, items);
     }
 
-    void OnPlaylist(object? sender, RoutedEventArgs e)
-    {
-        var items = _vm.Playlist.Select((p, i) => (object)Menus.Item(p.Label, p.Current, () => _vm.PlayIndex(i))).ToList();
-        if (items.Count == 0) items.Add(new MenuItem { Header = "Oynatma listesi boş", IsEnabled = false });
-        ShowMenu((Control)sender!, items);
-    }
 
     public void ShowRecentsMenu(Control anchor)
     {

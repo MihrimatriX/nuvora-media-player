@@ -139,7 +139,7 @@
 
       <!-- Thin progress line while the Görüntü & Ses panel covers the bar -->
       <ProgressBar Classes="thin" Background="#24FFFFFF" VerticalAlignment="Bottom" Margin="24,0,24,18"
-                   Maximum="{Binding Duration}" Value="{Binding Position, Mode=OneWay}" IsVisible="{Binding IsPanelOpen}" />
+                   Maximum="{Binding Duration}" Value="{Binding Position, Mode=OneWay}" IsVisible="{Binding IsSidePanelOpen}" />
 
       <!-- Bottom bar -->
       <Border x:Name="Bar" VerticalAlignment="Bottom" MaxWidth="1020" Margin="24,0,24,24" Padding="18,14,18,10"
@@ -271,7 +271,8 @@
                       Click="OnFpsMenu" ToolTip.Tip="Hedef kare hızı (G)" AutomationProperties.Name="Hedef kare hızı" />
               <Button Classes="chip" Margin="0,0,4,0" Content="{Binding SpeedText}" Click="OnSpeed" ToolTip.Tip="Oynatma hızı"
                       AutomationProperties.Name="Oynatma hızı" />
-              <Button Classes="icon" Click="OnPlaylist" ToolTip.Tip="Oynatma listesi" AutomationProperties.Name="Oynatma listesi">
+              <Button Classes="icon" Classes.on="{Binding IsPlaylistOpen}" Command="{Binding TogglePlaylistCommand}"
+                      ToolTip.Tip="Oynatma listesi (P)" AutomationProperties.Name="Oynatma listesi">
                 <Viewbox Classes="i19"><Path Data="{StaticResource IcoList}" /></Viewbox>
               </Button>
               <Button Classes="icon" Command="{Binding ToggleMuteCommand}" ToolTip.Tip="Sessiz (M)" AutomationProperties.Name="Sessiz">
@@ -295,6 +296,7 @@
     </Panel>
 
     <app:AvPanel Margin="0,44,0,0" IsVisible="{Binding IsPanelOpen}" />
+    <app:PlaylistPanel Margin="0,44,0,0" IsVisible="{Binding IsPlaylistOpen}" />
 
     <!-- ================= Header (custom title bar) ================= -->
     <Border x:Name="Header" VerticalAlignment="Top" Classes.solid="{Binding IsSheetOpen}" Classes.start="{Binding IsIdle}"

@@ -1,0 +1,124 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:app="using:Player.App"
+             x:Class="Player.App.PlaylistPanel"
+             x:DataType="app:PlayerViewModel">
+  <UserControl.Styles>
+    <Style Selector="ListBox#List">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Padding" Value="0" />
+    </Style>
+    <Style Selector="ListBox#List ListBoxItem">
+      <Setter Property="Padding" Value="10,8,6,8" />
+      <Setter Property="Margin" Value="0,0,0,2" />
+      <Setter Property="CornerRadius" Value="12" />
+    </Style>
+    <Style Selector="ListBox#List ListBoxItem:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource Fill3}" />
+    </Style>
+    <Style Selector="ListBox#List ListBoxItem:selected /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="{DynamicResource Fill4}" />
+    </Style>
+    <Style Selector="ListBox#List ListBoxItem:focus-visible /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+      <Setter Property="BorderThickness" Value="1.5" />
+    </Style>
+    <!-- Row tools show on hover or keyboard selection, so the list stays calm. -->
+    <Style Selector="ListBox#List ListBoxItem StackPanel.tools">
+      <Setter Property="Opacity" Value="0" />
+    </Style>
+    <Style Selector="ListBox#List ListBoxItem:pointerover StackPanel.tools, ListBox#List ListBoxItem:selected StackPanel.tools">
+      <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="ListBox#List TextBlock.current">
+      <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+    </Style>
+    <Style Selector="Button.mini">
+      <Setter Property="Width" Value="28" />
+      <Setter Property="Height" Value="28" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="Foreground" Value="{DynamicResource Fg2}" />
+    </Style>
+  </UserControl.Styles>
+
+  <Border Width="420" HorizontalAlignment="Right" VerticalAlignment="Stretch" Margin="16"
+          Padding="16,14,12,12" CornerRadius="20" Background="#EB0E1016" BorderBrush="{DynamicResource Line2}" BorderThickness="1"
+          BoxShadow="0 20 50 0 #66000000">
+    <DockPanel>
+      <!-- Header -->
+      <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto,Auto,Auto,Auto" ColumnSpacing="4" Margin="0,0,4,0">
+        <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+          <TextBlock Text="Oynatma listesi" FontSize="15" FontWeight="Bold" VerticalAlignment="Center" />
+          <TextBlock Classes="mono" Text="{Binding PlaylistPosition}" FontSize="11.5" Foreground="{DynamicResource Fg3}" VerticalAlignment="Center" />
+        </StackPanel>
+        <Button Grid.Column="1" Classes="mini" Click="OnAdd" ToolTip.Tip="Dosya ekle" AutomationProperties.Name="Listeye dosya ekle">
+          <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoPlus}" /></Viewbox>
+        </Button>
+        <Button Grid.Column="2" Classes="mini" Command="{Binding ShufflePlaylistCommand}" IsEnabled="{Binding HasPlaylist}"
+                ToolTip.Tip="Karıştır" AutomationProperties.Name="Listeyi karıştır">
+          <Viewbox Classes="i14"><Path Data="{StaticResource IcoShuffle}" /></Viewbox>
+        </Button>
+        <Button Grid.Column="3" Classes="mini" Command="{Binding ClearPlaylistCommand}" IsEnabled="{Binding HasPlaylist}"
+                ToolTip.Tip="Oynatılan dışındakileri kaldır" AutomationProperties.Name="Listeyi temizle">
+          <Viewbox Classes="i14"><Path Data="{StaticResource IcoTrash}" /></Viewbox>
+        </Button>
+        <Button Grid.Column="4" Classes="close" Margin="4,0,0,0" Command="{Binding TogglePlaylistCommand}" AutomationProperties.Name="Oynatma listesini kapat">
+          <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoClose}" /></Viewbox>
+        </Button>
+      </Grid>
+
+      <TextBlock DockPanel.Dock="Bottom" Margin="4,8,4,0" FontSize="11" Foreground="{DynamicResource Fg4}" TextWrapping="Wrap"
+                 Text="Enter: oynat · Delete: kaldır · Alt+↑/↓: taşı" IsVisible="{Binding HasPlaylist}" />
+
+      <Panel>
+      <!-- Empty state -->
+      <StackPanel Margin="0,40,0,0" Spacing="8" HorizontalAlignment="Center" IsVisible="{Binding !HasPlaylist}">
+        <Viewbox Classes="i28" Opacity="0.5"><Path Data="{StaticResource IcoList}" /></Viewbox>
+        <TextBlock Text="Oynatma listesi boş" FontSize="14" FontWeight="SemiBold" HorizontalAlignment="Center" />
+        <TextBlock Text="Dosya sürükleyin ya da + ile ekleyin." FontSize="12" Foreground="{DynamicResource Fg3}" HorizontalAlignment="Center" />
+      </StackPanel>
+
+      <ListBox x:Name="List" Margin="0,12,0,0" ItemsSource="{Binding PlaylistRows}" SelectedIndex="{Binding SelectedPlaylistIndex}"
+               IsVisible="{Binding HasPlaylist}" KeyDown="OnListKeyDown" DoubleTapped="OnListDoubleTapped"
+               AutomationProperties.Name="Oynatma listesi öğeleri">
+        <ListBox.ItemTemplate>
+          <DataTemplate x:DataType="app:PlaylistRow">
+            <Grid ColumnDefinitions="28,*,Auto" ColumnSpacing="8" Background="Transparent"
+                  AutomationProperties.Name="{Binding Label}">
+              <Panel VerticalAlignment="Center">
+                <TextBlock Classes="mono" Text="{Binding Number}" FontSize="11.5" Foreground="{DynamicResource Fg4}"
+                           HorizontalAlignment="Center" IsVisible="{Binding !IsCurrent}" />
+                <Viewbox Classes="i14" HorizontalAlignment="Center" IsVisible="{Binding IsCurrent}">
+                  <Path Data="{StaticResource IcoPlay}" Fill="{DynamicResource Accent}" Stroke="{DynamicResource Accent}" StrokeThickness="0" />
+                </Viewbox>
+              </Panel>
+              <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+                <TextBlock Text="{Binding Label}" FontSize="13" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"
+                           Classes.current="{Binding IsCurrent}" />
+                <TextBlock Text="{Binding Location}" FontSize="11" Foreground="{DynamicResource Fg4}" TextTrimming="CharacterEllipsis"
+                           IsVisible="{Binding Location, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
+              </StackPanel>
+              <StackPanel Grid.Column="2" Classes="tools" Orientation="Horizontal" Spacing="0" VerticalAlignment="Center">
+                <Button Classes="mini" ToolTip.Tip="Yukarı taşı" AutomationProperties.Name="Yukarı taşı"
+                        Command="{Binding $parent[ListBox].((app:PlayerViewModel)DataContext).MoveRowUpCommand}" CommandParameter="{Binding}">
+                  <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoUp}" /></Viewbox>
+                </Button>
+                <Button Classes="mini" ToolTip.Tip="Aşağı taşı" AutomationProperties.Name="Aşağı taşı"
+                        Command="{Binding $parent[ListBox].((app:PlayerViewModel)DataContext).MoveRowDownCommand}" CommandParameter="{Binding}">
+                  <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                </Button>
+                <Button Classes="mini" ToolTip.Tip="Listeden kaldır" AutomationProperties.Name="Listeden kaldır"
+                        Command="{Binding $parent[ListBox].((app:PlayerViewModel)DataContext).RemoveRowCommand}" CommandParameter="{Binding}">
+                  <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoClose}" /></Viewbox>
+                </Button>
+              </StackPanel>
+            </Grid>
+          </DataTemplate>
+        </ListBox.ItemTemplate>
+      </ListBox>
+      </Panel>
+    </DockPanel>
+  </Border>
+</UserControl>
