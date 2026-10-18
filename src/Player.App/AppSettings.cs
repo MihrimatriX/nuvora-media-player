@@ -82,14 +82,44 @@ public sealed class AppSettings
     static string FilePath => Path.Combine(ConfigDir, "settings.json");
     static readonly JsonSerializerOptions Json = new() { WriteIndented = true };
 
+    static string BackupPath => FilePath + ".bak";
+
     public static AppSettings Load()
     {
-        try { return JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(FilePath)) ?? new(); }
-        // Missing or corrupt file: start with defaults instead of refusing to launch.
-        catch (Exception e) when (e is IOException or JsonException) { return new(); }
+        // A corrupt main file (crash mid-write before Save became atomic, disk error) falls back to the
+        // backup Save keeps, so the user does not silently lose shortcuts and history.
+        foreach (var path in new[] { FilePath, BackupPath })
+        {
+            try
+            {
+                if (File.Exists(path)) return JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(path)) ?? new();
+            }
+            catch (Exception e) when (e is IOException or JsonException or UnauthorizedAccessException)
+            {
+                AppLog.Warn($"settings unreadable, trying next copy: {path}: {e.Message}");
+            }
+        }
+        return new();
     }
 
-    public void Save() => File.WriteAllText(FilePath, JsonSerializer.Serialize(this, Json));
+    /// <summary>Writes to a temp file, then swaps it in with <see cref="File.Replace(string, string, string?)"/>,
+    /// which keeps the previous file as settings.json.bak. A crash mid-write leaves the old file intact.</summary>
+    public void Save()
+    {
+        var tmp = FilePath + ".tmp";
+        try
+        {
+            using (var fs = new FileStream(tmp, FileMode.Create, FileAccess.Write, FileShare.None, 4096, FileOptions.WriteThrough))
+                JsonSerializer.Serialize(fs, this, Json);
+            if (File.Exists(FilePath)) File.Replace(tmp, FilePath, BackupPath, ignoreMetadataErrors: true);
+            else File.Move(tmp, FilePath);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            // Settings are not worth crashing playback for; the next Save retries.
+            AppLog.Warn($"settings not saved: {e.Message}");
+        }
+    }
 
     public AppSettings Clone() => JsonSerializer.Deserialize<AppSettings>(JsonSerializer.Serialize(this, Json))!;
 

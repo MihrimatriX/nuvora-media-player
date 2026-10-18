@@ -34,8 +34,11 @@ public sealed class MpvPlayer : IPlayerService
     };
 
     readonly SynchronizationContext? _sync = SynchronizationContext.Current;
+    // Guards _ctx: the event thread destroys the handle, so callers on other threads must not race it.
+    readonly Lock _gate = new();
     nint _ctx;
     Thread? _events;
+    volatile bool _disposing;
 
     public event Action<string, object?>? PropertyChanged;
     public event Action<string>? PlaybackError;
@@ -62,17 +65,25 @@ public sealed class MpvPlayer : IPlayerService
 
     public void Observe(string name, PropertyKind kind)
     {
-        if (_ctx != 0) mpv_observe_property(_ctx, 0, name, kind);
+        lock (_gate)
+            if (_ctx != 0 && !_disposing) mpv_observe_property(_ctx, 0, name, kind);
     }
 
     public void Command(params string[] args)
     {
-        if (_ctx == 0) return;
+        if (_disposing) return;
+        Send(args);
+    }
+
+    void Send(string[] args)
+    {
         var utf8 = new nint[args.Length + 1]; // last slot stays 0 = terminator
         try
         {
             for (var i = 0; i < args.Length; i++) utf8[i] = Marshal.StringToCoTaskMemUTF8(args[i]);
-            mpv_command_async(_ctx, 0, utf8);
+            // mpv_command_async only queues the command, so holding the lock here is cheap.
+            lock (_gate)
+                if (_ctx != 0) mpv_command_async(_ctx, 0, utf8);
         }
         finally
         {
@@ -82,12 +93,15 @@ public sealed class MpvPlayer : IPlayerService
 
     public void Dispose()
     {
-        if (_ctx == 0) return;
-        // "quit" lets mpv write watch-later state, then emits SHUTDOWN which ends the event loop.
-        Command("quit");
-        _events?.Join(TimeSpan.FromSeconds(3));
-        mpv_terminate_destroy(_ctx);
-        _ctx = 0;
+        if (_disposing) return;
+        _disposing = true;
+        if (_events is null) return; // never initialized
+        // "quit" lets mpv write watch-later state, then emits SHUTDOWN; the event thread destroys the handle.
+        Send(["quit"]);
+        // mpv_terminate_destroy must not run while another thread is inside mpv_wait_event, so on timeout
+        // the handle is left to the event thread (or to process exit) instead of being freed under it.
+        if (!_events.Join(TimeSpan.FromSeconds(3)))
+            Debug.WriteLine("mpv did not shut down within 3 s; leaving the handle to the event thread");
     }
 
     void SetOption(string name, string value)
@@ -105,6 +119,12 @@ public sealed class MpvPlayer : IPlayerService
             switch (ev.EventId)
             {
                 case EventShutdown:
+                    // Only this thread waits on the handle, so it is the one place that can free it safely.
+                    lock (_gate)
+                    {
+                        mpv_terminate_destroy(_ctx);
+                        _ctx = 0;
+                    }
                     return;
                 case EventPropertyChange:
                     // Event data is only valid until the next mpv_wait_event, so copy it out here.
