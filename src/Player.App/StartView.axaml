@@ -25,7 +25,7 @@
       </Border.Background>
     </Border>
 
-    <Grid Margin="36,58,36,32" RowDefinitions="*,Auto" ColumnDefinitions="*,340" RowSpacing="26" ColumnSpacing="20">
+    <Grid Margin="36,50,36,24" RowDefinitions="*,Auto,Auto" ColumnDefinitions="*,340" RowSpacing="18" ColumnSpacing="20">
       <!-- Continue watching -->
       <Border CornerRadius="24" ClipToBounds="True" MinHeight="300" BoxShadow="0 30 70 0 #73000000">
         <Panel>
@@ -104,8 +104,91 @@
         </StackPanel>
       </Panel>
 
+      <!-- System cards: values come from mpv and DXGI (PlayerViewModel.System.cs) -->
+      <UniformGrid Grid.Row="1" Grid.ColumnSpan="2" Columns="4" Margin="0,0,-16,0">
+        <UniformGrid.Styles>
+          <Style Selector="Border.stat">
+            <Setter Property="Margin" Value="0,0,16,0" />
+            <Setter Property="Padding" Value="16,12" />
+            <Setter Property="CornerRadius" Value="16" />
+            <Setter Property="Background" Value="#730E1016" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Line2}" />
+            <Setter Property="BorderThickness" Value="1" />
+          </Style>
+          <Style Selector="Border.statIcon">
+            <Setter Property="Width" Value="40" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+          </Style>
+          <Style Selector="TextBlock.statLabel">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource Fg4}" />
+          </Style>
+          <Style Selector="TextBlock.statValue">
+            <Setter Property="FontSize" Value="13.5" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+          </Style>
+          <Style Selector="TextBlock.statDetail">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+          </Style>
+        </UniformGrid.Styles>
+        <Border Classes="stat">
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+            <Border Classes="statIcon" Background="{DynamicResource AccentTint}" BorderBrush="{DynamicResource Accent}">
+              <Viewbox Classes="i18"><Path Data="{StaticResource IcoPlay}" Fill="{DynamicResource Accent}" /></Viewbox>
+            </Border>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+              <TextBlock Classes="statLabel" Text="Toplam izleme" />
+              <TextBlock Classes="statValue" Text="{Binding TotalWatchTimeText}" />
+              <TextBlock Classes="mono statDetail" Text="{Binding TotalRecentCount, StringFormat='{}{0} medya dosyası'}" Foreground="{DynamicResource Accent}" />
+            </StackPanel>
+          </Grid>
+        </Border>
+        <Border Classes="stat" ToolTip.Tip="{Binding HwdecDetail}">
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+            <Border Classes="statIcon" Background="#1A06B6D4" BorderBrush="#06B6D4">
+              <Viewbox Classes="i18"><Path Data="{StaticResource IcoScreen}" Stroke="#06B6D4" /></Viewbox>
+            </Border>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+              <TextBlock Classes="statLabel" Text="Donanım hızlandırma" />
+              <TextBlock Classes="statValue" Text="{Binding GpuDisplayName}" />
+              <TextBlock Classes="mono statDetail" Text="{Binding HwdecDisplayName}" Foreground="#06B6D4" />
+            </StackPanel>
+          </Grid>
+        </Border>
+        <Border Classes="stat">
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+            <Border Classes="statIcon" Background="#1A10B981" BorderBrush="#10B981">
+              <Viewbox Classes="i18"><Path Data="{StaticResource IcoWaves}" Stroke="#10B981" /></Viewbox>
+            </Border>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+              <TextBlock Classes="statLabel" Text="Ses çıkışı" />
+              <TextBlock Classes="statValue" Text="{Binding AudioBackendDisplayName}" />
+              <TextBlock Classes="mono statDetail" Text="{Binding AudioDeviceDisplayName}" Foreground="#10B981" />
+            </StackPanel>
+          </Grid>
+        </Border>
+        <Border Classes="stat">
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+            <Border Classes="statIcon" Background="#1AF59E0B" BorderBrush="#F59E0B">
+              <Viewbox Classes="i18"><Path Data="{StaticResource IcoGear}" Stroke="#F59E0B" /></Viewbox>
+            </Border>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+              <TextBlock Classes="statLabel" Text="Oynatma çekirdeği" />
+              <TextBlock Classes="statValue" Text="{Binding MpvEngineDisplayName}" />
+              <TextBlock Classes="mono statDetail" Text="{Binding FfmpegDisplayName}" Foreground="#F59E0B" />
+            </StackPanel>
+          </Grid>
+        </Border>
+      </UniformGrid>
+
       <!-- Recently played -->
-      <StackPanel Grid.Row="1" Grid.ColumnSpan="2" Spacing="14" IsVisible="{Binding HasRecentCards}">
+      <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Spacing="14" IsVisible="{Binding HasRecentCards}">
         <Grid ColumnDefinitions="*,Auto">
           <TextBlock Text="Son oynatılanlar" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" />
           <Button Grid.Column="1" Classes="link" Content="Tümünü gör" Click="OnAllRecents" IsVisible="{Binding HasMoreRecents}" />

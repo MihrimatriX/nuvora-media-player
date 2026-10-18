@@ -47,6 +47,7 @@ public sealed partial class PlayerViewModel : ObservableObject
         ("mpv-version", PropertyKind.String),
         ("video-params/dw", PropertyKind.Double), ("video-params/dh", PropertyKind.Double),
         ("audio-device-list", PropertyKind.String),
+        ("current-ao", PropertyKind.String), ("ffmpeg-version", PropertyKind.String),
     ];
 
     /// <summary>Output devices reported by mpv ("auto" first).</summary>
@@ -305,6 +306,7 @@ public sealed partial class PlayerViewModel : ObservableObject
         OnPropertyChanged(nameof(Settings));
         OnPropertyChanged(nameof(OpenKeyText));
         OnPropertyChanged(nameof(CompareKeyText));
+        NotifySystemInfo();
     }
 
     public void StartThumbnailer(nint previewWid) => _thumbnailer.Initialize(previewWid);
@@ -590,6 +592,8 @@ public sealed partial class PlayerViewModel : ObservableObject
         OnPropertyChanged(nameof(HasHero));
         OnPropertyChanged(nameof(HasRecentCards));
         OnPropertyChanged(nameof(HasMoreRecents));
+        OnPropertyChanged(nameof(TotalWatchTimeText));
+        OnPropertyChanged(nameof(TotalRecentCount));
     }
 
     // save-position-on-quit only fires on quit; switching files must save explicitly.
@@ -680,6 +684,7 @@ public sealed partial class PlayerViewModel : ObservableObject
                 AudioDevices = (value is string d ? JsonSerializer.Deserialize<List<AudioDeviceInfo>>(d, Json) ?? [] : [])
                     .Select(a => a.Name == "auto" ? a with { Description = "Otomatik" } : a)
                     .ToList();
+                OnPropertyChanged(nameof(AudioDeviceDisplayName));
                 break;
             case "video-params/dw" or "video-params/dh":
                 if (name == "video-params/dw") _dw = value as double? ?? 0; else _dh = value as double? ?? 0;
@@ -713,6 +718,7 @@ public sealed partial class PlayerViewModel : ObservableObject
                 _raw[name] = value as string;
                 OnPropertyChanged(nameof(TechInfo));
                 OnPropertyChanged(nameof(StatsSummary));
+                OnSystemProperty(name, value);
                 break;
         }
     }
