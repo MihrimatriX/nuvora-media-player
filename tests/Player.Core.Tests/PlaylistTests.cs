@@ -11,6 +11,8 @@ public class PlaylistTests
         public readonly List<string> Commands = [];
         public event Action<string, object?>? PropertyChanged;
         public event Action<string>? PlaybackError { add { } remove { } }
+        public event Action? SeekCompleted { add { } remove { } }
+        public event Action<string>? Log { add { } remove { } }
         public void Raise(string name, object? value) => PropertyChanged?.Invoke(name, value);
         public void Initialize(nint windowHandle, IReadOnlyDictionary<string, string> options) { }
         public void Observe(string name, PropertyKind kind) { }
