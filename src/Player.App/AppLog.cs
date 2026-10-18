@@ -10,6 +10,8 @@ public static class AppLog
 
     static string Dir => Path.Combine(AppSettings.ConfigDir, "logs");
 
+    public static void Info(string message) => Append("app.log", $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} INFO {message}");
+
     public static void Warn(string message) => Append("app.log", $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} WARN {message}");
 
     /// <summary>One file per crash, so a report can be attached as is.</summary>

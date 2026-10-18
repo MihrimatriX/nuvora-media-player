@@ -6,6 +6,13 @@ namespace Player.App;
 
 public sealed class AppSettings
 {
+    /// <summary>Bump when a field is renamed or changes meaning, and add the step to <see cref="Migrate"/>.</summary>
+    public const int CurrentSchemaVersion = 1;
+
+    /// <summary>Version of the file this instance was read from; 0 = written before versioning existed.
+    /// <see cref="Save"/> always writes <see cref="CurrentSchemaVersion"/>.</summary>
+    public int SchemaVersion { get; set; }
+
     // Genel
     public string Language { get; set; } = "auto"; // "auto" (Windows display language) | "tr" | "en"
     public string Accent { get; set; } = "#6D5AE6";
@@ -45,7 +52,7 @@ public sealed class AppSettings
     public string DisplayFormat169 { get; set; } = "normal"; // "normal" | "stretch" | "zoom"
     public string DisplayFormatCinematic { get; set; } = "normal"; // "normal" | "zoom" | "half-zoom"
     // Ses
-    public string AudioOutputMode { get; set; } = "stereo-surround"; // "stereo" | "stereo-surround" | "5.1" | "7.1" | "spdif" | "hdmi"
+    public string AudioOutputMode { get; set; } = "stereo"; // "stereo" | "stereo-surround" | "5.1" | "7.1" | "spdif" | "hdmi"
     public string AudioLanguages { get; set; } = "tur,eng,jpn";
     public string AudioDevice { get; set; } = "auto";
     public string SpdifDevice { get; set; } = "auto";
@@ -94,7 +101,7 @@ public sealed class AppSettings
         {
             try
             {
-                if (File.Exists(path)) return JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(path)) ?? new();
+                if (File.Exists(path)) return Migrate(JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(path)) ?? new());
             }
             catch (Exception e) when (e is IOException or JsonException or UnauthorizedAccessException)
             {
@@ -108,6 +115,7 @@ public sealed class AppSettings
     /// which keeps the previous file as settings.json.bak. A crash mid-write leaves the old file intact.</summary>
     public void Save()
     {
+        SchemaVersion = CurrentSchemaVersion;
         var tmp = FilePath + ".tmp";
         try
         {
@@ -129,8 +137,20 @@ public sealed class AppSettings
     public void CopyFrom(AppSettings draft)
     {
         foreach (var p in typeof(AppSettings).GetProperties())
-            if (p.CanWrite && p.Name is not (nameof(Recent) or nameof(Volume)))
+            if (p.CanWrite && p.Name is not (nameof(Recent) or nameof(Volume) or nameof(SchemaVersion)))
                 p.SetValue(this, p.GetValue(draft));
+        // Collections are copied, not shared: later edits to the draft must not leak into live settings.
+        Shortcuts = new Dictionary<string, string>(draft.Shortcuts);
+    }
+
+    /// <summary>Upgrades a file written by an older version. Version 1 introduced the field itself, so
+    /// there is nothing to convert yet; future steps go here as <c>if (s.SchemaVersion &lt; 2) { ... }</c>.</summary>
+    public static AppSettings Migrate(AppSettings s)
+    {
+        if (s.SchemaVersion > CurrentSchemaVersion)
+            AppLog.Warn($"settings written by a newer version (schema {s.SchemaVersion}); unknown fields are ignored");
+        s.SchemaVersion = CurrentSchemaVersion;
+        return s;
     }
 
     public void Remember(RecentItem item)

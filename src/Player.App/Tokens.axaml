@@ -7,6 +7,9 @@
   <SolidColorBrush x:Key="AccentSoft" Color="#476D5AE6" />   <!-- 28 %: icon tiles -->
   <SolidColorBrush x:Key="AccentPress" Color="#4D6D5AE6" />  <!-- 30 %: pressed buttons -->
   <SolidColorBrush x:Key="AccentHalo" Color="#596D5AE6" />   <!-- 35 %: seek thumb halo -->
+  <SolidColorBrush x:Key="AccentText" Color="#8373EA" />     <!-- accent as text, >= 4.5:1 on Sheet (ColorContrast.Lighten) -->
+  <SolidColorBrush x:Key="FocusRing" Color="#8373EA" />      <!-- keyboard focus outline -->
+  <SolidColorBrush x:Key="OnAccent" Color="#FFFFFF" />       <!-- text on an accent fill -->
 
   <SolidColorBrush x:Key="Bg" Color="#0B0C12" />
   <SolidColorBrush x:Key="Surface" Color="#0E1014" />
@@ -69,15 +72,21 @@
   <StreamGeometry x:Key="IcoFit">M4 8V6a2 2 0 0 1 2-2h2 M4 16v2a2 2 0 0 0 2 2h2 M16 4h2a2 2 0 0 1 2 2v2 M16 20h2a2 2 0 0 0 2-2v-2 M9 9h6v6H9z</StreamGeometry>
   <StreamGeometry x:Key="IcoCompare">M12 3v18 M8 9.5L5.5 12 8 14.5 M16 9.5l2.5 2.5-2.5 2.5 M5 5h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z</StreamGeometry>
   <StreamGeometry x:Key="IcoSplitArrows">M9.5 8l-4 4 4 4 M14.5 8l4 4-4 4</StreamGeometry>
+  <StreamGeometry x:Key="IcoShuffle">M16 3h5v5 M4 20L21 3 M21 16v5h-5 M15 15l6 6 M4 4l5 5</StreamGeometry>
+  <StreamGeometry x:Key="IcoPlus">M12 5v14 M5 12h14</StreamGeometry>
+  <StreamGeometry x:Key="IcoTrash">M4 7h16 M10 11v6 M14 11v6 M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12 M9 7V4h6v3</StreamGeometry>
+  <StreamGeometry x:Key="IcoUp">M6 15l6-6 6 6</StreamGeometry>
   <StreamGeometry x:Key="IcoLogo">M11 6L16 15H6Z</StreamGeometry>
 
   <!-- Toggle switch: 40x24 track, accent when on, knob slides in 160 ms. -->
   <ControlTheme x:Key="Switch" TargetType="ToggleButton">
+    <Setter Property="FocusAdorner" Value="{x:Null}" />
     <Setter Property="Cursor" Value="Hand" />
     <Setter Property="Background" Value="{DynamicResource Fill8}" />
     <Setter Property="Template">
       <ControlTemplate>
-        <Border Name="track" Width="40" Height="24" CornerRadius="12" Padding="3" Background="{TemplateBinding Background}">
+        <Border Name="track" Width="40" Height="24" CornerRadius="12" Padding="3" Background="{TemplateBinding Background}"
+                BorderBrush="{DynamicResource FocusRing}" BorderThickness="0">
           <Border Name="knob" Width="18" Height="18" CornerRadius="9" Background="White" HorizontalAlignment="Left"
                   BoxShadow="0 1 3 0 #4D000000" RenderTransform="translateX(0px)">
             <Border.Transitions>
@@ -91,6 +100,10 @@
     </Setter>
     <Style Selector="^:checked">
       <Setter Property="Background" Value="{DynamicResource Accent}" />
+    </Style>
+    <Style Selector="^:focus-visible /template/ Border#track">
+      <Setter Property="BorderThickness" Value="2" />
+      <Setter Property="Padding" Value="1" />
     </Style>
     <Style Selector="^:checked /template/ Border#knob">
       <Setter Property="RenderTransform" Value="translateX(16px)" />
@@ -116,7 +129,8 @@
   <ControlTheme x:Key="Knob" TargetType="Thumb">
     <Setter Property="Template">
       <ControlTemplate>
-        <Border CornerRadius="99" Background="White" BoxShadow="0 2 6 0 #66000000" />
+        <Border CornerRadius="99" Background="White" BoxShadow="0 2 6 0 #66000000"
+                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="2" />
       </ControlTemplate>
     </Setter>
   </ControlTheme>
@@ -126,7 +140,8 @@
       <ControlTemplate>
         <Panel Width="24" Height="24">
           <Border Width="24" Height="24" CornerRadius="99" Background="{DynamicResource AccentHalo}" />
-          <Border Width="14" Height="14" CornerRadius="99" Background="White" BoxShadow="0 2 6 0 #66000000" />
+          <Border Width="14" Height="14" CornerRadius="99" Background="White" BoxShadow="0 2 6 0 #66000000"
+                  BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="2" />
         </Panel>
       </ControlTemplate>
     </Setter>
@@ -134,6 +149,7 @@
 
   <!-- Thin slider: 4 px rail, accent fill, 12 px white knob. Classes: seek (6 px, halo), volume (white fill). -->
   <ControlTheme x:Key="{x:Type Slider}" TargetType="Slider">
+    <Setter Property="FocusAdorner" Value="{x:Null}" />
     <Setter Property="Foreground" Value="{DynamicResource Accent}" />
     <Setter Property="Height" Value="18" />
     <Setter Property="Cursor" Value="Hand" />
@@ -155,6 +171,12 @@
         </Grid>
       </ControlTemplate>
     </Setter>
+    <Style Selector="^:focus-visible /template/ Thumb#thumb">
+      <Setter Property="BorderBrush" Value="{DynamicResource FocusRing}" />
+    </Style>
+    <Style Selector="^.volume:focus-visible /template/ Thumb#thumb">
+      <Setter Property="Opacity" Value="1" />
+    </Style>
     <Style Selector="^.seek">
       <Setter Property="Height" Value="20" />
       <Setter Property="ClipToBounds" Value="False" />

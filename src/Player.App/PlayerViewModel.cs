@@ -47,6 +47,7 @@ public sealed partial class PlayerViewModel : ObservableObject
         ("mpv-version", PropertyKind.String),
         ("video-params/dw", PropertyKind.Double), ("video-params/dh", PropertyKind.Double),
         ("audio-device-list", PropertyKind.String), ("metadata/by-key/artist", PropertyKind.String),
+        ("current-ao", PropertyKind.String), ("ffmpeg-version", PropertyKind.String),
         ("frame-drop-count", PropertyKind.Double), ("seeking", PropertyKind.Flag),
         ("osd-dimensions/w", PropertyKind.Double), ("osd-dimensions/h", PropertyKind.Double),
     ];
@@ -87,8 +88,9 @@ public sealed partial class PlayerViewModel : ObservableObject
             {
                 using var ms = new MemoryStream(bytes);
                 var bmp = new Bitmap(ms);
-                if (_thumbCache.Count > 90) _thumbCache.Clear();
+                if (_thumbCache.TryGetValue(sec, out var old)) Retire(old);
                 _thumbCache[sec] = bmp;
+                TrimThumbCache(sec);
                 ThumbnailReady?.Invoke(sec, bmp);
             }
             catch { }
@@ -103,6 +105,7 @@ public sealed partial class PlayerViewModel : ObservableObject
         LoopMode = settings.LoopMode;
         Loc.SetLanguage(settings.Language);
         _player.PropertyChanged += OnPlayerProperty;
+        _player.SeekCompleted += PumpSeek;
         Loc.LanguageChanged += () => OnPropertyChanged(string.Empty); // every computed label re-reads its text
         _player.PlaybackError += msg => ErrorText = Loc.F("osd.playbackFailed", msg);
     }
@@ -144,18 +147,54 @@ public sealed partial class PlayerViewModel : ObservableObject
         : Loc.T(LoopMode switch { "file" => "loop.file", "playlist" => "loop.playlist", _ => "loop.off" });
 
     // ---- sheets ----
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsSheetOpen), nameof(ShowTitleBlock), nameof(ShowFileChip))]
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsSheetOpen), nameof(ShowTitleBlock), nameof(ShowFileChip), nameof(IsSidePanelOpen))]
     public partial bool IsPanelOpen { get; set; }
     [ObservableProperty, NotifyPropertyChangedFor(nameof(IsSheetOpen), nameof(ShowTitleBlock), nameof(ShowFileChip))]
     public partial bool IsSettingsOpen { get; set; }
     [ObservableProperty, NotifyPropertyChangedFor(nameof(IsImageTab))] public partial bool IsAudioTab { get; set; }
     public bool IsImageTab { get => !IsAudioTab; set => IsAudioTab = !value; }
-    public bool IsSheetOpen => IsPanelOpen || IsSettingsOpen;
+    public bool IsSheetOpen => IsPanelOpen || IsSettingsOpen || IsPlaylistOpen;
     public bool ShowTitleBlock => !IsIdle && !IsSheetOpen;
     public bool ShowFileChip => !IsIdle && IsSheetOpen;
 
-    /// <summary>Set by the view while the seek bar is held, so slider coercion never triggers a seek.</summary>
-    public bool IsScrubbing { get; set; }
+    /// <summary>Set by the view while the seek bar is held, so slider coercion never triggers a seek.
+    /// While held, seeks go to the nearest keyframe and only one is in flight at a time; releasing the bar
+    /// lands one exact seek on the final position.</summary>
+    public bool IsScrubbing
+    {
+        get => _scrubbing;
+        set
+        {
+            if (_scrubbing == value) return;
+            _scrubbing = value;
+            if (value) return;
+            _pendingSeek = null;
+            _seekInFlight = false;
+            _player.Command("seek", Inv(_position), "absolute+exact");
+        }
+    }
+
+    bool _scrubbing, _seekInFlight;
+    double? _pendingSeek;
+
+    void ScrubTo(double seconds)
+    {
+        _pendingSeek = seconds;
+        if (!_seekInFlight) PumpSeek();
+    }
+
+    /// <summary>Sends the newest scrub target once mpv has finished the previous seek (PLAYBACK_RESTART).</summary>
+    void PumpSeek()
+    {
+        if (_pendingSeek is not { } target)
+        {
+            _seekInFlight = false;
+            return;
+        }
+        _pendingSeek = null;
+        _seekInFlight = true;
+        _player.Command("seek", Inv(target), "absolute+keyframes");
+    }
 
     public double Position
     {
@@ -165,7 +204,7 @@ public sealed partial class PlayerViewModel : ObservableObject
             _position = value;
             OnPropertyChanged(nameof(PositionText));
             OnPropertyChanged(nameof(RightTimeText));
-            if (IsScrubbing) _player.Command("seek", Inv(value), "absolute");
+            if (IsScrubbing) ScrubTo(value);
         }
     }
 
@@ -313,13 +352,48 @@ public sealed partial class PlayerViewModel : ObservableObject
         OnPropertyChanged(nameof(Settings));
         OnPropertyChanged(nameof(OpenKeyText));
         OnPropertyChanged(nameof(CompareKeyText));
+        NotifySystemInfo();
     }
 
     public void StartThumbnailer(nint previewWid) => _thumbnailer.Initialize(previewWid);
 
+    const int ThumbCacheLimit = 90;
+    int _hoverBucket = -1;
+    List<Bitmap> _retiredThumbs = [], _retiringThumbs = [];
+
+    /// <summary>Evicts the buckets farthest from where the user is scrubbing. The hovered bucket is never
+    /// evicted because the seek bubble may be showing it.</summary>
+    void TrimThumbCache(int newest)
+    {
+        while (_thumbCache.Count > ThumbCacheLimit)
+        {
+            var victim = _thumbCache.Keys.Where(k => k != _hoverBucket && k != newest).MaxBy(k => Math.Abs(k - newest));
+            if (!_thumbCache.Remove(victim, out var bmp)) return;
+            Retire(bmp);
+        }
+    }
+
+    /// <summary>Thumbnails hold native Skia memory. A bitmap may still be on screen when it leaves the cache,
+    /// so it is disposed one generation later, by which time the seek bubble has moved on.</summary>
+    void Retire(Bitmap bmp)
+    {
+        _retiringThumbs.Add(bmp);
+        if (_retiringThumbs.Count < 16) return;
+        foreach (var b in _retiredThumbs) b.Dispose();
+        (_retiredThumbs, _retiringThumbs) = (_retiringThumbs, []);
+    }
+
+    void ClearThumbCache()
+    {
+        foreach (var bmp in _thumbCache.Values) Retire(bmp);
+        _thumbCache.Clear();
+        _hoverBucket = -1;
+    }
+
     public Bitmap? GetOrRequestThumbnail(double seconds, out int bucket)
     {
         bucket = Math.Max(0, (int)(seconds / 2.0) * 2);
+        _hoverBucket = bucket;
         if (_thumbCache.TryGetValue(bucket, out var bmp)) return bmp;
         _thumbnailer.Request(bucket);
         return null;
@@ -600,6 +674,8 @@ public sealed partial class PlayerViewModel : ObservableObject
         OnPropertyChanged(nameof(HasHero));
         OnPropertyChanged(nameof(HasRecentCards));
         OnPropertyChanged(nameof(HasMoreRecents));
+        OnPropertyChanged(nameof(TotalWatchTimeText));
+        OnPropertyChanged(nameof(TotalRecentCount));
     }
 
     // save-position-on-quit only fires on quit; switching files must save explicitly.
@@ -622,8 +698,8 @@ public sealed partial class PlayerViewModel : ObservableObject
     [RelayCommand] void Screenshot() => _player.Command("screenshot", "video");
     [RelayCommand] void Next() { SaveResumePoint(); _player.Command("playlist-next"); }
     [RelayCommand] void Previous() { SaveResumePoint(); _player.Command("playlist-prev"); }
-    [RelayCommand] void TogglePanel() { IsPanelOpen = !IsPanelOpen; IsSettingsOpen = false; }
-    [RelayCommand] void OpenSettings() { IsSettingsOpen = true; IsPanelOpen = false; }
+    [RelayCommand] void TogglePanel() { IsPanelOpen = !IsPanelOpen; IsSettingsOpen = false; IsPlaylistOpen = false; }
+    [RelayCommand] void OpenSettings() { IsSettingsOpen = true; IsPanelOpen = false; IsPlaylistOpen = false; }
 
     /// <summary>Fit (letterbox) vs fill (crop to window).</summary>
     [RelayCommand]
@@ -655,6 +731,7 @@ public sealed partial class PlayerViewModel : ObservableObject
                 if (IsIdle)
                 {
                     IsPanelOpen = false;
+                    IsPlaylistOpen = false;
                     IsSplitCompare = false;
                 }
                 break;
@@ -663,7 +740,7 @@ public sealed partial class PlayerViewModel : ObservableObject
                 _path = value as string;
                 _dw = _dh = 0;
                 _fittedPath = null;
-                _thumbCache.Clear();
+                ClearThumbCache();
                 _thumbnailer.SetFile(_path);
                 OnPropertyChanged(nameof(FileChip));
                 OnPropertyChanged(nameof(StatsSummary));
@@ -695,6 +772,7 @@ public sealed partial class PlayerViewModel : ObservableObject
                 AudioDevices = (value is string d ? JsonSerializer.Deserialize<List<AudioDeviceInfo>>(d, Json) ?? [] : [])
                     .Select(a => a.Name == "auto" ? a with { Description = Loc.T("audio.auto") } : a)
                     .ToList();
+                OnPropertyChanged(nameof(AudioDeviceDisplayName));
                 break;
             case "video-params/dw" or "video-params/dh":
                 if (name == "video-params/dw") _dw = value as double? ?? 0; else _dh = value as double? ?? 0;
@@ -731,6 +809,7 @@ public sealed partial class PlayerViewModel : ObservableObject
                 _raw[name] = value as string;
                 OnPropertyChanged(nameof(TechInfo));
                 OnPropertyChanged(nameof(StatsSummary));
+                OnSystemProperty(name, value);
                 break;
         }
     }

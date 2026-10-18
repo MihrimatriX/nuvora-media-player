@@ -63,6 +63,7 @@ public partial class LocTests
     [Fact]
     public void SetLanguage_SwitchesAndNotifiesBindings()
     {
+        Loc.SetLanguage("tr");
         var changed = 0;
         Loc.Instance.PropertyChanged += (_, e) => { if (e.PropertyName == "Item") changed++; };
         Loc.SetLanguage("en");

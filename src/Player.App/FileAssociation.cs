@@ -109,7 +109,14 @@ public static partial class FileAssociation
         Registry.CurrentUser.DeleteSubKeyTree(@"Software\Clients\Media\Nuvora Player", false);
         Registry.CurrentUser.OpenSubKey(@"Software\RegisteredApplications", true)?.DeleteValue(AppName, false);
         foreach (var ext in Extensions)
-            Registry.CurrentUser.OpenSubKey($@"Software\Classes\{ext}\OpenWithProgids", true)?.DeleteValue(ProgId, false);
+        {
+            using var key = Registry.CurrentUser.OpenSubKey($@"Software\Classes\{ext}", writable: true);
+            if (key is null) continue;
+            key.OpenSubKey("OpenWithProgids", writable: true)?.DeleteValue(ProgId, false);
+            // Register filled the default value only where it was empty; undo exactly that, or the extension
+            // keeps pointing at the ProgId deleted above and Explorer shows it with no handler.
+            if (key.GetValue("") as string == ProgId) key.DeleteValue("", false);
+        }
         SHChangeNotify(0x08000000, 0, 0, 0);
     }
 

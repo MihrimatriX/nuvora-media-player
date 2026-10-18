@@ -5,15 +5,36 @@ Kompakt, video odaklı Windows medya oynatıcısı. C# / .NET 10, Avalonia 11, l
 ## Çalıştırma
 
 1. **libmpv-2.dll edin** (x64):
-   - https://github.com/shinchiro/mpv-winbuild-cmake/releases adresinden `mpv-dev-x86_64-*.7z`
-     (CPU'n AVX2 destekliyorsa `x86_64-v3`) indir.
-   - Arşivden `libmpv-2.dll` dosyasını repo kökündeki `lib/` klasörüne koy. Build sırasında exe'nin yanına kopyalanır.
-   - mpv **0.39 veya üstü** gerekli (`autocreate-playlist` için). Daha eski bir sürümle de oynatır, ama klasördeki sonraki dosyaya geçmez.
+   ```
+   pwsh scripts/get-libmpv.ps1
+   ```
+   Betik `scripts/libmpv.json` içinde sabitlenmiş LGPL derlemesini indirir, SHA-256'sını doğrular ve
+   `libmpv-2.dll`'i `lib/` klasörüne koyar. Build sırasında exe'nin yanına kopyalanır. CI ve yayın da aynı DLL'i kullanır.
+   - mpv **0.39 veya üstü** gerekli (`autocreate-playlist` için).
+   - Sürümü yükseltmek için `libmpv.json`'daki `tag`, `asset` ve `sha256` alanlarını boşaltıp betiği çalıştır;
+     yazdırdığı değerleri geri yaz.
 2. Çalıştır:
    ```
    dotnet run --project src/Player.App -- "C:\video.mkv"
    ```
-3. Testler: `dotnet test`
+3. Testler: `dotnet test`. `[MpvFact]` testleri gerçek libmpv'yi `vo=null`/`ao=null` ile sürer ve DLL
+   yoksa atlanır; arayüz testleri (`tests/Player.App.Tests`) Avalonia.Headless ile çalışır.
+
+Her PR ve `main` push'unda GitHub Actions (`.github/workflows/ci.yml`) Windows'ta build ve test çalıştırır.
+
+## Yayın
+
+`v*` etiketi (ör. `git tag v0.1.0 && git push origin v0.1.0`) `.github/workflows/release.yml`'i tetikler:
+
+- **Kurulum:** Velopack `NuvoraPlayer-win-Setup.exe` (yönetici izni istemez, `%LocalAppData%\NuvoraPlayer`'a kurar)
+  ve tam + delta `.nupkg` paketleri. Kurulu sürüm açılışta GitHub Releases'i denetler (Ayarlar → Genel →
+  "Güncellemeleri denetle"), yeni sürümü arka planda indirir ve oynatıcı kapanınca sessizce uygular.
+- **Portable:** `NuvoraPlayer-<sürüm>-win-x64-portable.zip`, `portable` klasörüyle gelir; otomatik güncelleme yapmaz.
+- Paketler **taslak** bir GitHub sürümüne eklenir; yayınlamak elle yapılır. Etiketsiz koşular (PR, elle tetikleme)
+  aynı paketleri yalnızca workflow artifact'ı olarak üretir.
+
+**Tek örnek:** Oynatıcı açıkken başka bir dosyayı açmak (Explorer, "Birlikte aç") yeni pencere açmaz; dosya
+çalışan oynatıcıya iletilir ve pencere öne gelir.
 
 **Portable mod:** exe'nin yanında `portable` klasörü varsa ayarlar ve kaldığın yer bilgileri oraya,
 yoksa `%AppData%\Nuvora Player` altına yazılır.
