@@ -10,6 +10,7 @@
 
       <!-- One Button theme for every button in the app; variants are classes (see Styles below). -->
       <ControlTheme x:Key="{x:Type Button}" TargetType="Button">
+        <Setter Property="FocusAdorner" Value="{x:Null}" /> <!-- own ring: Border#focus -->
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{DynamicResource Fg}" />
         <Setter Property="Padding" Value="0" />
@@ -29,6 +30,8 @@
                   <Transitions><DoubleTransition Property="Opacity" Duration="0:0:0.15" /></Transitions>
                 </Border.Transitions>
               </Border>
+              <Border Name="focus" CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{DynamicResource FocusRing}"
+                      BorderThickness="2" IsVisible="False" />
               <ContentPresenter Name="PART_ContentPresenter" Content="{TemplateBinding Content}"
                                 ContentTemplate="{TemplateBinding ContentTemplate}" Padding="{TemplateBinding Padding}"
                                 HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -39,10 +42,12 @@
         <Style Selector="^:pointerover /template/ Border#hover"><Setter Property="Opacity" Value="0.07" /></Style>
         <Style Selector="^:pressed /template/ Border#hover"><Setter Property="Opacity" Value="0.12" /></Style>
         <Style Selector="^:disabled"><Setter Property="Opacity" Value="0.45" /></Style>
+        <Style Selector="^:focus-visible /template/ Border#focus"><Setter Property="IsVisible" Value="True" /></Style>
       </ControlTheme>
 
       <!-- One RadioButton theme: .card (presets), .tab (panel tabs), .nav (settings menu). -->
       <ControlTheme x:Key="{x:Type RadioButton}" TargetType="RadioButton">
+        <Setter Property="FocusAdorner" Value="{x:Null}" /> <!-- own ring: Border#focus -->
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{DynamicResource Fg2}" />
         <Setter Property="BorderBrush" Value="Transparent" />
@@ -56,6 +61,8 @@
               <Border Name="bg" Background="{TemplateBinding Background}" CornerRadius="{TemplateBinding CornerRadius}"
                       BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" />
               <Border Name="hover" Background="White" CornerRadius="{TemplateBinding CornerRadius}" Opacity="0" />
+              <Border Name="focus" CornerRadius="{TemplateBinding CornerRadius}" BorderBrush="{DynamicResource FocusRing}"
+                      BorderThickness="2" IsVisible="False" />
               <ContentPresenter Name="PART_ContentPresenter" Content="{TemplateBinding Content}" Padding="{TemplateBinding Padding}"
                                 HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                 VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
@@ -63,6 +70,7 @@
           </ControlTemplate>
         </Setter>
         <Style Selector="^:pointerover /template/ Border#hover"><Setter Property="Opacity" Value="0.04" /></Style>
+        <Style Selector="^:focus-visible /template/ Border#focus"><Setter Property="IsVisible" Value="True" /></Style>
 
         <Style Selector="^.card">
           <Setter Property="MinHeight" Value="84" />
@@ -227,7 +235,7 @@
     </Style>
     <Style Selector="Button.pill.accent">
       <Setter Property="Background" Value="{DynamicResource Accent}" />
-      <Setter Property="Foreground" Value="White" />
+      <Setter Property="Foreground" Value="{DynamicResource OnAccent}" />
     </Style>
     <Style Selector="Button.pill.white">
       <Setter Property="Height" Value="46" />
@@ -259,7 +267,7 @@
     </Style>
     <Style Selector="Button.chip.on">
       <Setter Property="Background" Value="{DynamicResource Accent}" />
-      <Setter Property="Foreground" Value="White" />
+      <Setter Property="Foreground" Value="{DynamicResource OnAccent}" />
     </Style>
     <Style Selector="Button.drop">
       <Setter Property="Height" Value="34" />

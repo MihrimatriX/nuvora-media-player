@@ -444,5 +444,9 @@
   "assoc.description": "Codec paketi gerektirmeyen tüm formatlar için video ve ses oynatıcı",
   "start.heroEmpty": "Bir video aç ya da pencereye sürükle. Codec paketi gerekmez.",
   "settings.versionLine": "Sürüm {0} · Modern Windows Medya Oynatıcı",
-  "settings.formatCount": "{0}+ video, ses, altyazı ve oynatma listesi formatı"
+  "settings.formatCount": "{0}+ video, ses, altyazı ve oynatma listesi formatı",
+  "player.closeComparison": "Karşılaştırmayı kapat",
+  "player.totalOrRemaining": "Toplam süre veya kalan süre",
+  "player.maximizeRestore": "Büyüt / geri al",
+  "settings.audioDelayMs": "Ses gecikmesi (ms)"
 }
