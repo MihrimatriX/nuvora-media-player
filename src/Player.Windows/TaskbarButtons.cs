@@ -45,7 +45,7 @@ public sealed class TaskbarButtons : IDisposable
     /// <summary>Returns true when the message was a thumbnail button click and needs no further processing.</summary>
     public bool HandleMessage(uint msg, nint wParam)
     {
-        if (msg == TaskbarButtonCreated)
+        if (msg == TaskbarButtonCreated && msg != 0)
         {
             Attach();
             return false;

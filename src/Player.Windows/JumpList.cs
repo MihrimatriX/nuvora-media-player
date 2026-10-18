@@ -20,7 +20,7 @@ public static class JumpList
         list.BeginList(out var slots, typeof(IObjectArray).GUID, out var removedPtr);
         try
         {
-            var removed = RemovedArguments(ComObjects.Wrap<IObjectArray>(removedPtr));
+            var removed = RemovedArguments(removedPtr == 0 ? null : ComObjects.Wrap<IObjectArray>(removedPtr));
             var collection = ComObjects.Create<IObjectCollection>(ComObjects.ClsidObjectCollection);
             var count = 0;
             foreach (var item in items)
@@ -62,9 +62,10 @@ public static class JumpList
         return link;
     }
 
-    static unsafe HashSet<string> RemovedArguments(IObjectArray removed)
+    static unsafe HashSet<string> RemovedArguments(IObjectArray? removed)
     {
         var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (removed is null) return result;
         var buffer = stackalloc char[1024];
         for (uint i = 0, n = removed.GetCount(); i < n; i++)
         {
