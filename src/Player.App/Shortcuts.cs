@@ -35,6 +35,7 @@ public static class Shortcuts
         new("screenshot", "shortcut.screenshot", "S"),
         new("stats", "shortcut.stats", "I"),
         new("panel", "shortcut.panel", "E"),
+        new("playlist", "shortcut.playlist", "P"),
         new("split-compare", "shortcut.split-compare", "C"),
         new("compare", "shortcut.compare", "\\"),
         new("open", "shortcut.open", "Ctrl+O"),

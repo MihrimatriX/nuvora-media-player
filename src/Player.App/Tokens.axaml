@@ -72,6 +72,10 @@
   <StreamGeometry x:Key="IcoFit">M4 8V6a2 2 0 0 1 2-2h2 M4 16v2a2 2 0 0 0 2 2h2 M16 4h2a2 2 0 0 1 2 2v2 M16 20h2a2 2 0 0 0 2-2v-2 M9 9h6v6H9z</StreamGeometry>
   <StreamGeometry x:Key="IcoCompare">M12 3v18 M8 9.5L5.5 12 8 14.5 M16 9.5l2.5 2.5-2.5 2.5 M5 5h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z</StreamGeometry>
   <StreamGeometry x:Key="IcoSplitArrows">M9.5 8l-4 4 4 4 M14.5 8l4 4-4 4</StreamGeometry>
+  <StreamGeometry x:Key="IcoShuffle">M16 3h5v5 M4 20L21 3 M21 16v5h-5 M15 15l6 6 M4 4l5 5</StreamGeometry>
+  <StreamGeometry x:Key="IcoPlus">M12 5v14 M5 12h14</StreamGeometry>
+  <StreamGeometry x:Key="IcoTrash">M4 7h16 M10 11v6 M14 11v6 M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12 M9 7V4h6v3</StreamGeometry>
+  <StreamGeometry x:Key="IcoUp">M6 15l6-6 6 6</StreamGeometry>
   <StreamGeometry x:Key="IcoLogo">M11 6L16 15H6Z</StreamGeometry>
 
   <!-- Toggle switch: 40x24 track, accent when on, knob slides in 160 ms. -->
