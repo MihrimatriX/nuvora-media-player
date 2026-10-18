@@ -10,7 +10,7 @@ public sealed class MpvThumbnailer : IDisposable
     readonly SynchronizationContext? _sync = SynchronizationContext.Current;
     readonly AutoResetEvent _signal = new(false);
     readonly string _tempFile;
-    nint _ctx;
+    volatile nint _ctx; // created on the caller's thread, destroyed only by the worker
     Thread? _worker;
     volatile bool _disposed;
     volatile string? _pendingPath;
@@ -86,6 +86,20 @@ public sealed class MpvThumbnailer : IDisposable
     }
 
     void WorkerLoop()
+    {
+        try { Work(); }
+        finally
+        {
+            // The worker is the only thread that calls into this handle, so it destroys it: no race with
+            // a synchronous mpv_command still in flight when Dispose gives up waiting.
+            var ctx = _ctx;
+            _ctx = 0;
+            if (ctx != 0) mpv_terminate_destroy(ctx);
+            try { if (File.Exists(_tempFile)) File.Delete(_tempFile); } catch { }
+        }
+    }
+
+    void Work()
     {
         while (!_disposed)
         {
@@ -181,12 +195,12 @@ public sealed class MpvThumbnailer : IDisposable
         if (_disposed) return;
         _disposed = true;
         _signal.Set();
-        _worker?.Join(TimeSpan.FromSeconds(1));
-        if (_ctx != 0)
+        if (_worker is null)
         {
-            mpv_terminate_destroy(_ctx);
-            _ctx = 0;
+            try { if (File.Exists(_tempFile)) File.Delete(_tempFile); } catch { }
+            return;
         }
-        try { if (File.Exists(_tempFile)) File.Delete(_tempFile); } catch { }
+        // On timeout the worker still owns the handle and frees it when its current command returns.
+        _worker.Join(TimeSpan.FromSeconds(1));
     }
 }
