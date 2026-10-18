@@ -46,7 +46,7 @@ public sealed partial class PlayerViewModel : ObservableObject
         ("ab-loop-a", PropertyKind.String), ("ab-loop-b", PropertyKind.String),
         ("mpv-version", PropertyKind.String),
         ("video-params/dw", PropertyKind.Double), ("video-params/dh", PropertyKind.Double),
-        ("audio-device-list", PropertyKind.String),
+        ("audio-device-list", PropertyKind.String), ("metadata/by-key/artist", PropertyKind.String),
     ];
 
     /// <summary>Output devices reported by mpv ("auto" first).</summary>
@@ -107,6 +107,7 @@ public sealed partial class PlayerViewModel : ObservableObject
 
     // ---- playback state ----
     [ObservableProperty] public partial string Title { get; set; } = "";
+    [ObservableProperty] public partial string? Artist { get; set; }
     [ObservableProperty, NotifyPropertyChangedFor(nameof(DurationText), nameof(RightTimeText))] public partial double Duration { get; set; }
     [ObservableProperty] public partial bool IsPaused { get; set; }
     [ObservableProperty] public partial bool IsMuted { get; set; }
@@ -129,6 +130,7 @@ public sealed partial class PlayerViewModel : ObservableObject
     [ObservableProperty] public partial bool ShowStats { get; set; }
 
     public bool IsFilled => _fill;
+    public bool HasVideo => _width > 0;
     public bool IsLoopActive => LoopMode != "off" || IsAbLoopActive;
     public bool IsAbLoopActive => _abA != "no";
     public double? AbLoopASeconds => double.TryParse(_abA, NumberStyles.Float, CultureInfo.InvariantCulture, out var a) ? a : null;
@@ -602,6 +604,8 @@ public sealed partial class PlayerViewModel : ObservableObject
 
     // ---- commands ----
     [RelayCommand] void TogglePause() => _player.Command("cycle", "pause");
+    public void SetPaused(bool paused) => _player.Command("set", "pause", paused ? "yes" : "no");
+    public void SeekTo(double seconds) => _player.Command("seek", Inv(seconds), "absolute");
     [RelayCommand] void ToggleMute() => _player.Command("cycle", "mute");
     [RelayCommand] void SeekBack() => _player.Command("seek", Inv(-_settings.SeekStepSeconds), "relative");
     [RelayCommand] void SeekForward() => _player.Command("seek", Inv(_settings.SeekStepSeconds), "relative");
@@ -690,7 +694,8 @@ public sealed partial class PlayerViewModel : ObservableObject
                     VideoSizeKnown?.Invoke(_dw, _dh);
                 }
                 break;
-            case "width": _width = value as double? ?? 0; OnPropertyChanged(nameof(StatsSummary)); break;
+            case "width": _width = value as double? ?? 0; OnPropertyChanged(nameof(StatsSummary)); OnPropertyChanged(nameof(HasVideo)); break;
+            case "metadata/by-key/artist": Artist = value as string; break;
             case "height":
                 var prevH = _height;
                 _height = value as double? ?? 0;
