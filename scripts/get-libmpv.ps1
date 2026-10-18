@@ -13,7 +13,9 @@
 #>
 param(
     [string]$Destination = (Join-Path $PSScriptRoot '..' 'lib'),
-    [switch]$Force
+    [switch]$Force,
+    # Release builds: refuse to resolve "latest" when the pin is missing.
+    [switch]$RequirePin
 )
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue' # Invoke-WebRequest is many times slower with the progress bar
@@ -24,6 +26,7 @@ if ((Test-Path $dll) -and -not $Force) { Write-Host "libmpv already present: $dl
 
 $tag = $pin.tag; $asset = $pin.asset
 if (-not $tag) {
+    if ($RequirePin) { throw 'scripts/libmpv.json has no pinned tag/asset/sha256' }
     $headers = @{ 'User-Agent' = 'nuvora-build' }
     if ($env:GH_TOKEN) { $headers.Authorization = "Bearer $env:GH_TOKEN" }
     $release = Invoke-RestMethod "https://api.github.com/repos/$($pin.repo)/releases/latest" -Headers $headers

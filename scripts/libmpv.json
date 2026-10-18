@@ -1,7 +1,7 @@
 {
   "repo": "zhongfly/mpv-winbuild",
-  "tag": "",
-  "asset": "",
-  "sha256": "",
+  "tag": "2026-10-18-9d108319ba",
+  "asset": "mpv-dev-lgpl-x86_64-20261018-git-07775397da.7z",
+  "sha256": "b060c7bc469e518ec99b7e7444112dad1a9f412beeb958956fd5b71cf0d6d65d",
   "assetPattern": "^mpv-dev-lgpl-x86_64-\\d{8}-git-[0-9a-f]+\\.7z$"
 }

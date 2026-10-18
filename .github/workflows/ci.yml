@@ -29,7 +29,7 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Cache NuGet packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.nuget/packages
           key: nuget-${{ hashFiles('**/*.csproj', 'Directory.Build.props') }}
@@ -37,7 +37,7 @@ jobs:
 
       - name: Cache libmpv
         id: libmpv
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: lib/libmpv-2.dll
           key: libmpv-${{ hashFiles('scripts/libmpv.json') }}
@@ -58,7 +58,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: test-results
           path: TestResults/*.trx
