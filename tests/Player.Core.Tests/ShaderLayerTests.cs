@@ -39,11 +39,12 @@ public class ShaderLayerTests
     public void ActiveLayerTellsLoadedFromWaiting()
     {
         var balanced = ImagePresets.Find("balanced");
-        Assert.Equal("Shader · FSRCNNX x2", ActiveLayer.Describe(balanced, ShaderLayers.Fsrcnnx, 1.5, false));
-        Assert.Equal("Yerleşik · spline36 · FSRCNNX x2 beklemede", ActiveLayer.Describe(balanced, ShaderLayers.Fsrcnnx, 1.0, false));
-        Assert.Equal("Yerleşik · spline36 · GPU yetişmedi", ActiveLayer.Describe(balanced, null, 1.5, true));
-        Assert.Equal("Shader · Anime4K A (yalnız onarım)", ActiveLayer.Describe(ImagePresets.Find("anime"), ShaderLayers.Anime4KFast, 1.0, false));
-        Assert.Equal("Kapalı", ActiveLayer.Describe(ImagePresets.Off, null, 2, false));
+        Assert.Equal(LayerState.Shader, ActiveLayer.Classify(balanced, ShaderLayers.Fsrcnnx, 1.5, false));
+        Assert.Equal(LayerState.ShaderFellBack, ActiveLayer.Classify(ImagePresets.Find("max"), ShaderLayers.Fsrcnnx, 1.5, true));
+        Assert.Equal(LayerState.Waiting, ActiveLayer.Classify(balanced, ShaderLayers.Fsrcnnx, 1.0, false));
+        Assert.Equal(LayerState.GpuBehind, ActiveLayer.Classify(balanced, null, 1.5, true));
+        Assert.Equal(LayerState.RestoreOnly, ActiveLayer.Classify(ImagePresets.Find("anime"), ShaderLayers.Anime4KFast, 1.0, false));
+        Assert.Equal(LayerState.BuiltIn, ActiveLayer.Classify(ImagePresets.Off, null, 2, false));
     }
 
     static TimeSpan S(double s) => TimeSpan.FromSeconds(s);

@@ -53,8 +53,8 @@ public static partial class FileAssociation
         var exe = Environment.ProcessPath!;
         using (var prog = Registry.CurrentUser.CreateSubKey($@"Software\Classes\{ProgId}"))
         {
-            prog.SetValue("", "Nuvora Player medya dosyası");
-            prog.SetValue("FriendlyTypeName", "Nuvora Player medya dosyası");
+            prog.SetValue("", Loc.T("assoc.fileType"));
+            prog.SetValue("FriendlyTypeName", Loc.T("assoc.fileType"));
             prog.CreateSubKey("DefaultIcon").SetValue("", $"\"{exe}\",0");
             prog.CreateSubKey(@"shell\open\command").SetValue("", $"\"{exe}\" \"%1\"");
         }
@@ -76,14 +76,14 @@ public static partial class FileAssociation
         // Folder context menu: "Nuvora Player ile oynat"
         using (var dirShell = Registry.CurrentUser.CreateSubKey(@"Software\Classes\Directory\shell\NuvoraPlayer"))
         {
-            dirShell.SetValue("", "Nuvora Player ile oynat");
+            dirShell.SetValue("", Loc.T("assoc.playWith"));
             dirShell.SetValue("Icon", $"\"{exe}\",0");
             dirShell.CreateSubKey("command").SetValue("", $"\"{exe}\" \"%1\"");
         }
         using (var caps = Registry.CurrentUser.CreateSubKey(CapabilitiesKey))
         {
             caps.SetValue("ApplicationName", AppName);
-            caps.SetValue("ApplicationDescription", "Codec paketi gerektirmeyen tüm formatlar için video ve ses oynatıcı");
+            caps.SetValue("ApplicationDescription", Loc.T("assoc.description"));
             using var assoc = caps.CreateSubKey("FileAssociations");
             foreach (var ext in Extensions) assoc.SetValue(ext, ProgId);
         }

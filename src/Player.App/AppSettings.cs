@@ -7,7 +7,7 @@ namespace Player.App;
 public sealed class AppSettings
 {
     // Genel
-    public string Language { get; set; } = "tr";
+    public string Language { get; set; } = "auto"; // "auto" (Windows display language) | "tr" | "en"
     public string Accent { get; set; } = "#6D5AE6";
     public bool AlwaysOnTop { get; set; }
     public bool CheckUpdates { get; set; } = true;
@@ -176,7 +176,7 @@ public sealed class RecentItem
         get
         {
             var left = TimeSpan.FromSeconds(Math.Max(0, Duration - Position));
-            return left.TotalHours >= 1 ? $"{(int)left.TotalHours} sa {left.Minutes} dk kaldı" : $"{Math.Max(1, left.Minutes)} dk kaldı";
+            return left.TotalHours >= 1 ? Loc.F("recent.leftHours", (int)left.TotalHours, left.Minutes) : Loc.F("recent.leftMinutes", Math.Max(1, left.Minutes));
         }
     }
 

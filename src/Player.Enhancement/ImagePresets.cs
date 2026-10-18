@@ -6,10 +6,7 @@ namespace Player.Enhancement;
 /// ends on the built-in scaler in <paramref name="Scaler"/>.
 /// </summary>
 public sealed record ImagePreset(string Id, string Name, string Description, string Scaler,
-    IReadOnlyDictionary<string, string> Options, IReadOnlyList<ShaderLayer> Shaders)
-{
-    public string BuiltInLabel => Id == "off" ? "Kapalı" : $"Yerleşik · {Scaler}";
-}
+    IReadOnlyDictionary<string, string> Options, IReadOnlyList<ShaderLayer> Shaders);
 
 public static class ImagePresets
 {
@@ -43,20 +40,18 @@ public static class ImagePresets
     };
 }
 
-/// <summary>What is really rendering right now, for the "Aktif katman" chip.</summary>
+public enum LayerState { BuiltIn, GpuBehind, Shader, ShaderFellBack, RestoreOnly, Waiting }
+
+/// <summary>What is really rendering right now, for the "Aktif katman" chip (the app turns it into text).</summary>
 public static class ActiveLayer
 {
     /// <param name="shader">The loaded layer, or null when none is loaded (preset has none, disabled, or fell back).</param>
     /// <param name="upscale">From <see cref="ShaderLayers.UpscaleFactor"/>; 0 = not known yet.</param>
-    public static string Describe(ImagePreset preset, ShaderLayer? shader, double upscale, bool fellBack)
+    public static LayerState Classify(ImagePreset preset, ShaderLayer? shader, double upscale, bool fellBack)
     {
-        if (shader is null)
-            return fellBack && preset.Shaders.Count > 0 ? $"{preset.BuiltInLabel} · GPU yetişmedi" : preset.BuiltInLabel;
-        var suffix = fellBack ? " · düşürüldü" : "";
-        if (upscale <= 0 || upscale > shader.MinUpscale) return $"Shader · {shader.Name}{suffix}";
+        if (shader is null) return fellBack && preset.Shaders.Count > 0 ? LayerState.GpuBehind : LayerState.BuiltIn;
+        if (upscale <= 0 || upscale > shader.MinUpscale) return fellBack ? LayerState.ShaderFellBack : LayerState.Shader;
         // Loaded, but the video is shown at (or below) its own size, so mpv skips the upscaling passes.
-        return shader.RestoresAtNative
-            ? $"Shader · {shader.Name} (yalnız onarım){suffix}"
-            : $"{preset.BuiltInLabel} · {shader.Name} beklemede";
+        return shader.RestoresAtNative ? LayerState.RestoreOnly : LayerState.Waiting;
     }
 }

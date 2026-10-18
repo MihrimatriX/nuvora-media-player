@@ -5,23 +5,26 @@ using Player.Enhancement;
 
 namespace Player.App;
 
-public sealed record PresetChoice(ImagePreset Preset, bool IsSelected);
+public sealed record PresetChoice(ImagePreset Preset, bool IsSelected)
+{
+    public string Name => PlayerViewModel.PresetLabel(Preset);
+    public string Description => Loc.T($"preset.{Preset.Id}.desc");
+}
 public sealed record FpsChoice(int Value, string Label, bool IsSelected);
 
 /// <summary>"Görüntü" tab: presets, active layer, 60/90/120 FPS motion interpolation, picture adjustments, original-image bypass.</summary>
 public sealed partial class PlayerViewModel
 {
-    public static readonly string[] Profiles = ["Varsayılan", "Canlı Renk & Keskin", "Sinema (Sıcak)", "Anime Canlı", "Akşam İzleme"];
+    /// <summary>Colour profile ids; the label is Loc "profile.{id}".</summary>
+    public static readonly string[] Profiles = ["default", "vivid", "cinema", "anime", "evening"];
     public static readonly (int Value, string Label)[] FpsTargets =
-        [(0, "Kaynak"), (60, "60 FPS"), (90, "90 FPS"), (120, "120 FPS"), (-1, "VSync")];
+        [(0, "fps.source"), (60, "60 FPS"), (90, "90 FPS"), (120, "120 FPS"), (-1, "VSync")]; // labels go through Loc.T
 
     public GpuInfo? Gpu { get; }
-    public string GpuName => Gpu?.Name ?? "Algılanamadı";
+    public string GpuName => Gpu?.Name ?? Loc.T("gpu.notDetected");
     public bool HasRtxVideo => Gpu?.HasRtxVideo == true;
-    public string RtxBadge => HasRtxVideo ? "Hazır" : "RTX gerekir";
-    public string GpuNote => _settings.ShaderUpscaling
-        ? "Ön ayarlar GPU shader katmanı kullanır (FSRCNNX, ArtCNN, Anime4K). GPU yetişemezse daha hafif katmana, sonra yerleşik ölçekleyiciye düşer."
-        : "GPU shader katmanı ayarlardan kapalı; mpv'nin yerleşik ölçekleyicileri kullanılıyor.";
+    public string RtxBadge => Loc.T(HasRtxVideo ? "gpu.rtxReady" : "gpu.rtxNeeded");
+    public string GpuNote => Loc.T(_settings.ShaderUpscaling ? "gpu.noteShaders" : "gpu.noteShadersOff");
 
     [ObservableProperty, NotifyPropertyChangedFor(nameof(PresetChoices), nameof(ActiveLayer), nameof(EnhanceLabel), nameof(PresetName), nameof(AfterBadgeText))]
     public partial string PresetId { get; set; } = "balanced";
@@ -63,12 +66,15 @@ public sealed partial class PlayerViewModel
     [ObservableProperty, NotifyPropertyChangedFor(nameof(SharpnessText), nameof(AfterBadgeText))] public partial double Sharpness { get; set; }
     [ObservableProperty, NotifyPropertyChangedFor(nameof(GammaText), nameof(AfterBadgeText))] public partial double Gamma { get; set; }
     [ObservableProperty, NotifyPropertyChangedFor(nameof(HueText), nameof(AfterBadgeText))] public partial double Hue { get; set; }
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(AfterBadgeText))] public partial string ProfileName { get; set; } = "Varsayılan";
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(AfterBadgeText), nameof(ProfileLabel))] public partial string ProfileName { get; set; } = "default";
+    public string ProfileLabel => Loc.T($"profile.{ProfileName}");
+    public static string PresetLabel(ImagePreset preset) => Loc.T($"preset.{preset.Id}");
+    static string LayerLabel(ImagePreset preset) => preset.Id == "off" ? Loc.T("preset.off") : Loc.F("preset.layerBuiltIn", preset.Scaler);
 
     ImagePreset CurrentPreset => ImagePresets.Find(PresetId);
     public IEnumerable<PresetChoice> PresetChoices => ImagePresets.All.Select(p => new PresetChoice(p, p.Id == PresetId));
-    public IEnumerable<FpsChoice> FpsChoices => FpsTargets.Select(f => new FpsChoice(f.Value, f.Label, f.Value == TargetFps));
-    public string PresetName => CurrentPreset.Name;
+    public IEnumerable<FpsChoice> FpsChoices => FpsTargets.Select(f => new FpsChoice(f.Value, Loc.T(f.Label), f.Value == TargetFps));
+    public string PresetName => PresetLabel(CurrentPreset);
     public string SplitPercentText => $"%{(SplitRatio * 100):0}";
 
     public string FpsBadge => TargetFps switch
@@ -87,9 +93,18 @@ public sealed partial class PlayerViewModel
     {
         get
         {
-            if (IsBypassed) return "Orijinal";
-            if (IsSplitCompare) return $"Önce / Sonra · {CurrentPreset.Name}";
-            var layer = Player.Enhancement.ActiveLayer.Describe(CurrentPreset, _loadedLayer, Upscale, _fallback.HasFallenBack);
+            if (IsBypassed) return Loc.T("layer.original");
+            if (IsSplitCompare) return Loc.F("layer.compare", PresetName);
+            var builtIn = LayerLabel(CurrentPreset);
+            var layer = Player.Enhancement.ActiveLayer.Classify(CurrentPreset, _loadedLayer, Upscale, _fallback.HasFallenBack) switch
+            {
+                LayerState.GpuBehind => Loc.F("layer.gpuBehind", builtIn),
+                LayerState.Shader => Loc.F("layer.shader", _loadedLayer!.Name),
+                LayerState.ShaderFellBack => Loc.F("layer.shaderFellBack", _loadedLayer!.Name),
+                LayerState.RestoreOnly => Loc.F("layer.restoreOnly", _loadedLayer!.Name),
+                LayerState.Waiting => Loc.F("layer.waiting", builtIn, _loadedLayer!.Name),
+                _ => builtIn,
+            };
             return FpsBadge.Length > 0 ? $"{layer} · {FpsBadge}" : layer;
         }
     }
@@ -101,9 +116,9 @@ public sealed partial class PlayerViewModel
     {
         get
         {
-            if (IsBypassed) return "Orijinal görüntü";
-            if (IsSplitCompare) return $"Önce / Sonra · {CurrentPreset.Name}";
-            var baseLabel = CurrentPreset.Id == "off" ? "İyileştirme kapalı" : $"{CurrentPreset.Name} · {Engine}";
+            if (IsBypassed) return Loc.T("enhance.originalImage");
+            if (IsSplitCompare) return Loc.F("layer.compare", PresetName);
+            var baseLabel = CurrentPreset.Id == "off" ? Loc.T("enhance.off") : $"{PresetName} · {Engine}";
             return FpsBadge.Length > 0 ? $"{baseLabel} · {FpsBadge}" : baseLabel;
         }
     }
@@ -112,15 +127,15 @@ public sealed partial class PlayerViewModel
     {
         get
         {
-            var preset = CurrentPreset.Id == "off" ? "Dengeli" : CurrentPreset.Name;
-            if (ProfileName != "Varsayılan") return $"{preset} · {ProfileName}";
+            var preset = CurrentPreset.Id == "off" ? Loc.T("preset.balanced") : PresetName;
+            if (ProfileName != "default") return $"{preset} · {ProfileLabel}";
             if (Math.Abs(Sharpness) > 0.5 || Math.Abs(Saturation) > 0.5 || Math.Abs(Contrast) > 0.5)
-                return $"{preset} · Keskinlik {SharpnessText}";
+                return $"{preset} · {Loc.F("badge.sharpness", SharpnessText)}";
             return FpsBadge.Length > 0 ? $"{preset} · {FpsBadge}" : $"{preset} · {Engine}";
         }
     }
 
-    public string BypassLabel => IsSplitCompare ? "Karşılaştırmayı kapat" : "Önce / Sonra çubuğu";
+    public string BypassLabel => Loc.T(IsSplitCompare ? "bypass.close" : "bypass.open");
     public string ContrastText => Signed(Contrast);
     public string SaturationText => Signed(Saturation);
     public string BrightnessText => Signed(Brightness);
@@ -168,7 +183,7 @@ public sealed partial class PlayerViewModel
     [RelayCommand]
     public void ResetPicture()
     {
-        ProfileName = "Varsayılan";
+        ProfileName = "default";
         (Contrast, Saturation, Brightness, Sharpness, Gamma, Hue) = (0, 0, 0, 0, 0, 0);
     }
 
@@ -177,10 +192,10 @@ public sealed partial class PlayerViewModel
         ProfileName = name;
         (Contrast, Saturation, Brightness, Sharpness, Gamma, Hue) = name switch
         {
-            "Canlı Renk & Keskin" => (6, 18, 0, 35, 2, 0),
-            "Sinema (Sıcak)" => (8, 6, -2, 15, -3, -3),
-            "Anime Canlı" => (6, 22, 1, 45, 0, 0),
-            "Akşam İzleme" => (4, -6, -8, 0, -4, -2),
+            "vivid" => (6, 18, 0, 35, 2, 0),
+            "cinema" => (8, 6, -2, 15, -3, -3),
+            "anime" => (6, 22, 1, 45, 0, 0),
+            "evening" => (4, -6, -8, 0, -4, -2),
             _ => (0, 0, 0, 0, 0, 0),
         };
     }
@@ -299,7 +314,7 @@ public sealed partial class PlayerViewModel
         var files = candidate.Files.Select(ShaderPath).ToArray();
         if (files.FirstOrDefault(f => !File.Exists(f)) is { } missing)
         {
-            AppLog.Warn($"Shader eksik, yerleşik ölçekleyici kullanılıyor: {missing}");
+            AppLog.Warn($"Shader missing, using built-in scaler: {missing}");
             return [];
         }
         layer = candidate;
@@ -345,9 +360,9 @@ public sealed partial class PlayerViewModel
                 var from = _loadedLayer.Name;
                 if (!_fallback.Sample(_clock.Elapsed, (long)drops, CurrentPreset.Shaders.Count)) break;
                 ApplyImage();
-                var to = _loadedLayer?.Name ?? $"Yerleşik {CurrentPreset.Scaler}";
-                AppLog.Warn($"GPU yetişemedi ({(long)drops} kare düştü, {_height:0}p): {from} → {to}");
-                OsdRequested?.Invoke($"GPU yetişemedi · {from} → {to}");
+                var to = _loadedLayer?.Name ?? LayerLabel(CurrentPreset);
+                AppLog.Warn($"GPU fell behind ({(long)drops} dropped frames, {_height:0}p): {from} -> {to}");
+                OsdRequested?.Invoke(Loc.F("osd.gpuFallback", from, to));
                 break;
         }
     }
