@@ -9,7 +9,11 @@ namespace Player.App;
 
 public partial class App : Application
 {
-    public override void Initialize() => AvaloniaXamlLoader.Load(this);
+    public override void Initialize()
+    {
+        AvaloniaXamlLoader.Load(this);
+        Accessibility.Register();
+    }
 
     public override void OnFrameworkInitializationCompleted()
     {
@@ -41,5 +45,10 @@ public partial class App : Application
         r["AccentPress"] = new SolidColorBrush(c, 0.30);
         r["AccentHalo"] = new SolidColorBrush(c, 0.35);
         r["SystemAccentColor"] = c; // Fluent bits we did not restyle (focus rings, menus)
+        // Accent as text or focus ring must still reach WCAG AA on the dark surfaces; text on an accent fill picks white or ink.
+        var text = ColorContrast.Lighten(c, ColorContrast.Surface);
+        r["AccentText"] = new SolidColorBrush(text);
+        r["FocusRing"] = new SolidColorBrush(text);
+        r["OnAccent"] = new SolidColorBrush(ColorContrast.ReadableOn(c));
     }
 }

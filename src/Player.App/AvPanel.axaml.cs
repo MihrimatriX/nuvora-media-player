@@ -6,7 +6,11 @@ namespace Player.App;
 
 public partial class AvPanel : UserControl
 {
-    public AvPanel() => InitializeComponent();
+    public AvPanel()
+    {
+        InitializeComponent();
+        Accessibility.LabelRows(this);
+    }
 
     PlayerViewModel Vm => (PlayerViewModel)DataContext!;
 
