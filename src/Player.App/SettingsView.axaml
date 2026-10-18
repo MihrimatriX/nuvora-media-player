@@ -23,17 +23,17 @@
           <!-- Navigation -->
           <Border Background="{DynamicResource SheetNav}" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,1,0" Padding="12,20">
             <StackPanel Spacing="4">
-              <TextBlock Text="Ayarlar" FontSize="16" FontWeight="Bold" Margin="12,0,12,12" />
+              <TextBlock Text="{app:T player.settings}" FontSize="16" FontWeight="Bold" Margin="12,0,12,12" />
               <RadioButton Classes="nav" GroupName="page" IsChecked="{Binding Page, Converter={x:Static app:EqualsConverter.Instance}, ConverterParameter=genel}">
                 <StackPanel Orientation="Horizontal" Spacing="10">
                   <Viewbox Classes="i18"><Path Data="{StaticResource IcoGear}" StrokeThickness="2" /></Viewbox>
-                  <TextBlock Text="Genel" />
+                  <TextBlock Text="{app:T settings.general}" />
                 </StackPanel>
               </RadioButton>
               <RadioButton Classes="nav" GroupName="page" IsChecked="{Binding Page, Converter={x:Static app:EqualsConverter.Instance}, ConverterParameter=video}">
                 <StackPanel Orientation="Horizontal" Spacing="10">
                   <Viewbox Classes="i18"><Path Data="{StaticResource IcoScreen}" StrokeThickness="1.8" /></Viewbox>
-                  <TextBlock Text="Video &amp; FPS" />
+                  <TextBlock Text="{app:T settings.videoFPS}" />
                 </StackPanel>
               </RadioButton>
               <RadioButton Classes="nav" GroupName="page" IsChecked="{Binding Page, Converter={x:Static app:EqualsConverter.Instance}, ConverterParameter=ses}">
@@ -44,31 +44,31 @@
                       <Path Data="{StaticResource IcoWave1}" StrokeThickness="1.8" />
                     </Panel>
                   </Viewbox>
-                  <TextBlock Text="Ses" />
+                  <TextBlock Text="{app:T panel.sound}" />
                 </StackPanel>
               </RadioButton>
               <RadioButton Classes="nav" GroupName="page" IsChecked="{Binding Page, Converter={x:Static app:EqualsConverter.Instance}, ConverterParameter=altyazi}">
                 <StackPanel Orientation="Horizontal" Spacing="10">
                   <Viewbox Classes="i18"><Path Data="{StaticResource IcoSubs}" StrokeThickness="1.8" /></Viewbox>
-                  <TextBlock Text="Altyazı" />
+                  <TextBlock Text="{app:T settings.subtitles}" />
                 </StackPanel>
               </RadioButton>
               <RadioButton Classes="nav" GroupName="page" IsChecked="{Binding Page, Converter={x:Static app:EqualsConverter.Instance}, ConverterParameter=disaaktar}">
                 <StackPanel Orientation="Horizontal" Spacing="10">
                   <Viewbox Classes="i18"><Path Data="{StaticResource IcoUpload}" StrokeThickness="1.8" /></Viewbox>
-                  <TextBlock Text="Dışa Aktar" />
+                  <TextBlock Text="{app:T settings.export}" />
                 </StackPanel>
               </RadioButton>
               <RadioButton Classes="nav" GroupName="page" IsChecked="{Binding Page, Converter={x:Static app:EqualsConverter.Instance}, ConverterParameter=kisayollar}">
                 <StackPanel Orientation="Horizontal" Spacing="10">
                   <Viewbox Classes="i18"><Path Data="{StaticResource IcoKeyboard}" StrokeThickness="1.8" /></Viewbox>
-                  <TextBlock Text="Kısayollar" />
+                  <TextBlock Text="{app:T settings.shortcuts}" />
                 </StackPanel>
               </RadioButton>
               <RadioButton Classes="nav" GroupName="page" IsChecked="{Binding Page, Converter={x:Static app:EqualsConverter.Instance}, ConverterParameter=hakkinda}">
                 <StackPanel Orientation="Horizontal" Spacing="10">
                   <Viewbox Classes="i18"><Path Data="{StaticResource IcoInfo}" StrokeThickness="1.8" /></Viewbox>
-                  <TextBlock Text="Hakkında" />
+                  <TextBlock Text="{app:T settings.about}" />
                 </StackPanel>
               </RadioButton>
             </StackPanel>
@@ -79,14 +79,14 @@
             <Grid DockPanel.Dock="Top" Height="64" ColumnDefinitions="*,Auto" Margin="28,0,18,0">
               <TextBlock Text="{Binding PageTitle}" FontSize="20" FontWeight="Bold" VerticalAlignment="Center" />
               <Button Grid.Column="1" Classes="close" Width="34" Height="34" CornerRadius="17" Command="{Binding CancelCommand}"
-                      AutomationProperties.Name="Ayarları kapat">
+                      AutomationProperties.Name="{app:T settings.closeSettings}">
                 <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoClose}" /></Viewbox>
               </Button>
             </Grid>
             <Border DockPanel.Dock="Bottom" Height="64" BorderBrush="{DynamicResource Line}" BorderThickness="0,1,0,0" Padding="28,0">
               <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right" VerticalAlignment="Center">
-                <Button Classes="pill small" Padding="20,0" Content="Vazgeç" Background="{DynamicResource Fill5}" Command="{Binding CancelCommand}" />
-                <Button Classes="pill small accent" Padding="24,0" Content="Kaydet" Command="{Binding SaveCommand}" />
+                <Button Classes="pill small" Padding="20,0" Content="{app:T settings.cancel}" Background="{DynamicResource Fill5}" Command="{Binding CancelCommand}" />
+                <Button Classes="pill small accent" Padding="24,0" Content="{app:T settings.save}" Command="{Binding SaveCommand}" />
               </StackPanel>
             </Border>
 
@@ -94,15 +94,15 @@
               <Panel>
                 <!-- ================= GENEL ================= -->
                 <StackPanel Spacing="14" IsVisible="{Binding Page, Converter={x:Static app:EqualsConverter.Instance}, ConverterParameter=genel}">
-                  <TextBlock Classes="h3" Text="Genel Ayarlar" />
+                  <TextBlock Classes="h3" Text="{app:T settings.generalSettings}" />
                   <Border Classes="group">
                     <StackPanel>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Uygulama dili" />
+                          <TextBlock Classes="label" Text="{app:T settings.appLanguage}" />
                           <Button Grid.Column="1" Classes="drop" Click="OnLanguage">
                             <StackPanel Orientation="Horizontal" Spacing="8">
-                              <TextBlock Text="Türkçe" VerticalAlignment="Center" />
+                              <TextBlock Text="{Binding LanguageName}" VerticalAlignment="Center" />
                               <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
                             </StackPanel>
                           </Button>
@@ -110,7 +110,7 @@
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
-                          <TextBlock Classes="label" Text="Tema ve vurgu rengi" />
+                          <TextBlock Classes="label" Text="{app:T settings.themeAndAccentColor}" />
                           <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
                             <StackPanel Name="Swatches" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" />
                             <Button Classes="drop" Click="OnTheme">
@@ -124,67 +124,67 @@
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Uygulama penceresi her zaman üstte" />
-                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.AlwaysOnTop}" AutomationProperties.Name="Pencere her zaman üstte" />
+                          <TextBlock Classes="label" Text="{app:T settings.keepTheAppWindowAlways}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.AlwaysOnTop}" AutomationProperties.Name="{app:T settings.windowAlwaysOnTop}" />
                         </Grid>
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="SmartSeek (zaman çubuğu üzerinde anlık önizleme)" />
-                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.SmartSeek}" AutomationProperties.Name="SmartSeek" />
+                          <TextBlock Classes="label" Text="{app:T settings.smartseekInstantPreviewOnThe}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.SmartSeek}" AutomationProperties.Name="{app:T settings.smartseek}" />
                         </Grid>
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Uygulamayı tam ekran kipinde başlat" />
-                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.StartFullscreen}" AutomationProperties.Name="Tam ekranda başlat" />
+                          <TextBlock Classes="label" Text="{app:T settings.startTheAppInFull}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.StartFullscreen}" AutomationProperties.Name="{app:T settings.startInFullScreen}" />
                         </Grid>
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Oynatma sırasında üst başlık çubuğunu gizle" />
-                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.HideTopBar}" AutomationProperties.Name="Üst menüyü gizle" />
+                          <TextBlock Classes="label" Text="{app:T settings.hideTheTopTitleBar}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.HideTopBar}" AutomationProperties.Name="{app:T settings.hideTopBar}" />
                         </Grid>
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Güncellemeleri otomatik denetle" />
-                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.CheckUpdates}" AutomationProperties.Name="Güncellemeleri denetle" />
+                          <TextBlock Classes="label" Text="{app:T settings.checkForUpdatesAutomatically}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.CheckUpdates}" AutomationProperties.Name="{app:T settings.checkForUpdates}" />
                         </Grid>
                       </Border>
                     </StackPanel>
                   </Border>
 
-                  <TextBlock Classes="h3" Text="Oynatma Ayarları" Margin="0,4,0,0" />
+                  <TextBlock Classes="h3" Text="{app:T settings.playbackSettings}" Margin="0,4,0,0" />
                   <Border Classes="group">
                     <StackPanel>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Klasördeki sonraki dosyayı otomatik aç" />
-                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.AutoNext}" AutomationProperties.Name="Sonraki dosyayı otomatik aç" />
+                          <TextBlock Classes="label" Text="{app:T settings.automaticallyOpenTheNextFile}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.AutoNext}" AutomationProperties.Name="{app:T settings.autoOpenNextFile}" />
                         </Grid>
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Oynatmaya kaldığı yerden otomatik devam et" />
-                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.Resume}" AutomationProperties.Name="Kaldığı yerden devam et" />
+                          <TextBlock Classes="label" Text="{app:T settings.automaticallyResumePlaybackWhereIt}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.Resume}" AutomationProperties.Name="{app:T settings.resumeWhereLeftOff}" />
                         </Grid>
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Video açıldığında tam ekran kipinde başlat" />
-                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.PlayInFullscreen}" AutomationProperties.Name="Video açıldığında tam ekranda başlat" />
+                          <TextBlock Classes="label" Text="{app:T settings.switchToFullScreenWhen}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.PlayInFullscreen}" AutomationProperties.Name="{app:T settings.fullScreenWhenAVideo}" />
                         </Grid>
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Pencereyi açılan videonun boyutuna sığdır" />
-                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.FitWindowToVideo}" AutomationProperties.Name="Pencereyi videoya sığdır" />
+                          <TextBlock Classes="label" Text="{app:T settings.fitTheWindowToThe}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.FitWindowToVideo}" AutomationProperties.Name="{app:T settings.fitWindowToVideo}" />
                         </Grid>
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Atlama aralığı (ileri / geri sarma)" />
+                          <TextBlock Classes="label" Text="{app:T settings.seekStepForwardBack}" />
                           <Button Grid.Column="1" Classes="drop" Click="OnSeekStep">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                               <TextBlock Classes="mono" Text="{Binding SeekStepText}" VerticalAlignment="Center" />
@@ -195,7 +195,7 @@
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Varsayılan tekrarlama kipi" />
+                          <TextBlock Classes="label" Text="{app:T settings.defaultRepeatMode}" />
                           <Button Grid.Column="1" Classes="drop" Click="OnLoopMode">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                               <TextBlock Text="{Binding LoopModeText}" VerticalAlignment="Center" />
@@ -206,7 +206,7 @@
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Video üzerinde fare tekerleği işlevi" />
+                          <TextBlock Classes="label" Text="{app:T settings.mouseWheelActionOverVideo}" />
                           <Button Grid.Column="1" Classes="drop" Click="OnWheelAction">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                               <TextBlock Text="{Binding WheelActionText}" VerticalAlignment="Center" />
@@ -218,15 +218,15 @@
                     </StackPanel>
                   </Border>
 
-                  <TextBlock Classes="h3" Text="Kare Yakalama ve Geçmiş" Margin="0,4,0,0" />
+                  <TextBlock Classes="h3" Text="{app:T settings.frameCaptureAndHistory}" Margin="0,4,0,0" />
                   <Border Classes="group">
                     <StackPanel>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
-                          <TextBlock Classes="label" Text="Kare yakalama klasörü" />
+                          <TextBlock Classes="label" Text="{app:T settings.frameCaptureFolder}" />
                           <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                            <TextBox Classes="field" Width="280" Text="{Binding Draft.ScreenshotDirectory}" AutomationProperties.Name="Kare yakalama klasörü" />
-                            <Button Classes="drop" Width="36" Height="36" Padding="0" Click="OnPickFolder" ToolTip.Tip="Klasör seç" AutomationProperties.Name="Klasör seç">
+                            <TextBox Classes="field" Width="280" Text="{Binding Draft.ScreenshotDirectory}" AutomationProperties.Name="{app:T settings.frameCaptureFolder}" />
+                            <Button Classes="drop" Width="36" Height="36" Padding="0" Click="OnPickFolder" ToolTip.Tip="{app:T settings.chooseFolder}" AutomationProperties.Name="{app:T settings.chooseFolder}">
                               <Viewbox Classes="i16"><Path Data="{StaticResource IcoFolder}" StrokeThickness="1.9" /></Viewbox>
                             </Button>
                           </StackPanel>
@@ -234,24 +234,24 @@
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Son oynatılanlar geçmişi" />
-                          <Button Grid.Column="1" Classes="outline" Content="Geçmişi temizle" Command="{Binding ClearHistoryCommand}" />
+                          <TextBlock Classes="label" Text="{app:T settings.recentlyPlayedHistory}" />
+                          <Button Grid.Column="1" Classes="outline" Content="{app:T settings.clearHistory}" Command="{Binding ClearHistoryCommand}" />
                         </Grid>
                       </Border>
                     </StackPanel>
                   </Border>
 
-                  <TextBlock Classes="h3" Text="Windows Varsayılan Oynatıcı ve Dosya İlişkilendirme" Margin="0,4,0,0" IsVisible="{Binding CanRegisterDefault}" />
+                  <TextBlock Classes="h3" Text="{app:T settings.windowsDefaultPlayerAndFile}" Margin="0,4,0,0" IsVisible="{Binding CanRegisterDefault}" />
                   <Border Classes="group" Padding="16,14" IsVisible="{Binding CanRegisterDefault}">
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
                       <StackPanel Spacing="4" VerticalAlignment="Center">
-                        <TextBlock Text="Tüm medya formatlarıyla ilişkilendir" FontSize="13.5" FontWeight="SemiBold" />
+                        <TextBlock Text="{app:T settings.associateWithAllMediaFormats}" FontSize="13.5" FontWeight="SemiBold" />
                         <TextBlock Text="{Binding DefaultStatus}" FontSize="12" Foreground="{DynamicResource Fg3}" TextWrapping="Wrap" LineHeight="17" />
                       </StackPanel>
                       <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                        <Button Classes="link" Content="Kaydı kaldır" FontSize="12" Padding="8,0"
+                        <Button Classes="link" Content="{app:T settings.unregister}" FontSize="12" Padding="8,0"
                                 Command="{Binding UnregisterDefaultCommand}" IsVisible="{Binding IsDefaultRegistered}" />
-                        <Button Classes="outline" Content="Varsayılan oynatıcı yap" Command="{Binding RegisterDefaultCommand}" />
+                        <Button Classes="outline" Content="{app:T settings.makeDefaultPlayer}" Command="{Binding RegisterDefaultCommand}" />
                       </StackPanel>
                     </Grid>
                   </Border>
@@ -259,21 +259,21 @@
 
                 <!-- ================= VIDEO & FPS ================= -->
                 <StackPanel Spacing="14" IsVisible="{Binding Page, Converter={x:Static app:EqualsConverter.Instance}, ConverterParameter=video}">
-                  <TextBlock Classes="h3" Text="Donanım Hızlandırma ve Tarama Çözme (Deinterlacing)" />
+                  <TextBlock Classes="h3" Text="{app:T settings.hardwareAccelerationAndDeinterlacing}" />
                   <Border Classes="group">
                     <StackPanel>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
                           <StackPanel Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="label" Text="Donanım hızlandırmayı kullan (GPU Zero-Copy)" />
-                            <TextBlock Text="NVIDIA PureVideo / NVDEC, Direct3D 11 ve Intel QuickSync ile en düşük CPU kullanımı" FontSize="11.5" Foreground="{DynamicResource Fg3}" />
+                            <TextBlock Classes="label" Text="{app:T settings.useHardwareAccelerationGPUZero}" />
+                            <TextBlock Text="{app:T settings.lowestCPUUsageWithNVIDIA}" FontSize="11.5" Foreground="{DynamicResource Fg3}" />
                           </StackPanel>
-                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.HardwareDecoding}" AutomationProperties.Name="Donanım hızlandırmalı kod çözme" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.HardwareDecoding}" AutomationProperties.Name="{app:T settings.hardwareAcceleratedDecoding}" />
                         </Grid>
                       </Border>
                       <Border Classes="row" IsEnabled="{Binding Draft.HardwareDecoding}">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Donanım kod çözücü kipi" />
+                          <TextBlock Classes="label" Text="{app:T settings.hardwareDecoderMode}" />
                           <Button Grid.Column="1" Classes="drop" Click="OnHwdecMode">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                               <TextBlock Text="{Binding HwdecModeText}" VerticalAlignment="Center" />
@@ -284,7 +284,7 @@
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Tarama çözme (Deinterlacing)" />
+                          <TextBlock Classes="label" Text="{app:T settings.deinterlacing}" />
                           <Button Grid.Column="1" Classes="drop" Click="OnDeinterlaceMode">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                               <TextBlock Text="{Binding DeinterlaceModeText}" VerticalAlignment="Center" />
@@ -295,7 +295,7 @@
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Video çıkış sürücüsü" />
+                          <TextBlock Classes="label" Text="{app:T settings.videoOutputDriver}" />
                           <Button Grid.Column="1" Classes="drop" Click="OnVideoOutput">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                               <TextBlock Text="{Binding VideoOutputText}" VerticalAlignment="Center" />
@@ -307,14 +307,14 @@
                     </StackPanel>
                   </Border>
 
-                  <TextBlock Classes="h3" Text="Motion² ve Yüksek Kare Hızı (24 → 60/90/120 FPS)" Margin="0,4,0,0" />
+                  <TextBlock Classes="h3" Text="{app:T settings.motionAndHighFrameRate}" Margin="0,4,0,0" />
                   <Border Classes="group">
                     <StackPanel>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
                           <StackPanel Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="label" Text="Varsayılan hedef kare hızı (FPS)" />
-                            <TextBlock Text="24/25/30 FPS videoları gerçek zamanlı akıcı yüksek kare hızına dönüştürür" FontSize="11.5" Foreground="{DynamicResource Fg3}" />
+                            <TextBlock Classes="label" Text="{app:T settings.defaultTargetFrameRateFPS}" />
+                            <TextBlock Text="{app:T settings.turns242530FPS}" FontSize="11.5" Foreground="{DynamicResource Fg3}" />
                           </StackPanel>
                           <Button Grid.Column="1" Classes="drop" Click="OnTargetFps">
                             <StackPanel Orientation="Horizontal" Spacing="8">
@@ -327,21 +327,21 @@
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
                           <StackPanel Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="label" Text="Motion² UHD / 4K yüksek kare hızı işleme" />
-                            <TextBlock Text="4K/UHD videolarda sıfır kopyalama ile doğrudan GPU shader üzerinde akıcı kare üretir" FontSize="11.5" Foreground="{DynamicResource Fg3}" />
+                            <TextBlock Classes="label" Text="{app:T settings.motionUHD4KHighFrame}" />
+                            <TextBlock Text="{app:T settings.generatesSmoothFramesOn4K}" FontSize="11.5" Foreground="{DynamicResource Fg3}" />
                           </StackPanel>
-                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.Motion2Uhd4K}" AutomationProperties.Name="Motion2 UHD/4K" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.Motion2Uhd4K}" AutomationProperties.Name="{app:T settings.motionUHD4K}" />
                         </Grid>
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Otomatik tarama (interlace) algılama" />
-                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.AutoInterlaceDetection}" AutomationProperties.Name="Otomatik tarama algılama" />
+                          <TextBlock Classes="label" Text="{app:T settings.automaticInterlaceDetection}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.AutoInterlaceDetection}" AutomationProperties.Name="{app:T settings.automaticInterlaceDetection2}" />
                         </Grid>
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Hareket yumuşatma algoritması (tscale)" />
+                          <TextBlock Classes="label" Text="{app:T settings.motionSmoothingAlgorithmTscale}" />
                           <Button Grid.Column="1" Classes="drop" Click="OnMotionScaler">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                               <TextBlock Text="{Binding MotionScalerText}" VerticalAlignment="Center" />
@@ -352,7 +352,7 @@
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Varsayılan görüntü ölçekleyici ve keskinlik" />
+                          <TextBlock Classes="label" Text="{app:T settings.defaultImageScalerAndSharpness}" />
                           <Button Grid.Column="1" Classes="drop" Click="OnDefaultPreset">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                               <TextBlock Text="{Binding DefaultPresetText}" VerticalAlignment="Center" />
@@ -363,7 +363,7 @@
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="HDR ton eşleme (Tone Mapping)" />
+                          <TextBlock Classes="label" Text="{app:T settings.hdrToneMapping}" />
                           <Button Grid.Column="1" Classes="drop" Click="OnToneMapping">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                               <TextBlock Text="{Binding ToneMappingText}" VerticalAlignment="Center" />
@@ -375,12 +375,12 @@
                     </StackPanel>
                   </Border>
 
-                  <TextBlock Classes="h3" Text="Tam Ekran ve Görüntüleme Biçimi (Display Format)" Margin="0,4,0,0" />
+                  <TextBlock Classes="h3" Text="{app:T settings.fullScreenAndDisplayFormat}" Margin="0,4,0,0" />
                   <Border Classes="group">
                     <StackPanel>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Ekran formatı" />
+                          <TextBlock Classes="label" Text="{app:T settings.screenFormat}" />
                           <Button Grid.Column="1" Classes="drop" Click="OnScreenFormat">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                               <TextBlock Classes="mono" Text="{Binding ScreenFormatText}" VerticalAlignment="Center" />
@@ -391,7 +391,7 @@
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="4:3 video görünümü" />
+                          <TextBlock Classes="label" Text="{app:T settings.43VideoDisplay}" />
                           <Button Grid.Column="1" Classes="drop" Click="OnDisplayFormat43">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                               <TextBlock Text="{Binding DisplayFormat43Text}" VerticalAlignment="Center" />
@@ -402,7 +402,7 @@
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="16:9 video görünümü" />
+                          <TextBlock Classes="label" Text="{app:T settings.169VideoDisplay}" />
                           <Button Grid.Column="1" Classes="drop" Click="OnDisplayFormat169">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                               <TextBlock Text="{Binding DisplayFormat169Text}" VerticalAlignment="Center" />
@@ -413,7 +413,7 @@
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Sinematik (21:9) video görünümü" />
+                          <TextBlock Classes="label" Text="{app:T settings.cinematic219VideoDisplay}" />
                           <Button Grid.Column="1" Classes="drop" Click="OnDisplayFormatCinematic">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                               <TextBlock Text="{Binding DisplayFormatCinematicText}" VerticalAlignment="Center" />
@@ -428,14 +428,14 @@
 
                 <!-- ================= SES ================= -->
                 <StackPanel Spacing="14" IsVisible="{Binding Page, Converter={x:Static app:EqualsConverter.Instance}, ConverterParameter=ses}">
-                  <TextBlock Classes="h3" Text="Ses Çıkış Kipi, Kanal Düzeni ve Bitstream" />
+                  <TextBlock Classes="h3" Text="{app:T settings.audioOutputModeChannelLayout}" />
                   <Border Classes="group">
                     <StackPanel>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
                           <StackPanel Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="label" Text="Ses çıkış kipi (Kanal ve Bitstream)" />
-                            <TextBlock Text="Stereo, Stereo Surround, 5.1, 7.1, S/PDIF Bitstream veya HDMI Bitstream" FontSize="11.5" Foreground="{DynamicResource Fg3}" />
+                            <TextBlock Classes="label" Text="{app:T settings.audioOutputModeChannelsAnd}" />
+                            <TextBlock Text="{app:T settings.stereoStereoSurround51}" FontSize="11.5" Foreground="{DynamicResource Fg3}" />
                           </StackPanel>
                           <Button Grid.Column="1" Classes="drop" Click="OnAudioOutputMode">
                             <StackPanel Orientation="Horizontal" Spacing="8">
@@ -447,7 +447,7 @@
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
-                          <TextBlock Classes="label" Text="Ana ses çıkış cihazı" />
+                          <TextBlock Classes="label" Text="{app:T settings.mainAudioOutputDevice}" />
                           <Button Grid.Column="1" Classes="drop" MaxWidth="320" Click="OnAudioDevice">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                               <TextBlock Text="{Binding AudioDeviceText}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="270" />
@@ -458,7 +458,7 @@
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
-                          <TextBlock Classes="label" Text="S/PDIF Bitstream çıkış cihazı (AC-3 / DTS)" />
+                          <TextBlock Classes="label" Text="{app:T settings.sPDIFBitstreamOutputDevice}" />
                           <Button Grid.Column="1" Classes="drop" MaxWidth="320" Click="OnSpdifDevice">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                               <TextBlock Text="{Binding SpdifDeviceText}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="270" />
@@ -469,7 +469,7 @@
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
-                          <TextBlock Classes="label" Text="HDMI Bitstream çıkış cihazı (TrueHD / DTS-HD / E-AC-3)" />
+                          <TextBlock Classes="label" Text="{app:T settings.hdmiBitstreamOutputDeviceTrueHD}" />
                           <Button Grid.Column="1" Classes="drop" MaxWidth="320" Click="OnHdmiDevice">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                               <TextBlock Text="{Binding HdmiDeviceText}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="270" />
@@ -480,34 +480,34 @@
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Özel ses kipi (WASAPI Exclusive)" />
-                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.AudioExclusive}" AutomationProperties.Name="Özel kip" />
+                          <TextBlock Classes="label" Text="{app:T settings.exclusiveAudioModeWASAPIExclusive}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.AudioExclusive}" AutomationProperties.Name="{app:T settings.exclusiveMode}" />
                         </Grid>
                       </Border>
                     </StackPanel>
                   </Border>
 
-                  <TextBlock Classes="h3" Text="Dudak Senkronizasyonu (Lipsync Adjustment)" Margin="0,4,0,0" />
+                  <TextBlock Classes="h3" Text="{app:T settings.lipSyncAdjustment}" Margin="0,4,0,0" />
                   <Border Classes="group" Padding="16,14">
                     <StackPanel Spacing="10">
                       <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12">
                         <StackPanel Spacing="2" VerticalAlignment="Center">
-                          <TextBlock Classes="label" Text="Ses gecikmesi / dudak senkronizasyonu" />
-                          <TextBlock Text="Ses ve görüntü arasındaki senkron farkını milisaniye cinsinden ayarlar (−500 ms … +500 ms)" FontSize="11.5" Foreground="{DynamicResource Fg3}" />
+                          <TextBlock Classes="label" Text="{app:T settings.audioDelayLipSync}" />
+                          <TextBlock Text="{app:T settings.adjustsTheOffsetBetweenSound}" FontSize="11.5" Foreground="{DynamicResource Fg3}" />
                         </StackPanel>
                         <TextBlock Grid.Column="1" Classes="mono" Text="{Binding LipsyncText}" FontSize="13" Foreground="{DynamicResource Accent}" VerticalAlignment="Center" />
-                        <Button Grid.Column="2" Classes="link" Content="Sıfırla" FontSize="12" Command="{Binding ResetLipsyncCommand}" VerticalAlignment="Center" />
+                        <Button Grid.Column="2" Classes="link" Content="{app:T panel.reset}" FontSize="12" Command="{Binding ResetLipsyncCommand}" VerticalAlignment="Center" />
                       </Grid>
                       <Slider Minimum="-500" Maximum="500" Value="{Binding LipsyncValue}" />
                     </StackPanel>
                   </Border>
 
-                  <TextBlock Classes="h3" Text="Ses İyileştirme ve Dil Tercihleri" Margin="0,4,0,0" />
+                  <TextBlock Classes="h3" Text="{app:T settings.soundEnhancementAndLanguagePreferences}" Margin="0,4,0,0" />
                   <Border Classes="group">
                     <StackPanel>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Ses düzeyi değiştirme adımı" />
+                          <TextBlock Classes="label" Text="{app:T settings.volumeStep}" />
                           <Button Grid.Column="1" Classes="drop" Click="OnVolumeStep">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                               <TextBlock Classes="mono" Text="{Binding VolumeStepText}" VerticalAlignment="Center" />
@@ -518,23 +518,23 @@
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Ses yükseltme (%200 Boost) varsayılan olarak açık başlasın" />
-                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.BoostByDefault}" AutomationProperties.Name="Ses yükseltme açık başlasın" />
+                          <TextBlock Classes="label" Text="{app:T settings.startWithVolumeBoost200}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.BoostByDefault}" AutomationProperties.Name="{app:T settings.startWithVolumeBoostOn}" />
                         </Grid>
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Ses normalizasyonu (dynaudnorm) varsayılan olarak açık başlasın" />
-                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.NormalizeByDefault}" AutomationProperties.Name="Ses normalizasyonu açık başlasın" />
+                          <TextBlock Classes="label" Text="{app:T settings.startWithLoudnessNormalizationDynaudnorm}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.NormalizeByDefault}" AutomationProperties.Name="{app:T settings.startWithLoudnessNormalizationOn}" />
                         </Grid>
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
                           <StackPanel Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="label" Text="Tercih edilen ses dilleri" />
-                            <TextBlock Text="Virgülle ayrılmış ISO dil kodları (örn. tur,eng,jpn)" FontSize="11.5" Foreground="{DynamicResource Fg3}" />
+                            <TextBlock Classes="label" Text="{app:T settings.preferredAudioLanguages}" />
+                            <TextBlock Text="{app:T settings.commaSeparatedISOLanguageCodes}" FontSize="11.5" Foreground="{DynamicResource Fg3}" />
                           </StackPanel>
-                          <TextBox Grid.Column="1" Classes="field" Width="220" Text="{Binding Draft.AudioLanguages}" Watermark="tur,eng,jpn" AutomationProperties.Name="Tercih edilen ses dilleri" />
+                          <TextBox Grid.Column="1" Classes="field" Width="220" Text="{Binding Draft.AudioLanguages}" Watermark="tur,eng,jpn" AutomationProperties.Name="{app:T settings.preferredAudioLanguages}" />
                         </Grid>
                       </Border>
                     </StackPanel>
@@ -543,21 +543,21 @@
 
                 <!-- ================= ALTYAZI ================= -->
                 <StackPanel Spacing="14" IsVisible="{Binding Page, Converter={x:Static app:EqualsConverter.Instance}, ConverterParameter=altyazi}">
-                  <TextBlock Classes="h3" Text="Altyazı Görünümü ve Dil Tercihleri" />
+                  <TextBlock Classes="h3" Text="{app:T settings.subtitleAppearanceAndLanguagePreferences}" />
                   <Border Classes="group">
                     <StackPanel>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
                           <StackPanel Spacing="2" VerticalAlignment="Center">
-                            <TextBlock Classes="label" Text="Tercih edilen altyazı dilleri" />
-                            <TextBlock Text="Virgülle ayrılmış ISO dil kodları (örn. tur,eng)" FontSize="11.5" Foreground="{DynamicResource Fg3}" />
+                            <TextBlock Classes="label" Text="{app:T settings.preferredSubtitleLanguages}" />
+                            <TextBlock Text="{app:T settings.commaSeparatedISOLanguageCodes2}" FontSize="11.5" Foreground="{DynamicResource Fg3}" />
                           </StackPanel>
-                          <TextBox Grid.Column="1" Classes="field" Width="220" Text="{Binding Draft.SubtitleLanguages}" Watermark="tur,eng" AutomationProperties.Name="Tercih edilen altyazı dilleri" />
+                          <TextBox Grid.Column="1" Classes="field" Width="220" Text="{Binding Draft.SubtitleLanguages}" Watermark="tur,eng" AutomationProperties.Name="{app:T settings.preferredSubtitleLanguages}" />
                         </Grid>
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Altyazı boyutu" />
+                          <TextBlock Classes="label" Text="{app:T settings.subtitleSize}" />
                           <Button Grid.Column="1" Classes="drop" Click="OnSubtitleScale">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                               <TextBlock Classes="mono" Text="{Binding SubtitleScaleText}" VerticalAlignment="Center" />
@@ -568,7 +568,7 @@
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Altyazı rengi" />
+                          <TextBlock Classes="label" Text="{app:T settings.subtitleColor}" />
                           <Button Grid.Column="1" Classes="drop" Click="OnSubtitleColor">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                               <TextBlock Text="{Binding SubtitleColorText}" VerticalAlignment="Center" />
@@ -579,7 +579,7 @@
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Altyazı dikey konumu" />
+                          <TextBlock Classes="label" Text="{app:T settings.subtitleVerticalPosition}" />
                           <Button Grid.Column="1" Classes="drop" Click="OnSubtitlePos">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                               <TextBlock Text="{Binding SubtitlePosText}" VerticalAlignment="Center" />
@@ -590,20 +590,20 @@
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Yarı saydam arka plan kutusu" />
-                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.SubtitleBackground}" AutomationProperties.Name="Yarı saydam arka plan kutusu" />
+                          <TextBlock Classes="label" Text="{app:T settings.semiTransparentBackgroundBox}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.SubtitleBackground}" AutomationProperties.Name="{app:T settings.semiTransparentBackgroundBox}" />
                         </Grid>
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="ASS/SSA altyazı stillerini standart yazı tipiyle geçersiz kıl" />
-                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.OverrideAssStyles}" AutomationProperties.Name="ASS altyazı stillerini geçersiz kıl" />
+                          <TextBlock Classes="label" Text="{app:T settings.overrideASSSSASubtitleStyles}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.OverrideAssStyles}" AutomationProperties.Name="{app:T settings.overrideASSSubtitleStyles}" />
                         </Grid>
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Klasördeki eşleşen altyazı dosyalarını otomatik yükle" />
-                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.AutoLoadSubtitles}" AutomationProperties.Name="Altyazıları otomatik yükle" />
+                          <TextBlock Classes="label" Text="{app:T settings.automaticallyLoadMatchingSubtitleFiles}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.AutoLoadSubtitles}" AutomationProperties.Name="{app:T settings.autoLoadSubtitles}" />
                         </Grid>
                       </Border>
                     </StackPanel>
@@ -612,24 +612,24 @@
 
                 <!-- ================= DIŞA AKTAR (EXPORT) ================= -->
                 <StackPanel Spacing="14" IsVisible="{Binding Page, Converter={x:Static app:EqualsConverter.Instance}, ConverterParameter=disaaktar}">
-                  <TextBlock Classes="h3" Text="Donanım Hızlandırma (Hardware Acceleration)" />
+                  <TextBlock Classes="h3" Text="{app:T settings.hardwareAcceleration}" />
                   <Border Classes="group">
                     <StackPanel>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Video kod çözme (decoding) için donanım hızlandırmayı kullan" />
-                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.ExportHwDecode}" AutomationProperties.Name="Dışa aktarma donanım kod çözme" />
+                          <TextBlock Classes="label" Text="{app:T settings.useHardwareAccelerationForVideo}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.ExportHwDecode}" AutomationProperties.Name="{app:T settings.exportHardwareDecoding}" />
                         </Grid>
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Video kodlama (encoding) için donanım hızlandırmayı kullan" />
-                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.ExportHwEncode}" AutomationProperties.Name="Dışa aktarma donanım kodlama" />
+                          <TextBlock Classes="label" Text="{app:T settings.useHardwareAccelerationForVideo2}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.ExportHwEncode}" AutomationProperties.Name="{app:T settings.exportHardwareEncoding}" />
                         </Grid>
                       </Border>
                       <Border Classes="row" IsEnabled="{Binding Draft.ExportHwEncode}">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Donanım video kodlayıcı (Encoder)" />
+                          <TextBlock Classes="label" Text="{app:T settings.hardwareVideoEncoder}" />
                           <Button Grid.Column="1" Classes="drop" Click="OnExportEncoder">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                               <TextBlock Text="{Binding ExportEncoderText}" VerticalAlignment="Center" />
@@ -640,7 +640,7 @@
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Dışa aktarma tarama çözme (Deinterlacing)" />
+                          <TextBlock Classes="label" Text="{app:T settings.exportDeinterlacing}" />
                           <Button Grid.Column="1" Classes="drop" Click="OnExportDeinterlace">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                               <TextBlock Text="{Binding ExportDeinterlaceText}" VerticalAlignment="Center" />
@@ -652,15 +652,15 @@
                     </StackPanel>
                   </Border>
 
-                  <TextBlock Classes="h3" Text="Dışa Aktarma Klasörü ve Çıktı Ayarları" Margin="0,4,0,0" />
+                  <TextBlock Classes="h3" Text="{app:T settings.exportFolderAndOutputSettings}" Margin="0,4,0,0" />
                   <Border Classes="group">
                     <StackPanel>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
-                          <TextBlock Classes="label" Text="Dışa aktarma çıktı klasörü" />
+                          <TextBlock Classes="label" Text="{app:T settings.exportOutputFolder}" />
                           <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                            <TextBox Classes="field" Width="280" Text="{Binding Draft.ExportDirectory}" AutomationProperties.Name="Dışa aktarma klasörü" />
-                            <Button Classes="drop" Width="36" Height="36" Padding="0" Click="OnPickExportFolder" ToolTip.Tip="Klasör seç" AutomationProperties.Name="Dışa aktarma klasörü seç">
+                            <TextBox Classes="field" Width="280" Text="{Binding Draft.ExportDirectory}" AutomationProperties.Name="{app:T settings.exportFolder}" />
+                            <Button Classes="drop" Width="36" Height="36" Padding="0" Click="OnPickExportFolder" ToolTip.Tip="{app:T settings.chooseFolder}" AutomationProperties.Name="{app:T settings.chooseExportFolder}">
                               <Viewbox Classes="i16"><Path Data="{StaticResource IcoFolder}" StrokeThickness="1.9" /></Viewbox>
                             </Button>
                           </StackPanel>
@@ -668,7 +668,7 @@
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Kare dışa aktarma dosya biçimi" />
+                          <TextBlock Classes="label" Text="{app:T settings.frameExportFileFormat}" />
                           <Button Grid.Column="1" Classes="drop" Click="OnScreenshotFormat">
                             <StackPanel Orientation="Horizontal" Spacing="8">
                               <TextBlock Classes="mono" Text="{Binding ScreenshotFormatText}" VerticalAlignment="Center" />
@@ -679,10 +679,10 @@
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
-                          <TextBlock Classes="label" Text="Hızlı işlemler" />
+                          <TextBlock Classes="label" Text="{app:T settings.quickActions}" />
                           <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                            <Button Classes="outline" Content="Çıktı klasörünü aç" Command="{Binding Player.OpenExportFolderCommand}" />
-                            <Button Classes="outline on" Content="Mevcut kareyi dışa aktar" Command="{Binding Player.ExportCurrentFrameCommand}"
+                            <Button Classes="outline" Content="{app:T settings.openOutputFolder}" Command="{Binding Player.OpenExportFolderCommand}" />
+                            <Button Classes="outline on" Content="{app:T settings.exportCurrentFrame}" Command="{Binding Player.ExportCurrentFrameCommand}"
                                     IsEnabled="{Binding !Player.IsIdle}" />
                           </StackPanel>
                         </Grid>
@@ -694,8 +694,8 @@
                 <!-- ================= KISAYOLLAR ================= -->
                 <StackPanel Spacing="12" IsVisible="{Binding Page, Converter={x:Static app:EqualsConverter.Instance}, ConverterParameter=kisayollar}">
                   <Grid ColumnDefinitions="*,Auto">
-                    <TextBlock Classes="h3" Text="Klavye Kısayolları" VerticalAlignment="Center" />
-                    <Button Grid.Column="1" Classes="link" Content="Varsayılanlara sıfırla" FontSize="12" Command="{Binding ResetShortcutsCommand}" />
+                    <TextBlock Classes="h3" Text="{app:T settings.keyboardShortcuts}" VerticalAlignment="Center" />
+                    <Button Grid.Column="1" Classes="link" Content="{app:T settings.resetToDefaults}" FontSize="12" Command="{Binding ResetShortcutsCommand}" />
                   </Grid>
                   <Border Classes="group" Padding="4">
                     <ItemsControl ItemsSource="{Binding ShortcutItems}">
@@ -706,7 +706,7 @@
                         <DataTemplate x:DataType="app:ShortcutItem">
                           <Border Padding="12,0" Height="40" CornerRadius="8">
                             <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                              <TextBlock Text="{Binding Action.Label}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                              <TextBlock Text="{Binding Label}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
                               <Button Grid.Column="1" Classes="chip" Classes.on="{Binding IsCapturing}" VerticalAlignment="Center" Content="{Binding KeyText}"
                                       Command="{Binding #Root.((app:SettingsViewModel)DataContext).StartCaptureCommand}"
                                       CommandParameter="{Binding}" />
@@ -716,7 +716,7 @@
                       </ItemsControl.ItemTemplate>
                     </ItemsControl>
                   </Border>
-                  <TextBlock Text="Değiştirmek için tuş kutusuna tıklayın · Kaldırmak için Backspace · İptal için Esc"
+                  <TextBlock Text="{app:T settings.clickAKeyBoxTo}"
                              FontSize="12" Foreground="{DynamicResource Fg3}" />
                 </StackPanel>
 
@@ -729,7 +729,7 @@
                       </Border>
                       <StackPanel VerticalAlignment="Center" Spacing="2">
                         <TextBlock Text="Nuvora Player" FontSize="18" FontWeight="Bold" />
-                        <TextBlock Classes="mono" Text="{Binding Version, StringFormat='Sürüm {0} · Modern Windows Medya Oynatıcı'}" Foreground="{DynamicResource Fg3}" />
+                        <TextBlock Classes="mono" Text="{Binding VersionLine}" Foreground="{DynamicResource Fg3}" />
                       </StackPanel>
                     </StackPanel>
                   </Border>
@@ -737,29 +737,29 @@
                     <StackPanel>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="Auto,*">
-                          <TextBlock Classes="label" Text="Oynatma motoru" />
+                          <TextBlock Classes="label" Text="{app:T settings.playbackEngine}" />
                           <TextBlock Grid.Column="1" Classes="mono" Text="{Binding Player.MpvVersion}" HorizontalAlignment="Right" VerticalAlignment="Center"
                                      TextTrimming="CharacterEllipsis" Margin="12,0,0,0" />
                         </Grid>
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="Auto,*">
-                          <TextBlock Classes="label" Text="Aktif grafik işlemci (GPU)" />
+                          <TextBlock Classes="label" Text="{app:T settings.activeGraphicsProcessorGPU}" />
                           <TextBlock Grid.Column="1" Text="{Binding Player.GpuName}" FontSize="13" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"
                                      TextTrimming="CharacterEllipsis" Margin="12,0,0,0" />
                         </Grid>
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="Auto,*">
-                          <TextBlock Classes="label" Text="Desteklenen formatlar" />
-                          <TextBlock Grid.Column="1" Classes="mono" Text="{Binding SupportedFormatCount, StringFormat='{}{0}+ video, ses, altyazı ve oynatma listesi formatı'}"
+                          <TextBlock Classes="label" Text="{app:T settings.supportedFormats}" />
+                          <TextBlock Grid.Column="1" Classes="mono" Text="{Binding FormatCountText}"
                                      HorizontalAlignment="Right" VerticalAlignment="Center" Margin="12,0,0,0" />
                         </Grid>
                       </Border>
                     </StackPanel>
                   </Border>
                   <TextBlock FontSize="12" Foreground="{DynamicResource Fg3}" TextWrapping="Wrap" LineHeight="18"
-                             Text="libmpv, FFmpeg, Avalonia UI, Manrope ve IBM Plex Mono üzerine kuruludur. Tüm açık kaynak bileşen lisansları THIRD_PARTY.md dosyasındadır." />
+                             Text="{app:T settings.builtOnLibmpvFFmpegAvalonia}" />
                 </StackPanel>
               </Panel>
             </ScrollViewer>

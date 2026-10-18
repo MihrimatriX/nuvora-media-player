@@ -2,6 +2,8 @@ using Player.App;
 
 namespace Player.Core.Tests;
 
+// PlayerViewModel sets the global UI language, so this shares the non-parallel Loc collection.
+[Collection(nameof(LocTests))]
 public class PlaylistTests
 {
     sealed class RecordingPlayer : IPlayerService

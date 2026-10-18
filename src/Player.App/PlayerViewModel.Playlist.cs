@@ -95,7 +95,7 @@ public sealed partial class PlayerViewModel
     public void ShufflePlaylist()
     {
         _player.Command("playlist-shuffle");
-        ShowOsd("Oynatma listesi karıştırıldı");
+        ShowOsd(Loc.T("playlist.shuffled"));
     }
 
     /// <summary>Removes everything except the file that is playing.</summary>
@@ -105,7 +105,7 @@ public sealed partial class PlayerViewModel
     public void AppendToPlaylist(IReadOnlyList<string> paths)
     {
         foreach (var p in paths) _player.Command("loadfile", p, IsIdle ? "append-play" : "append");
-        if (paths.Count > 0) ShowOsd(paths.Count == 1 ? "Listeye eklendi" : $"{paths.Count} dosya listeye eklendi");
+        if (paths.Count > 0) ShowOsd(paths.Count == 1 ? Loc.T("playlist.addedOne") : Loc.F("playlist.addedMany", paths.Count));
     }
 
     static string I(int i) => i.ToString(CultureInfo.InvariantCulture);

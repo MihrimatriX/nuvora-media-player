@@ -7,7 +7,7 @@ namespace Player.App;
 public partial class StartView : UserControl
 {
     public static readonly IValueConverter PillText =
-        new FuncValueConverter<bool, string>(hasHero => hasHero ? "Kaldığın yerden devam et" : "Hoş geldin");
+        new FuncValueConverter<bool, string>(hasHero => Loc.T(hasHero ? "start.pillResume" : "start.pillWelcome"));
 
     public StartView() => InitializeComponent();
 

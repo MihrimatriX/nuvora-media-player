@@ -515,15 +515,15 @@ public partial class OverlayWindow : Window
     {
         var files = await StorageProvider.OpenFilePickerAsync(new()
         {
-            Title = "Medya dosyası aç",
+            Title = Loc.T("dialog.openMedia"),
             AllowMultiple = true,
             FileTypeFilter =
             [
-                new("Tüm medya dosyaları") { Patterns = FileAssociation.Extensions.Select(x => "*" + x).ToList() },
-                new("Video dosyaları") { Patterns = FileAssociation.VideoExtensions.Select(x => "*" + x).ToList() },
-                new("Ses dosyaları") { Patterns = FileAssociation.AudioExtensions.Select(x => "*" + x).ToList() },
-                new("Oynatma listeleri") { Patterns = FileAssociation.PlaylistExtensions.Select(x => "*" + x).ToList() },
-                new("Tüm dosyalar") { Patterns = ["*.*"] },
+                new(Loc.T("dialog.allMedia")) { Patterns = FileAssociation.Extensions.Select(x => "*" + x).ToList() },
+                new(Loc.T("dialog.videoFiles")) { Patterns = FileAssociation.VideoExtensions.Select(x => "*" + x).ToList() },
+                new(Loc.T("dialog.audioFiles")) { Patterns = FileAssociation.AudioExtensions.Select(x => "*" + x).ToList() },
+                new(Loc.T("dialog.playlists")) { Patterns = FileAssociation.PlaylistExtensions.Select(x => "*" + x).ToList() },
+                new(Loc.T("dialog.allFiles")) { Patterns = ["*.*"] },
             ],
         });
         _vm.Open(LocalPaths(files));
@@ -534,12 +534,12 @@ public partial class OverlayWindow : Window
     {
         var files = await StorageProvider.OpenFilePickerAsync(new()
         {
-            Title = "Listeye ekle",
+            Title = Loc.T("playlist.addDialog"),
             AllowMultiple = true,
             FileTypeFilter =
             [
-                new("Tüm medya dosyaları") { Patterns = FileAssociation.Extensions.Select(x => "*" + x).ToList() },
-                new("Tüm dosyalar") { Patterns = ["*.*"] },
+                new(Loc.T("dialog.allMedia")) { Patterns = FileAssociation.Extensions.Select(x => "*" + x).ToList() },
+                new(Loc.T("dialog.allFiles")) { Patterns = ["*.*"] },
             ],
         });
         _vm.AppendToPlaylist(LocalPaths(files));
@@ -548,7 +548,7 @@ public partial class OverlayWindow : Window
     public async void OpenFolder()
     {
         // mpv expands a directory into a playlist itself.
-        var folders = await StorageProvider.OpenFolderPickerAsync(new() { Title = "Klasör aç" });
+        var folders = await StorageProvider.OpenFolderPickerAsync(new() { Title = Loc.T("dialog.openFolder") });
         _vm.Open(LocalPaths(folders));
     }
 
@@ -556,8 +556,8 @@ public partial class OverlayWindow : Window
     {
         var files = await StorageProvider.OpenFilePickerAsync(new()
         {
-            Title = "Altyazı yükle",
-            FileTypeFilter = [new("Altyazı") { Patterns = FileAssociation.SubtitleExtensions.Select(x => "*" + x).ToList() }],
+            Title = Loc.T("dialog.loadSubtitle"),
+            FileTypeFilter = [new(Loc.T("menu.subtitles")) { Patterns = FileAssociation.SubtitleExtensions.Select(x => "*" + x).ToList() }],
         });
         foreach (var path in LocalPaths(files)) _vm.AddSubtitle(path);
     }
@@ -584,20 +584,20 @@ public partial class OverlayWindow : Window
     List<object> BuildTrackGroups()
     {
         var groups = new List<object>();
-        foreach (var (type, header) in new[] { ("sub", "Altyazı"), ("audio", "Ses"), ("video", "Video") })
+        foreach (var (type, header) in new[] { ("sub", Loc.T("menu.subtitles")), ("audio", Loc.T("menu.audio")), ("video", Loc.T("menu.video")) })
         {
             var items = _vm.Tracks.Where(t => t.Type == type)
                 .Select(t => (object)Menus.Item(t.Label, t.Selected, () => _vm.SelectTrack(type, t.Id.ToString(CultureInfo.InvariantCulture))))
                 .ToList();
             if (type == "sub")
             {
-                items.Insert(0, Menus.Item("Kapalı", !_vm.Tracks.Any(t => t.Type == "sub" && t.Selected), () => _vm.SelectTrack("sub", "no")));
+                items.Insert(0, Menus.Item(Loc.T("menu.off"), !_vm.Tracks.Any(t => t.Type == "sub" && t.Selected), () => _vm.SelectTrack("sub", "no")));
                 items.Add(new Separator());
-                items.Add(Menus.Action("Dosyadan yükle…", AddSubtitle));
-                items.Add(Menus.Action("Boyutu büyüt (+%10)", () => _vm.StepSubtitleScale(0.1)));
-                items.Add(Menus.Action("Boyutu küçült (−%10)", () => _vm.StepSubtitleScale(-0.1)));
-                items.Add(Menus.Action("Yukarı taşı", () => _vm.StepSubtitlePos(-2)));
-                items.Add(Menus.Action("Aşağı taşı", () => _vm.StepSubtitlePos(2)));
+                items.Add(Menus.Action(Loc.T("menu.loadFromFile"), AddSubtitle));
+                items.Add(Menus.Action(Loc.T("menu.sizeUp"), () => _vm.StepSubtitleScale(0.1)));
+                items.Add(Menus.Action(Loc.T("menu.sizeDown"), () => _vm.StepSubtitleScale(-0.1)));
+                items.Add(Menus.Action(Loc.T("menu.moveUp"), () => _vm.StepSubtitlePos(-2)));
+                items.Add(Menus.Action(Loc.T("menu.moveDown"), () => _vm.StepSubtitlePos(2)));
             }
             groups.Add(new MenuItem { Header = header, ItemsSource = items, IsEnabled = items.Count > 0 });
         }
@@ -609,31 +609,31 @@ public partial class OverlayWindow : Window
             Math.Abs(s - _vm.Speed) < 0.01, () => _vm.SetSpeed(s))));
 
     void OnFpsMenu(object? sender, RoutedEventArgs e) => ShowMenu((Control)sender!,
-        PlayerViewModel.FpsTargets.Select(f => Menus.Item(f.Label, f.Value == _vm.TargetFps, () => _vm.TargetFps = f.Value)));
+        PlayerViewModel.FpsTargets.Select(f => Menus.Item(Loc.T(f.Label), f.Value == _vm.TargetFps, () => _vm.TargetFps = f.Value)));
 
     void OnLoop(object? sender, RoutedEventArgs e) => ShowMenu((Control)sender!,
     [
-        Menus.Item("Tekrar kapalı", _vm.LoopMode == "off" && !_vm.IsAbLoopActive, () => _vm.SetLoop("off")),
-        Menus.Item("Dosyayı tekrarla (L)", _vm.LoopMode == "file", () => _vm.SetLoop("file")),
-        Menus.Item("Oynatma listesini tekrarla", _vm.LoopMode == "playlist", () => _vm.SetLoop("playlist")),
+        Menus.Item(Loc.T("loop.off"), _vm.LoopMode == "off" && !_vm.IsAbLoopActive, () => _vm.SetLoop("off")),
+        Menus.Item(Loc.T("menu.repeatFileL"), _vm.LoopMode == "file", () => _vm.SetLoop("file")),
+        Menus.Item(Loc.T("menu.repeatPlaylist"), _vm.LoopMode == "playlist", () => _vm.SetLoop("playlist")),
         new Separator(),
-        Menus.Action(_vm.IsAbLoopActive ? $"A–B Döngüsü ({_vm.LoopLabel}) — Sıfırla (B)" : "A–B Döngüsü başlangıç noktası seç (B)", () => _vm.AbLoop()),
+        Menus.Action(_vm.IsAbLoopActive ? Loc.F("menu.abReset", _vm.LoopLabel) : Loc.T("menu.abPickStart"), () => _vm.AbLoop()),
     ]);
 
     void OnAspectMenu(object? sender, RoutedEventArgs e)
     {
         var items = new List<object>
         {
-            Menus.Item("Pencereye sığdır (Letterbox)", !_vm.IsFilled, () => { if (_vm.IsFilled) _vm.ToggleFill(); }),
-            Menus.Item("Pencereyi doldur / Kırp (Z)", _vm.IsFilled, () => { if (!_vm.IsFilled) _vm.ToggleFill(); }),
+            Menus.Item(Loc.T("menu.fitWindow"), !_vm.IsFilled, () => { if (_vm.IsFilled) _vm.ToggleFill(); }),
+            Menus.Item(Loc.T("menu.fillWindow"), _vm.IsFilled, () => { if (!_vm.IsFilled) _vm.ToggleFill(); }),
             new Separator(),
         };
         items.AddRange(PlayerViewModel.AspectRatios.Select(a =>
-            (object)Menus.Item($"En-Boy: {a.Label}", a.Value == _vm.AspectRatio, () => _vm.SetAspect(a.Value))));
+            (object)Menus.Item(Loc.F("menu.aspectItem", Loc.T(a.Label)), a.Value == _vm.AspectRatio, () => _vm.SetAspect(a.Value))));
         items.Add(new Separator());
         items.AddRange(PlayerViewModel.Rotations.Select(r =>
-            (object)Menus.Item($"Döndür: {r}°", r == _vm.Rotation, () => _vm.SetRotation(r))));
-        items.Add(Menus.Item("Yatay çevir (Ayna)", _vm.IsMirrored, () => _vm.ToggleMirror()));
+            (object)Menus.Item(Loc.F("menu.rotateItem", r), r == _vm.Rotation, () => _vm.SetRotation(r))));
+        items.Add(Menus.Item(Loc.T("menu.mirror"), _vm.IsMirrored, () => _vm.ToggleMirror()));
         ShowMenu((Control)sender!, items);
     }
 
@@ -646,7 +646,7 @@ public partial class OverlayWindow : Window
         if (items.Count > 0)
         {
             items.Add(new Separator());
-            items.Add(Menus.Action("Geçmişi temizle", () => _vm.ClearRecents()));
+            items.Add(Menus.Action(Loc.T("settings.clearHistory"), () => _vm.ClearRecents()));
         }
         ShowMenu(anchor, items);
     }
@@ -659,8 +659,8 @@ public partial class OverlayWindow : Window
 
         if (!_vm.IsIdle)
         {
-            items.Add(Menus.Action(_vm.IsPaused ? "Oynat (Boşluk)" : "Duraklat (Boşluk)", () => _vm.TogglePauseCommand.Execute(null)));
-            items.Add(Menus.Item("Önce / Sonra karşılaştırma çubuğu (C)", _vm.IsSplitCompare, () => _vm.ToggleSplitCompareCommand.Execute(null)));
+            items.Add(Menus.Action(_vm.IsPaused ? Loc.T("menu.playSpace") : Loc.T("menu.pauseSpace"), () => _vm.TogglePauseCommand.Execute(null)));
+            items.Add(Menus.Item(Loc.T("player.beforeAfterComparisonSliderC"), _vm.IsSplitCompare, () => _vm.ToggleSplitCompareCommand.Execute(null)));
             items.Add(new Separator());
         }
 
@@ -671,12 +671,12 @@ public partial class OverlayWindow : Window
         if (recents.Count > 0)
         {
             recents.Add(new Separator());
-            recents.Add(Menus.Action("Geçmişi temizle", () => _vm.ClearRecents()));
+            recents.Add(Menus.Action(Loc.T("settings.clearHistory"), () => _vm.ClearRecents()));
         }
-        items.Add(Menus.Action("Dosya aç… (Ctrl+O)", OpenFiles));
-        items.Add(Menus.Action("Klasör aç…", OpenFolder));
+        items.Add(Menus.Action(Loc.T("menu.openFile"), OpenFiles));
+        items.Add(Menus.Action(Loc.T("menu.openFolder"), OpenFolder));
         if (recents.Count > 0)
-            items.Add(new MenuItem { Header = "Son oynatılanlar", ItemsSource = recents });
+            items.Add(new MenuItem { Header = Loc.T("start.recentlyPlayed"), ItemsSource = recents });
 
         if (!_vm.IsIdle)
         {
@@ -686,43 +686,43 @@ public partial class OverlayWindow : Window
             var speedItems = PlayerViewModel.Speeds
                 .Select(s => (object)Menus.Item($"{s.ToString("0.##", CultureInfo.InvariantCulture)}×", Math.Abs(s - _vm.Speed) < 0.01, () => _vm.SetSpeed(s)))
                 .ToList();
-            items.Add(new MenuItem { Header = $"Oynatma hızı ({_vm.SpeedText})", ItemsSource = speedItems });
+            items.Add(new MenuItem { Header = Loc.F("menu.speedHeader", _vm.SpeedText), ItemsSource = speedItems });
 
             // 2. Kare hızı / Akıcı hareket
-            var fpsLabel = _vm.TargetFps > 0 ? $"{_vm.TargetFps} FPS" : (_vm.TargetFps == -1 ? "VSync" : "Orijinal");
+            var fpsLabel = _vm.TargetFps > 0 ? $"{_vm.TargetFps} FPS" : (_vm.TargetFps == -1 ? "VSync" : Loc.T("layer.original"));
             var fpsItems = PlayerViewModel.FpsTargets
-                .Select(f => (object)Menus.Item(f.Label, f.Value == _vm.TargetFps, () => _vm.TargetFps = f.Value))
+                .Select(f => (object)Menus.Item(Loc.T(f.Label), f.Value == _vm.TargetFps, () => _vm.TargetFps = f.Value))
                 .ToList();
-            items.Add(new MenuItem { Header = $"Kare hızı / Akıcı hareket ({fpsLabel})", ItemsSource = fpsItems });
+            items.Add(new MenuItem { Header = Loc.F("menu.fpsHeader", fpsLabel), ItemsSource = fpsItems });
 
             // 3. Görüntü kalitesi & Ölçekleyici
-            var activePresetName = ImagePresets.All.FirstOrDefault(p => p.Id == _vm.PresetId)?.Name ?? "Özel";
+            var activePresetName = ImagePresets.All.FirstOrDefault(p => p.Id == _vm.PresetId) is { } active ? PlayerViewModel.PresetLabel(active) : Loc.T("opt.custom");
             var presetItems = ImagePresets.All
-                .Select(p => (object)Menus.Item($"{p.Name} ({p.Scaler})", p.Id == _vm.PresetId, () => _vm.PresetId = p.Id))
+                .Select(p => (object)Menus.Item($"{PlayerViewModel.PresetLabel(p)} ({p.Scaler})", p.Id == _vm.PresetId, () => _vm.PresetId = p.Id))
                 .ToList();
-            items.Add(new MenuItem { Header = $"Görüntü kalitesi & Ölçekleyici ({activePresetName})", ItemsSource = presetItems });
+            items.Add(new MenuItem { Header = Loc.F("menu.qualityHeader", activePresetName), ItemsSource = presetItems });
 
             // 4. Renk profili
             var profileItems = PlayerViewModel.Profiles
-                .Select(p => (object)Menus.Item(p, p == _vm.ProfileName, () => _vm.ApplyProfile(p)))
+                .Select(p => (object)Menus.Item(Loc.T($"profile.{p}"), p == _vm.ProfileName, () => _vm.ApplyProfile(p)))
                 .ToList();
-            items.Add(new MenuItem { Header = $"Renk profili ({_vm.ProfileName})", ItemsSource = profileItems });
+            items.Add(new MenuItem { Header = Loc.F("menu.profileHeader", _vm.ProfileLabel), ItemsSource = profileItems });
 
             // 5. Altyazı parçaları & Ayarlar
             var subList = _vm.Tracks.Where(t => t.Type == "sub").ToList();
             var subItems = new List<object>
             {
-                Menus.Item("Kapalı", !subList.Any(t => t.Selected), () => _vm.SelectTrack("sub", "no")),
+                Menus.Item(Loc.T("menu.off"), !subList.Any(t => t.Selected), () => _vm.SelectTrack("sub", "no")),
             };
             foreach (var t in subList)
                 subItems.Add(Menus.Item(t.Label, t.Selected, () => _vm.SelectTrack("sub", t.Id.ToString(CultureInfo.InvariantCulture))));
             subItems.Add(new Separator());
-            subItems.Add(Menus.Action("Dosyadan yükle…", AddSubtitle));
-            subItems.Add(Menus.Action("Boyutu büyüt (+%10)", () => _vm.StepSubtitleScale(0.1)));
-            subItems.Add(Menus.Action("Boyutu küçült (−%10)", () => _vm.StepSubtitleScale(-0.1)));
-            subItems.Add(Menus.Action("Yukarı taşı", () => _vm.StepSubtitlePos(-2)));
-            subItems.Add(Menus.Action("Aşağı taşı", () => _vm.StepSubtitlePos(2)));
-            items.Add(new MenuItem { Header = "Altyazı parçaları", ItemsSource = subItems });
+            subItems.Add(Menus.Action(Loc.T("menu.loadFromFile"), AddSubtitle));
+            subItems.Add(Menus.Action(Loc.T("menu.sizeUp"), () => _vm.StepSubtitleScale(0.1)));
+            subItems.Add(Menus.Action(Loc.T("menu.sizeDown"), () => _vm.StepSubtitleScale(-0.1)));
+            subItems.Add(Menus.Action(Loc.T("menu.moveUp"), () => _vm.StepSubtitlePos(-2)));
+            subItems.Add(Menus.Action(Loc.T("menu.moveDown"), () => _vm.StepSubtitlePos(2)));
+            items.Add(new MenuItem { Header = Loc.T("menu.subtitleTracks"), ItemsSource = subItems });
 
             // 6. Ses parçaları & Çıkış
             var audioList = _vm.Tracks.Where(t => t.Type == "audio").ToList();
@@ -730,62 +730,62 @@ public partial class OverlayWindow : Window
             foreach (var t in audioList)
                 audioItems.Add(Menus.Item(t.Label, t.Selected, () => _vm.SelectTrack("audio", t.Id.ToString(CultureInfo.InvariantCulture))));
             if (audioList.Count > 0) audioItems.Add(new Separator());
-            audioItems.Add(Menus.Item("Sessiz (M)", _vm.IsMuted, () => _vm.ToggleMuteCommand.Execute(null)));
-            audioItems.Add(Menus.Item("Ses yükseltme (%200 Boost)", _vm.BoostEnabled, () => _vm.BoostEnabled = !_vm.BoostEnabled));
-            audioItems.Add(Menus.Item("Ses normalizasyonu (dynaudnorm)", _vm.Normalize, () => _vm.Normalize = !_vm.Normalize));
+            audioItems.Add(Menus.Item(Loc.T("player.muteM"), _vm.IsMuted, () => _vm.ToggleMuteCommand.Execute(null)));
+            audioItems.Add(Menus.Item(Loc.T("menu.boost"), _vm.BoostEnabled, () => _vm.BoostEnabled = !_vm.BoostEnabled));
+            audioItems.Add(Menus.Item(Loc.T("menu.normalize"), _vm.Normalize, () => _vm.Normalize = !_vm.Normalize));
             audioItems.Add(new Separator());
             audioItems.AddRange(_vm.AudioDevices.Select(d =>
                 (object)Menus.Item(d.Description, d.Name == _vm.Settings.AudioDevice, () => _vm.SelectAudioDevice(d.Name))));
-            items.Add(new MenuItem { Header = "Ses parçaları & Çıkış", ItemsSource = audioItems });
+            items.Add(new MenuItem { Header = Loc.T("menu.audioTracks"), ItemsSource = audioItems });
 
             // 7. En-Boy & Döndürme
             var aspectItems = new List<object>
             {
-                Menus.Item("Pencereye sığdır (Letterbox)", !_vm.IsFilled, () => { if (_vm.IsFilled) _vm.ToggleFill(); }),
-                Menus.Item("Pencereyi doldur / Kırp (Z)", _vm.IsFilled, () => { if (!_vm.IsFilled) _vm.ToggleFill(); }),
+                Menus.Item(Loc.T("menu.fitWindow"), !_vm.IsFilled, () => { if (_vm.IsFilled) _vm.ToggleFill(); }),
+                Menus.Item(Loc.T("menu.fillWindow"), _vm.IsFilled, () => { if (!_vm.IsFilled) _vm.ToggleFill(); }),
                 new Separator(),
             };
             aspectItems.AddRange(PlayerViewModel.AspectRatios.Select(a =>
-                (object)Menus.Item($"En-Boy: {a.Label}", a.Value == _vm.AspectRatio, () => _vm.SetAspect(a.Value))));
+                (object)Menus.Item(Loc.F("menu.aspectItem", Loc.T(a.Label)), a.Value == _vm.AspectRatio, () => _vm.SetAspect(a.Value))));
             aspectItems.Add(new Separator());
             aspectItems.AddRange(PlayerViewModel.Rotations.Select(r =>
-                (object)Menus.Item($"Döndür: {r}°", r == _vm.Rotation, () => _vm.SetRotation(r))));
-            aspectItems.Add(Menus.Item("Yatay çevir (Ayna)", _vm.IsMirrored, () => _vm.ToggleMirror()));
-            items.Add(new MenuItem { Header = "En-Boy & Döndürme", ItemsSource = aspectItems });
+                (object)Menus.Item(Loc.F("menu.rotateItem", r), r == _vm.Rotation, () => _vm.SetRotation(r))));
+            aspectItems.Add(Menus.Item(Loc.T("menu.mirror"), _vm.IsMirrored, () => _vm.ToggleMirror()));
+            items.Add(new MenuItem { Header = Loc.T("menu.aspectRotate"), ItemsSource = aspectItems });
 
             // 8. Döngü & Tekrar
             var loopItems = new List<object>
             {
-                Menus.Item("Tekrar kapalı", _vm.LoopMode == "off" && !_vm.IsAbLoopActive, () => _vm.SetLoop("off")),
-                Menus.Item("Dosyayı tekrarla (L)", _vm.LoopMode == "file", () => _vm.SetLoop("file")),
-                Menus.Item("Listeyi tekrarla", _vm.LoopMode == "playlist", () => _vm.SetLoop("playlist")),
+                Menus.Item(Loc.T("loop.off"), _vm.LoopMode == "off" && !_vm.IsAbLoopActive, () => _vm.SetLoop("off")),
+                Menus.Item(Loc.T("menu.repeatFileL"), _vm.LoopMode == "file", () => _vm.SetLoop("file")),
+                Menus.Item(Loc.T("loop.playlist"), _vm.LoopMode == "playlist", () => _vm.SetLoop("playlist")),
                 new Separator(),
-                Menus.Action(_vm.IsAbLoopActive ? $"A–B Döngüsü ({_vm.LoopLabel}) — Sıfırla (B)" : "A–B Döngüsü seç (B)", () => _vm.AbLoop()),
+                Menus.Action(_vm.IsAbLoopActive ? Loc.F("menu.abReset", _vm.LoopLabel) : Loc.T("menu.abPick"), () => _vm.AbLoop()),
             };
-            items.Add(new MenuItem { Header = $"Döngü ({_vm.LoopLabel})", ItemsSource = loopItems });
+            items.Add(new MenuItem { Header = Loc.F("menu.loopHeader", _vm.LoopLabel), ItemsSource = loopItems });
 
             if (_vm.Chapters.Count > 0)
             {
                 var chItems = _vm.Chapters
                     .Select((c, i) => (object)Menus.Item($"{PlayerViewModel.Format(c.Time)} · {_vm.ChapterLabel(i)}", i == _vm.ChapterIndex, () => _vm.SeekToChapter(i)))
                     .ToList();
-                items.Add(new MenuItem { Header = $"Bölümler ({_vm.Chapters.Count})", ItemsSource = chItems });
+                items.Add(new MenuItem { Header = Loc.F("menu.chaptersHeader", _vm.Chapters.Count), ItemsSource = chItems });
             }
 
             items.Add(new Separator());
-            items.Add(Menus.Action("Kare yakala (S)", () => _vm.ScreenshotCommand.Execute(null)));
-            items.Add(Menus.Action("Kare yakalama klasörünü aç", () => _vm.OpenScreenshotFolder()));
+            items.Add(Menus.Action(Loc.T("player.captureFrameS"), () => _vm.ScreenshotCommand.Execute(null)));
+            items.Add(Menus.Action(Loc.T("menu.openCaptureFolder"), () => _vm.OpenScreenshotFolder()));
         }
 
         items.Add(new Separator());
-        items.Add(Menus.Item("Tam ekran (F)", Main?.WindowState == WindowState.FullScreen, ToggleFullScreen));
-        items.Add(Menus.Item("Her zaman üstte (T)", _vm.Settings.AlwaysOnTop, () => _vm.ToggleAlwaysOnTop()));
+        items.Add(Menus.Item(Loc.T("player.fullScreenF"), Main?.WindowState == WindowState.FullScreen, ToggleFullScreen));
+        items.Add(Menus.Item(Loc.T("menu.onTop"), _vm.Settings.AlwaysOnTop, () => _vm.ToggleAlwaysOnTop()));
         if (!_vm.IsIdle)
         {
-            items.Add(Menus.Item("Medya istatistikleri (I)", _vm.ShowStats, () => _vm.ToggleStats()));
-            items.Add(Menus.Action("Görüntü & Ses panelini aç (E)", () => _vm.TogglePanelCommand.Execute(null)));
+            items.Add(Menus.Item(Loc.T("player.mediaStatisticsI"), _vm.ShowStats, () => _vm.ToggleStats()));
+            items.Add(Menus.Action(Loc.T("menu.openPanel"), () => _vm.TogglePanelCommand.Execute(null)));
         }
-        items.Add(Menus.Action("Ayarlar… (Ctrl+,)", () => _vm.OpenSettingsCommand.Execute(null)));
+        items.Add(Menus.Action(Loc.T("menu.settings"), () => _vm.OpenSettingsCommand.Execute(null)));
 
         ShowMenu(anchor, items, atPointer: true);
     }

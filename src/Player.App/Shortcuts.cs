@@ -7,38 +7,39 @@ namespace Player.App;
 /// Characters match the typed symbol, so they follow the keyboard layout (Turkish Q moves ',' '.' '\').</summary>
 public static class Shortcuts
 {
+    /// <summary>Label is a Loc key.</summary>
     public sealed record Action(string Id, string Label, string Default);
 
     public static readonly IReadOnlyList<Action> All =
     [
-        new("pause", "Oynat / duraklat", "Space"),
-        new("seek-back", "Geri atla", "Left"),
-        new("seek-forward", "İleri atla", "Right"),
-        new("volume-up", "Sesi aç", "Up"),
-        new("volume-down", "Sesi kıs", "Down"),
-        new("mute", "Sessiz", "M"),
-        new("fullscreen", "Tam ekran", "F"),
-        new("frame-back", "Kare geri", ","),
-        new("frame-step", "Kare ileri", "."),
-        new("prev", "Önceki dosya", "PageUp"),
-        new("next", "Sonraki dosya", "PageDown"),
-        new("speed-down", "Yavaşlat", "Ctrl+Down"),
-        new("speed-up", "Hızlandır", "Ctrl+Up"),
-        new("fps-cycle", "FPS hedefi (Kaynak/60/90/120)", "G"),
-        new("loop", "Tekrarlama kipi", "L"),
-        new("ab-loop", "A–B döngüsü", "B"),
-        new("aspect", "En-boy oranı", "A"),
-        new("fill", "Sığdır / doldur", "Z"),
-        new("rotate", "90° döndür", "R"),
-        new("ontop", "Her zaman üstte", "T"),
-        new("screenshot", "Kare yakala", "S"),
-        new("stats", "Medya istatistikleri", "I"),
-        new("panel", "Görüntü & Ses paneli", "E"),
-        new("playlist", "Oynatma listesi", "P"),
-        new("split-compare", "Önce / Sonra karşılaştırma çubuğu", "C"),
-        new("compare", "Orijinali göster (basılı tut)", "\\"),
-        new("open", "Dosya aç", "Ctrl+O"),
-        new("settings", "Ayarlar", "Ctrl+,"),
+        new("pause", "shortcut.pause", "Space"),
+        new("seek-back", "shortcut.seek-back", "Left"),
+        new("seek-forward", "shortcut.seek-forward", "Right"),
+        new("volume-up", "shortcut.volume-up", "Up"),
+        new("volume-down", "shortcut.volume-down", "Down"),
+        new("mute", "shortcut.mute", "M"),
+        new("fullscreen", "shortcut.fullscreen", "F"),
+        new("frame-back", "shortcut.frame-back", ","),
+        new("frame-step", "shortcut.frame-step", "."),
+        new("prev", "shortcut.prev", "PageUp"),
+        new("next", "shortcut.next", "PageDown"),
+        new("speed-down", "shortcut.speed-down", "Ctrl+Down"),
+        new("speed-up", "shortcut.speed-up", "Ctrl+Up"),
+        new("fps-cycle", "shortcut.fps-cycle", "G"),
+        new("loop", "shortcut.loop", "L"),
+        new("ab-loop", "shortcut.ab-loop", "B"),
+        new("aspect", "shortcut.aspect", "A"),
+        new("fill", "shortcut.fill", "Z"),
+        new("rotate", "shortcut.rotate", "R"),
+        new("ontop", "shortcut.ontop", "T"),
+        new("screenshot", "shortcut.screenshot", "S"),
+        new("stats", "shortcut.stats", "I"),
+        new("panel", "shortcut.panel", "E"),
+        new("playlist", "shortcut.playlist", "P"),
+        new("split-compare", "shortcut.split-compare", "C"),
+        new("compare", "shortcut.compare", "\\"),
+        new("open", "shortcut.open", "Ctrl+O"),
+        new("settings", "shortcut.settings", "Ctrl+,"),
     ];
 
     public static string BindingFor(IReadOnlyDictionary<string, string> custom, string id) =>
@@ -99,7 +100,7 @@ public static class Shortcuts
         var (mods, key) = Split(binding);
         var name = key switch
         {
-            "Space" => "Boşluk", "PageUp" => "PgUp", "PageDown" => "PgDn", "Left" => "←", "Right" => "→",
+            "Space" => Loc.T("key.space"), "PageUp" => "PgUp", "PageDown" => "PgDn", "Left" => "←", "Right" => "→",
             "Up" => "↑", "Down" => "↓", "Escape" => "Esc", "Return" => "Enter", "OemComma" => ",", "OemPeriod" => ".",
             _ => key,
         };
