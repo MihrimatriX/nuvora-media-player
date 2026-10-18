@@ -85,8 +85,9 @@ public sealed partial class PlayerViewModel : ObservableObject
             {
                 using var ms = new MemoryStream(bytes);
                 var bmp = new Bitmap(ms);
-                if (_thumbCache.Count > 90) _thumbCache.Clear();
+                if (_thumbCache.TryGetValue(sec, out var old)) Retire(old);
                 _thumbCache[sec] = bmp;
+                TrimThumbCache(sec);
                 ThumbnailReady?.Invoke(sec, bmp);
             }
             catch { }
@@ -314,9 +315,43 @@ public sealed partial class PlayerViewModel : ObservableObject
 
     public void StartThumbnailer(nint previewWid) => _thumbnailer.Initialize(previewWid);
 
+    const int ThumbCacheLimit = 90;
+    int _hoverBucket = -1;
+    List<Bitmap> _retiredThumbs = [], _retiringThumbs = [];
+
+    /// <summary>Evicts the buckets farthest from where the user is scrubbing. The hovered bucket is never
+    /// evicted because the seek bubble may be showing it.</summary>
+    void TrimThumbCache(int newest)
+    {
+        while (_thumbCache.Count > ThumbCacheLimit)
+        {
+            var victim = _thumbCache.Keys.Where(k => k != _hoverBucket && k != newest).MaxBy(k => Math.Abs(k - newest));
+            if (!_thumbCache.Remove(victim, out var bmp)) return;
+            Retire(bmp);
+        }
+    }
+
+    /// <summary>Thumbnails hold native Skia memory. A bitmap may still be on screen when it leaves the cache,
+    /// so it is disposed one generation later, by which time the seek bubble has moved on.</summary>
+    void Retire(Bitmap bmp)
+    {
+        _retiringThumbs.Add(bmp);
+        if (_retiringThumbs.Count < 16) return;
+        foreach (var b in _retiredThumbs) b.Dispose();
+        (_retiredThumbs, _retiringThumbs) = (_retiringThumbs, []);
+    }
+
+    void ClearThumbCache()
+    {
+        foreach (var bmp in _thumbCache.Values) Retire(bmp);
+        _thumbCache.Clear();
+        _hoverBucket = -1;
+    }
+
     public Bitmap? GetOrRequestThumbnail(double seconds, out int bucket)
     {
         bucket = Math.Max(0, (int)(seconds / 2.0) * 2);
+        _hoverBucket = bucket;
         if (_thumbCache.TryGetValue(bucket, out var bmp)) return bmp;
         _thumbnailer.Request(bucket);
         return null;
@@ -660,7 +695,7 @@ public sealed partial class PlayerViewModel : ObservableObject
                 _path = value as string;
                 _dw = _dh = 0;
                 _fittedPath = null;
-                _thumbCache.Clear();
+                ClearThumbCache();
                 _thumbnailer.SetFile(_path);
                 OnPropertyChanged(nameof(FileChip));
                 OnPropertyChanged(nameof(StatsSummary));

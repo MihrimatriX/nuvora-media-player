@@ -50,7 +50,7 @@ public sealed class AppSettings
     public string DisplayFormat169 { get; set; } = "normal"; // "normal" | "stretch" | "zoom"
     public string DisplayFormatCinematic { get; set; } = "normal"; // "normal" | "zoom" | "half-zoom"
     // Ses
-    public string AudioOutputMode { get; set; } = "stereo-surround"; // "stereo" | "stereo-surround" | "5.1" | "7.1" | "spdif" | "hdmi"
+    public string AudioOutputMode { get; set; } = "stereo"; // "stereo" | "stereo-surround" | "5.1" | "7.1" | "spdif" | "hdmi"
     public string AudioLanguages { get; set; } = "tur,eng,jpn";
     public string AudioDevice { get; set; } = "auto";
     public string SpdifDevice { get; set; } = "auto";

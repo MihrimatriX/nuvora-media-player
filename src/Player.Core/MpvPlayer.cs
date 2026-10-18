@@ -15,7 +15,6 @@ public sealed class MpvPlayer : IPlayerService
         ["gpu-api"] = "d3d11",
         ["hwdec"] = "auto-safe",
         ["hwdec-codecs"] = "all",
-        ["vd-lavc-fast"] = "yes",
         ["vd-lavc-threads"] = "0",
         ["cache"] = "auto",
         ["demuxer-max-bytes"] = "128MiB",
