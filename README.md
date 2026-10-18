@@ -22,6 +22,20 @@ Kompakt, video odaklı Windows medya oynatıcısı. C# / .NET 10, Avalonia 11, l
 
 Her PR ve `main` push'unda GitHub Actions (`.github/workflows/ci.yml`) Windows'ta build ve test çalıştırır.
 
+## Yayın
+
+`v*` etiketi (ör. `git tag v0.1.0 && git push origin v0.1.0`) `.github/workflows/release.yml`'i tetikler:
+
+- **Kurulum:** Velopack `NuvoraPlayer-win-Setup.exe` (yönetici izni istemez, `%LocalAppData%\NuvoraPlayer`'a kurar)
+  ve tam + delta `.nupkg` paketleri. Kurulu sürüm açılışta GitHub Releases'i denetler (Ayarlar → Genel →
+  "Güncellemeleri denetle"), yeni sürümü arka planda indirir ve oynatıcı kapanınca sessizce uygular.
+- **Portable:** `NuvoraPlayer-<sürüm>-win-x64-portable.zip`, `portable` klasörüyle gelir; otomatik güncelleme yapmaz.
+- Paketler **taslak** bir GitHub sürümüne eklenir; yayınlamak elle yapılır. Etiketsiz koşular (PR, elle tetikleme)
+  aynı paketleri yalnızca workflow artifact'ı olarak üretir.
+
+**Tek örnek:** Oynatıcı açıkken başka bir dosyayı açmak (Explorer, "Birlikte aç") yeni pencere açmaz; dosya
+çalışan oynatıcıya iletilir ve pencere öne gelir.
+
 **Portable mod:** exe'nin yanında `portable` klasörü varsa ayarlar ve kaldığın yer bilgileri oraya,
 yoksa `%AppData%\Nuvora Player` altına yazılır.
 
