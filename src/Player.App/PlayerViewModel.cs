@@ -100,6 +100,7 @@ public sealed partial class PlayerViewModel : ObservableObject
         TargetFps = settings.TargetFps != 0 ? settings.TargetFps : (settings.SmoothMotionByDefault ? 60 : 0);
         LoopMode = settings.LoopMode;
         _player.PropertyChanged += OnPlayerProperty;
+        _player.SeekCompleted += PumpSeek;
         _player.PlaybackError += msg => ErrorText = $"Dosya oynatılamadı: {msg}";
     }
 
@@ -148,8 +149,44 @@ public sealed partial class PlayerViewModel : ObservableObject
     public bool ShowTitleBlock => !IsIdle && !IsSheetOpen;
     public bool ShowFileChip => !IsIdle && IsSheetOpen;
 
-    /// <summary>Set by the view while the seek bar is held, so slider coercion never triggers a seek.</summary>
-    public bool IsScrubbing { get; set; }
+    /// <summary>Set by the view while the seek bar is held, so slider coercion never triggers a seek.
+    /// While held, seeks go to the nearest keyframe and only one is in flight at a time; releasing the bar
+    /// lands one exact seek on the final position.</summary>
+    public bool IsScrubbing
+    {
+        get => _scrubbing;
+        set
+        {
+            if (_scrubbing == value) return;
+            _scrubbing = value;
+            if (value) return;
+            _pendingSeek = null;
+            _seekInFlight = false;
+            _player.Command("seek", Inv(_position), "absolute+exact");
+        }
+    }
+
+    bool _scrubbing, _seekInFlight;
+    double? _pendingSeek;
+
+    void ScrubTo(double seconds)
+    {
+        _pendingSeek = seconds;
+        if (!_seekInFlight) PumpSeek();
+    }
+
+    /// <summary>Sends the newest scrub target once mpv has finished the previous seek (PLAYBACK_RESTART).</summary>
+    void PumpSeek()
+    {
+        if (_pendingSeek is not { } target)
+        {
+            _seekInFlight = false;
+            return;
+        }
+        _pendingSeek = null;
+        _seekInFlight = true;
+        _player.Command("seek", Inv(target), "absolute+keyframes");
+    }
 
     public double Position
     {
@@ -159,7 +196,7 @@ public sealed partial class PlayerViewModel : ObservableObject
             _position = value;
             OnPropertyChanged(nameof(PositionText));
             OnPropertyChanged(nameof(RightTimeText));
-            if (IsScrubbing) _player.Command("seek", Inv(value), "absolute");
+            if (IsScrubbing) ScrubTo(value);
         }
     }
 

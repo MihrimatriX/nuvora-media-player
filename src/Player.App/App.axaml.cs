@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Player.Core;
 
@@ -15,10 +16,15 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            // Built on the UI thread, so MpvPlayer captures the UI SynchronizationContext.
             var services = new ServiceCollection()
                 .AddSingleton(AppSettings.Load())
-                .AddSingleton<IPlayerService, MpvPlayer>()
+                .AddSingleton<IPlayerService>(_ =>
+                {
+                    // mpv events reach the view model on the UI thread, whichever thread resolves the service.
+                    var player = new MpvPlayer(a => Dispatcher.UIThread.Post(a));
+                    player.Log += AppLog.Warn;
+                    return player;
+                })
                 .AddSingleton<PlayerViewModel>()
                 .BuildServiceProvider();
 

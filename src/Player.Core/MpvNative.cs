@@ -7,7 +7,8 @@ internal static partial class MpvNative
     // ponytail: Windows name only; Linux/macOS need a NativeLibrary resolver for libmpv.so.2 / libmpv.2.dylib.
     const string Lib = "libmpv-2";
 
-    internal const int EventShutdown = 1, EventEndFile = 7, EventFileLoaded = 8, EventPlaybackRestart = 21, EventPropertyChange = 22;
+    internal const int EventShutdown = 1, EventLogMessage = 2, EventCommandReply = 5, EventEndFile = 7, EventFileLoaded = 8,
+        EventPlaybackRestart = 21, EventPropertyChange = 22;
     internal const int EndFileReasonError = 4;
 
     [StructLayout(LayoutKind.Sequential)]
@@ -19,6 +20,11 @@ internal static partial class MpvNative
     [StructLayout(LayoutKind.Sequential)]
     internal struct MpvEventEndFile { public int Reason; public int Error; }
 
+    [StructLayout(LayoutKind.Sequential)]
+    internal struct MpvEventLogMessage { public nint Prefix; public nint Level; public nint Text; public int LogLevel; }
+
+    /// <summary>(major &lt;&lt; 16) | minor of the client API the loaded DLL implements.</summary>
+    [LibraryImport(Lib)] internal static partial ulong mpv_client_api_version();
     [LibraryImport(Lib)] internal static partial nint mpv_create();
     [LibraryImport(Lib)] internal static partial int mpv_initialize(nint ctx);
     [LibraryImport(Lib)] internal static partial void mpv_terminate_destroy(nint ctx);
@@ -27,6 +33,9 @@ internal static partial class MpvNative
 
     [LibraryImport(Lib, StringMarshalling = StringMarshalling.Utf8)]
     internal static partial int mpv_set_option_string(nint ctx, string name, string data);
+
+    [LibraryImport(Lib, StringMarshalling = StringMarshalling.Utf8)]
+    internal static partial int mpv_request_log_messages(nint ctx, string minLevel);
 
     [LibraryImport(Lib, StringMarshalling = StringMarshalling.Utf8)]
     internal static partial int mpv_observe_property(nint ctx, ulong userdata, string name, PropertyKind format);
