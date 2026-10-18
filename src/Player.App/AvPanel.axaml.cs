@@ -11,10 +11,10 @@ public partial class AvPanel : UserControl
     PlayerViewModel Vm => (PlayerViewModel)DataContext!;
 
     void OnProfiles(object? sender, RoutedEventArgs e) =>
-        Menus.Show((Control)sender!, PlayerViewModel.Profiles.Select(p => Menus.Item(p, p == Vm.ProfileName, () => Vm.ApplyProfile(p))));
+        Menus.Show((Control)sender!, PlayerViewModel.Profiles.Select(p => Menus.Item(Loc.T($"profile.{p}"), p == Vm.ProfileName, () => Vm.ApplyProfile(p))));
 
     void OnDrc(object? sender, RoutedEventArgs e) =>
-        Menus.Show((Control)sender!, PlayerViewModel.DrcLevels.Select((d, i) => Menus.Item(d.Label, i == Vm.DrcIndex, () => Vm.DrcIndex = i)));
+        Menus.Show((Control)sender!, PlayerViewModel.DrcLevels.Select((d, i) => Menus.Item(Loc.T(d.Label), i == Vm.DrcIndex, () => Vm.DrcIndex = i)));
 
     void OnChannelWheel(object? sender, PointerWheelEventArgs e)
     {

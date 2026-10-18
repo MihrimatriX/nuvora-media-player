@@ -11,6 +11,7 @@ public partial class MainWindow : Window
 {
     readonly OverlayWindow _overlay = null!;
     double _videoW = 1280, _videoH = 720;
+    IDisposable? _shell;
 
     public MainWindow() => InitializeComponent();
 
@@ -67,7 +68,7 @@ public partial class MainWindow : Window
             catch (Exception e) when (e is DllNotFoundException or InvalidOperationException)
             {
                 vm.ErrorText = e is DllNotFoundException
-                    ? "libmpv-2.dll bulunamadı. README'deki adımlarla lib klasörüne ekleyin."
+                    ? Loc.T("error.libmpvMissing")
                     : e.Message;
             }
         };
@@ -77,7 +78,12 @@ public partial class MainWindow : Window
             SyncOverlay();
         };
         PositionChanged += (_, _) => SyncOverlay();
-        Closing += (_, _) => vm.Shutdown(); // before our HWND dies, mpv may still be rendering into it
+        if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17763)) _shell = ShellIntegration.TryAttach(this, vm);
+        Closing += (_, _) =>
+        {
+            _shell?.Dispose();
+            vm.Shutdown(); // before our HWND dies, mpv may still be rendering into it
+        };
         AddHandler(KeyDownEvent, (_, e) => _overlay.HandleKey(e), RoutingStrategies.Tunnel);
         AddHandler(KeyUpEvent, (_, e) => _overlay.HandleKeyUp(e), RoutingStrategies.Tunnel);
     }
