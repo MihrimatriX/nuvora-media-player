@@ -1,7 +1,10 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Avalonia.Threading;
 using Avalonia.Media;
+using Avalonia.Media.Fonts;
 using Microsoft.Extensions.DependencyInjection;
 using Player.Core;
 
@@ -26,9 +29,24 @@ public partial class App : Application
                 .AddSingleton<PlayerViewModel>()
                 .BuildServiceProvider();
 
-            SetAccent(services.GetRequiredService<AppSettings>().Accent);
-            desktop.MainWindow = new MainWindow(services.GetRequiredService<PlayerViewModel>(), desktop.Args ?? []);
+            var settings = services.GetRequiredService<AppSettings>();
+            var vm = services.GetRequiredService<PlayerViewModel>();
+            SetAccent(settings.Accent);
+            var window = new MainWindow(vm, desktop.Args ?? []);
+            desktop.MainWindow = window;
             desktop.Exit += (_, _) => services.Dispose();
+
+            if (Program.Instance is { } instance)
+            {
+                instance.ArgumentsReceived += args => Dispatcher.UIThread.Post(() =>
+                {
+                    vm.Open(args);
+                    if (window.WindowState == WindowState.Minimized) window.WindowState = WindowState.Normal;
+                    window.Activate();
+                });
+                instance.StartListening();
+            }
+            _ = Updater.CheckAsync(settings);
         }
         base.OnFrameworkInitializationCompleted();
     }
@@ -51,4 +69,14 @@ public partial class App : Application
         r["FocusRing"] = new SolidColorBrush(text);
         r["OnAccent"] = new SolidColorBrush(ColorContrast.ReadableOn(c));
     }
+}
+
+public static class AppBuilderExtensions
+{
+    /// <summary>Registers the embedded Manrope / IBM Plex Mono collection and makes Manrope the default.
+    /// Shared by the app and the headless UI tests.</summary>
+    public static AppBuilder UseNuvoraFonts(this AppBuilder builder) => builder
+        .ConfigureFonts(fonts => fonts.AddFontCollection(new EmbeddedFontCollection(
+            new Uri("fonts:Nuvora", UriKind.Absolute), new Uri("avares://NuvoraPlayer/Assets/Fonts", UriKind.Absolute))))
+        .With(new FontManagerOptions { DefaultFamilyName = "fonts:Nuvora#Manrope" });
 }
