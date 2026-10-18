@@ -47,6 +47,8 @@ public sealed partial class PlayerViewModel : ObservableObject
         ("mpv-version", PropertyKind.String),
         ("video-params/dw", PropertyKind.Double), ("video-params/dh", PropertyKind.Double),
         ("audio-device-list", PropertyKind.String),
+        ("frame-drop-count", PropertyKind.Double), ("seeking", PropertyKind.Flag),
+        ("osd-dimensions/w", PropertyKind.Double), ("osd-dimensions/h", PropertyKind.Double),
     ];
 
     /// <summary>Output devices reported by mpv ("auto" first).</summary>
@@ -292,6 +294,7 @@ public sealed partial class PlayerViewModel : ObservableObject
             if (_applied.GetValueOrDefault(k) != v) _player.Command("set", k, v);
         _applied = options;
         PresetId = _settings.DefaultPreset;
+        ApplyImage(); // the shader-layer switches may have changed even if the preset did not
         Normalize = _settings.NormalizeByDefault;
         BoostEnabled = _settings.BoostByDefault || Volume > 100;
         TargetFps = _settings.TargetFps != 0 ? _settings.TargetFps : (_settings.SmoothMotionByDefault ? 60 : 0);
@@ -675,6 +678,9 @@ public sealed partial class PlayerViewModel : ObservableObject
                 OnPropertyChanged(nameof(AbLoopASeconds));
                 OnPropertyChanged(nameof(AbLoopBSeconds));
                 break;
+            case "frame-drop-count" or "seeking" or "osd-dimensions/w" or "osd-dimensions/h":
+                OnEnhancementProperty(name, value);
+                break;
             case "mpv-version": MpvVersion = value as string ?? ""; break;
             case "audio-device-list":
                 AudioDevices = (value is string d ? JsonSerializer.Deserialize<List<AudioDeviceInfo>>(d, Json) ?? [] : [])
@@ -683,6 +689,7 @@ public sealed partial class PlayerViewModel : ObservableObject
                 break;
             case "video-params/dw" or "video-params/dh":
                 if (name == "video-params/dw") _dw = value as double? ?? 0; else _dh = value as double? ?? 0;
+                NotifyLayer();
                 if (_dw > 0 && _dh > 0 && _path is not null && _path != _fittedPath)
                 {
                     _fittedPath = _path;
@@ -695,6 +702,7 @@ public sealed partial class PlayerViewModel : ObservableObject
                 var prevH = _height;
                 _height = value as double? ?? 0;
                 if ((prevH < 1400) != (_height < 1400) && TargetFps > 0) ApplyFps();
+                if (_height > 0 && _height != prevH) { RestartFallback(); ApplyImage(); }
                 OnPropertyChanged(nameof(TechInfo));
                 OnPropertyChanged(nameof(StatsSummary));
                 break;

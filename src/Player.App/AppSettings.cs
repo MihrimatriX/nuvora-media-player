@@ -37,6 +37,8 @@ public sealed class AppSettings
     public string MotionScaler { get; set; } = "oversample"; // "oversample" | "mitchell" | "sphinx" | "catmull_rom"
     public string ToneMapping { get; set; } = "auto"; // "auto" | "bt.2446a" | "spline" | "hable" | "mobius"
     public string DefaultPreset { get; set; } = "balanced";
+    public bool ShaderUpscaling { get; set; } = true; // GPU shader layer (FSRCNNX / ArtCNN / Anime4K) on top of the presets
+    public bool AutoFallback { get; set; } = true; // step down the shader chain when frames drop
     public string ScreenshotFormat { get; set; } = "png";
     public string ScreenFormat { get; set; } = "16:9"; // "auto" | "16:9" | "16:10" | "21:9" | "4:3"
     public string DisplayFormat43 { get; set; } = "normal"; // "normal" | "stretch" | "zoom"

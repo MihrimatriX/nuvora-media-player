@@ -363,6 +363,24 @@
                       </Border>
                       <Border Classes="row">
                         <Grid ColumnDefinitions="*,Auto">
+                          <StackPanel Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="label" Text="GPU shader katmanı" />
+                            <TextBlock Text="Dengeli: FSRCNNX, Anime: Anime4K, Maksimum: ArtCNN. Yalnızca video büyütülürken çalışır" FontSize="11.5" Foreground="{DynamicResource Fg3}" />
+                          </StackPanel>
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.ShaderUpscaling}" AutomationProperties.Name="GPU shader katmanı" />
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <StackPanel Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="label" Text="GPU yetişemezse otomatik düşür" />
+                            <TextBlock Text="Kare düşerse daha hafif katmana, sonra yerleşik ölçekleyiciye geçer" FontSize="11.5" Foreground="{DynamicResource Fg3}" />
+                          </StackPanel>
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.AutoFallback}" AutomationProperties.Name="Otomatik düşüş" />
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
                           <TextBlock Classes="label" Text="HDR ton eşleme (Tone Mapping)" />
                           <Button Grid.Column="1" Classes="drop" Click="OnToneMapping">
                             <StackPanel Orientation="Horizontal" Spacing="8">

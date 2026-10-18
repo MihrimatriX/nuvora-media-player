@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Player.Enhancement;
@@ -18,9 +19,9 @@ public sealed partial class PlayerViewModel
     public string GpuName => Gpu?.Name ?? "Algılanamadı";
     public bool HasRtxVideo => Gpu?.HasRtxVideo == true;
     public string RtxBadge => HasRtxVideo ? "Hazır" : "RTX gerekir";
-    public string GpuNote => HasRtxVideo
-        ? "RTX ekran kartı algılandı; donanım ve GPU shader ölçekleyicileri aktif."
-        : "mpv'nin yüksek kaliteli GPU ölçekleyicisi ve CAS keskinleştirme katmanı kullanılıyor.";
+    public string GpuNote => _settings.ShaderUpscaling
+        ? "Ön ayarlar GPU shader katmanı kullanır (FSRCNNX, ArtCNN, Anime4K). GPU yetişemezse daha hafif katmana, sonra yerleşik ölçekleyiciye düşer."
+        : "GPU shader katmanı ayarlardan kapalı; mpv'nin yerleşik ölçekleyicileri kullanılıyor.";
 
     [ObservableProperty, NotifyPropertyChangedFor(nameof(PresetChoices), nameof(ActiveLayer), nameof(EnhanceLabel), nameof(PresetName), nameof(AfterBadgeText))]
     public partial string PresetId { get; set; } = "balanced";
@@ -35,9 +36,17 @@ public sealed partial class PlayerViewModel
     public partial double SplitRatio { get; set; } = 0.5;
 
     double _videoSplitRatio = 0.5;
-    bool _shaderLoaded;
 
-    static string CompareShaderPath => Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", "compare.glsl").Replace('\\', '/');
+    // ---- layer 2: GPU shaders + automatic fallback ----
+    readonly LayerFallback _fallback = new();
+    readonly Stopwatch _clock = Stopwatch.StartNew();
+    string[] _loadedShaders = [];
+    ShaderLayer? _loadedLayer;
+    double _osdW, _osdH;
+
+    static string ShaderPath(string relative) => Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", relative).Replace('\\', '/');
+
+    static string CompareShaderPath => ShaderPath("compare.glsl");
 
     [ObservableProperty, NotifyPropertyChangedFor(nameof(FpsChoices), nameof(FpsBadge), nameof(ActiveLayer), nameof(EnhanceLabel), nameof(SmoothMotion), nameof(AfterBadgeText))]
     public partial int TargetFps { get; set; }
@@ -69,11 +78,24 @@ public sealed partial class PlayerViewModel
         _ => "",
     };
 
-    public string ActiveLayer => IsBypassed
-        ? "Orijinal"
-        : IsSplitCompare
-            ? $"Önce / Sonra · {CurrentPreset.Name}"
-            : FpsBadge.Length > 0 ? $"{CurrentPreset.LayerLabel} · {FpsBadge}" : CurrentPreset.LayerLabel;
+    double Upscale => ShaderLayers.UpscaleFactor(_height, _dw, _dh, _osdW, _osdH);
+
+    /// <summary>The shader layer actually handed to mpv (null = built-in scalers only).</summary>
+    public string? LoadedShaderName => _loadedLayer?.Name;
+
+    public string ActiveLayer
+    {
+        get
+        {
+            if (IsBypassed) return "Orijinal";
+            if (IsSplitCompare) return $"Önce / Sonra · {CurrentPreset.Name}";
+            var layer = Player.Enhancement.ActiveLayer.Describe(CurrentPreset, _loadedLayer, Upscale, _fallback.HasFallenBack);
+            return FpsBadge.Length > 0 ? $"{layer} · {FpsBadge}" : layer;
+        }
+    }
+
+    /// <summary>Engine name for compact labels: the loaded shader, else the built-in scaler.</summary>
+    string Engine => _loadedLayer?.Name ?? CurrentPreset.Scaler;
 
     public string EnhanceLabel
     {
@@ -81,7 +103,7 @@ public sealed partial class PlayerViewModel
         {
             if (IsBypassed) return "Orijinal görüntü";
             if (IsSplitCompare) return $"Önce / Sonra · {CurrentPreset.Name}";
-            var baseLabel = CurrentPreset.Id == "off" ? "İyileştirme kapalı" : $"{CurrentPreset.Name} · {CurrentPreset.Scaler}";
+            var baseLabel = CurrentPreset.Id == "off" ? "İyileştirme kapalı" : $"{CurrentPreset.Name} · {Engine}";
             return FpsBadge.Length > 0 ? $"{baseLabel} · {FpsBadge}" : baseLabel;
         }
     }
@@ -94,7 +116,7 @@ public sealed partial class PlayerViewModel
             if (ProfileName != "Varsayılan") return $"{preset} · {ProfileName}";
             if (Math.Abs(Sharpness) > 0.5 || Math.Abs(Saturation) > 0.5 || Math.Abs(Contrast) > 0.5)
                 return $"{preset} · Keskinlik {SharpnessText}";
-            return FpsBadge.Length > 0 ? $"{preset} · {FpsBadge}" : $"{preset} · {CurrentPreset.Scaler}";
+            return FpsBadge.Length > 0 ? $"{preset} · {FpsBadge}" : $"{preset} · {Engine}";
         }
     }
 
@@ -106,7 +128,16 @@ public sealed partial class PlayerViewModel
     public string GammaText => Signed(Gamma);
     public string HueText => Signed(Hue);
 
-    [RelayCommand] void SelectPreset(string id) => PresetId = id;
+    [RelayCommand]
+    void SelectPreset(string id)
+    {
+        if (id != PresetId) { PresetId = id; return; }
+        // Picking the active preset again retries its full shader chain after an automatic fallback.
+        if (!_fallback.HasFallenBack) return;
+        _fallback.Forget(id);
+        RestartFallback();
+        ApplyImage();
+    }
     [RelayCommand] void SelectFps(int fps) => TargetFps = fps;
 
     [RelayCommand]
@@ -154,7 +185,7 @@ public sealed partial class PlayerViewModel
         };
     }
 
-    partial void OnPresetIdChanged(string value) => ApplyImage();
+    partial void OnPresetIdChanged(string value) { RestartFallback(); ApplyImage(); }
     partial void OnIsBypassedChanged(bool value) { ApplyImage(); ApplyFps(); }
     partial void OnIsSplitCompareChanged(bool value) => ApplyImage();
     partial void OnSplitRatioChanged(double value)
@@ -226,20 +257,14 @@ public sealed partial class PlayerViewModel
             _player.Command("set", "hue", "0");
             _player.Command("set", "sharpen", "0");
 
-            if (!_shaderLoaded && File.Exists(CompareShaderPath))
-            {
-                _player.Command("change-list", "glsl-shaders", "set", CompareShaderPath);
-                _shaderLoaded = true;
-            }
+            // The split view compares picture adjustments only; CNN layers would land on both halves.
+            SetShaders(File.Exists(CompareShaderPath) ? [CompareShaderPath] : [], null);
             UpdateCompareShaderOpts();
             return;
         }
 
-        if (_shaderLoaded)
-        {
-            _player.Command("change-list", "glsl-shaders", "clr", "");
-            _shaderLoaded = false;
-        }
+        ShaderLayer? layer = null;
+        SetShaders(IsBypassed ? [] : DesiredShaders(out layer), layer);
 
         var preset = IsBypassed ? ImagePresets.Off : CurrentPreset;
         foreach (var (k, v) in preset.Options) _player.Command("set", k, v);
@@ -262,6 +287,69 @@ public sealed partial class PlayerViewModel
         var presetBoost = preset.Id switch { "anime" => 0.85, "max" => 0.75, "balanced" => 0.50, _ => 0.25 };
         var opts = $"split={Inv(_videoSplitRatio)},sharp={Inv(sharp)},cont={Inv(Contrast)},sat={Inv(Saturation)},bright={Inv(Brightness)},gam={Inv(Gamma)},hue_deg={Inv(Hue)},preset_boost={Inv(presetBoost)}";
         _player.Command("set", "glsl-shader-opts", opts);
+    }
+
+    /// <summary>Files of the chain level the fallback allows; missing files (stripped install) mean built-in.</summary>
+    string[] DesiredShaders(out ShaderLayer? layer)
+    {
+        layer = null;
+        var chain = CurrentPreset.Shaders;
+        if (!_settings.ShaderUpscaling || _fallback.Level >= chain.Count) return [];
+        var candidate = chain[_fallback.Level];
+        var files = candidate.Files.Select(ShaderPath).ToArray();
+        if (files.FirstOrDefault(f => !File.Exists(f)) is { } missing)
+        {
+            AppLog.Warn($"Shader eksik, yerleşik ölçekleyici kullanılıyor: {missing}");
+            return [];
+        }
+        layer = candidate;
+        return files;
+    }
+
+    void SetShaders(string[] files, ShaderLayer? layer)
+    {
+        var changed = !files.SequenceEqual(_loadedShaders);
+        _loadedLayer = layer;
+        if (changed)
+        {
+            // One path per command: glsl-shaders is a path list whose separator differs per OS (';' on Windows).
+            _player.Command("change-list", "glsl-shaders", "clr", "");
+            foreach (var f in files) _player.Command("change-list", "glsl-shaders", "append", f);
+            _loadedShaders = files;
+            _fallback.Rebase(_clock.Elapsed); // compiling shaders stalls a few frames; don't count those
+        }
+        NotifyLayer();
+    }
+
+    void NotifyLayer()
+    {
+        OnPropertyChanged(nameof(ActiveLayer));
+        OnPropertyChanged(nameof(LoadedShaderName));
+        OnPropertyChanged(nameof(EnhanceLabel));
+        OnPropertyChanged(nameof(AfterBadgeText));
+        OnPropertyChanged(nameof(TechInfo));
+        OnPropertyChanged(nameof(GpuNote));
+    }
+
+    void RestartFallback() => _fallback.Start(PresetId, (int)_height, _clock.Elapsed);
+
+    /// <summary>mpv properties that drive the shader layer; called from <see cref="OnPlayerProperty"/>.</summary>
+    void OnEnhancementProperty(string name, object? value)
+    {
+        switch (name)
+        {
+            case "osd-dimensions/w": _osdW = value as double? ?? 0; NotifyLayer(); break;
+            case "osd-dimensions/h": _osdH = value as double? ?? 0; NotifyLayer(); break;
+            case "seeking": _fallback.Rebase(_clock.Elapsed); break;
+            case "frame-drop-count" when value is double drops && _settings.AutoFallback && _loadedLayer is not null:
+                var from = _loadedLayer.Name;
+                if (!_fallback.Sample(_clock.Elapsed, (long)drops, CurrentPreset.Shaders.Count)) break;
+                ApplyImage();
+                var to = _loadedLayer?.Name ?? $"Yerleşik {CurrentPreset.Scaler}";
+                AppLog.Warn($"GPU yetişemedi ({(long)drops} kare düştü, {_height:0}p): {from} → {to}");
+                OsdRequested?.Invoke($"GPU yetişemedi · {from} → {to}");
+                break;
+        }
     }
 
     static string Signed(double v) => v > 0 ? $"+{v:0}" : $"{v:0}";
