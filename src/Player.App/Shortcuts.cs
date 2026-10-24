@@ -26,6 +26,7 @@ public static class Shortcuts
         new("speed-down", "shortcut.speed-down", "Ctrl+Down"),
         new("speed-up", "shortcut.speed-up", "Ctrl+Up"),
         new("fps-cycle", "shortcut.fps-cycle", "G"),
+        new("look-cycle", "shortcut.look-cycle", "V"),
         new("loop", "shortcut.loop", "L"),
         new("ab-loop", "shortcut.ab-loop", "B"),
         new("aspect", "shortcut.aspect", "A"),

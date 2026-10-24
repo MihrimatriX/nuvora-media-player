@@ -64,8 +64,10 @@
   <StreamGeometry x:Key="IcoWave1">M16.5 8.5a5 5 0 0 1 0 7</StreamGeometry>
   <StreamGeometry x:Key="IcoMuteX">M16 9l5 6 M21 9l-5 6</StreamGeometry>
   <StreamGeometry x:Key="IcoFullscreen">M4 9V6a2 2 0 0 1 2-2h3 M20 9V6a2 2 0 0 0-2-2h-3 M4 15v3a2 2 0 0 0 2 2h3 M20 15v3a2 2 0 0 1-2 2h-3</StreamGeometry>
+  <StreamGeometry x:Key="IcoFullscreenExit">M9 4v3a2 2 0 0 1-2 2H4 M15 4v3a2 2 0 0 0 2 2h3 M9 20v-3a2 2 0 0 0-2-2H4 M15 20v-3a2 2 0 0 1 2-2h3</StreamGeometry>
   <StreamGeometry x:Key="IcoMin">M5 12h14</StreamGeometry>
   <StreamGeometry x:Key="IcoMax">M8 4h8a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V8a4 4 0 0 1 4-4z</StreamGeometry>
+  <StreamGeometry x:Key="IcoRestore">M6.5 8h7a2.5 2.5 0 0 1 2.5 2.5v7a2.5 2.5 0 0 1-2.5 2.5h-7A2.5 2.5 0 0 1 4 17.5v-7A2.5 2.5 0 0 1 6.5 8z M8 4.8A2.5 2.5 0 0 1 10.5 4h7A2.5 2.5 0 0 1 20 6.5v7a2.5 2.5 0 0 1-0.8 1.8</StreamGeometry>
   <StreamGeometry x:Key="IcoClose">M6 6l12 12 M18 6L6 18</StreamGeometry>
   <StreamGeometry x:Key="IcoGear">M9 12a3 3 0 1 0 6 0a3 3 0 1 0-6 0 M12 3v2.5 M12 18.5V21 M3 12h2.5 M18.5 12H21 M5.6 5.6l1.8 1.8 M16.6 16.6l1.8 1.8 M5.6 18.4l1.8-1.8 M16.6 7.4l1.8-1.8</StreamGeometry>
   <StreamGeometry x:Key="IcoUpload">M12 15V4 M7.5 8.5L12 4l4.5 4.5 M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4</StreamGeometry>
@@ -212,6 +214,10 @@
     </Style>
     <Style Selector="^.volume:pointerover /template/ Thumb#thumb">
       <Setter Property="Opacity" Value="1" />
+    </Style>
+    <!-- Muted: the level is kept but dimmed, so it reads as "not playing at this volume". -->
+    <Style Selector="^.volume.muted /template/ RepeatButton#PART_DecreaseButton">
+      <Setter Property="Opacity" Value="0.35" />
     </Style>
     <Style Selector="^:disabled">
       <Setter Property="Opacity" Value="0.45" />

@@ -88,6 +88,22 @@
           <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
         </Style>
 
+        <!-- Colour filter tiles: swatch + name, compact version of .card. -->
+        <Style Selector="^.look">
+          <Setter Property="Padding" Value="6,6,6,7" />
+          <Setter Property="CornerRadius" Value="12" />
+          <Setter Property="Background" Value="{DynamicResource Fill1}" />
+          <Setter Property="BorderBrush" Value="{DynamicResource Line}" />
+          <Setter Property="BorderThickness" Value="1.5" />
+          <Setter Property="Foreground" Value="{DynamicResource Fg2}" />
+          <Setter Property="HorizontalAlignment" Value="Stretch" />
+        </Style>
+        <Style Selector="^.look:checked">
+          <Setter Property="Background" Value="{DynamicResource AccentTint}" />
+          <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
+          <Setter Property="Foreground" Value="White" />
+        </Style>
+
         <Style Selector="^.tab">
           <Setter Property="Height" Value="34" />
           <Setter Property="CornerRadius" Value="9" />

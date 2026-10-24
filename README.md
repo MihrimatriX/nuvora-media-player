@@ -62,11 +62,28 @@ Tüm kısayollar **Ayarlar → Kısayollar** sayfasından özelleştirilebilir (
 | Z | Sığdır ↔ doldur |
 | S | Kare yakala (`ScreenshotDirectory`) |
 | E | Görüntü & Ses paneli |
+| V | Sıradaki renk filtresi |
 | \ (basılı tut) | Orijinali göster (iyileştirme karşılaştırması) |
 | Ctrl+O | Dosya aç |
 | Ctrl+, | Ayarlar |
 
 Altyazı dosyasını (.srt/.ass/…) oynatma sırasında pencereye bırakmak onu yükler.
+
+## Renk ve sinema filtreleri
+
+Görüntü & Ses paneli → **Renk ve Sinema Filtreleri**: 11 hazır görünüm (Sıcak, Soğuk, Gişe Filmi / teal & orange,
+Technicolor, Ağartılmış, Mat Film, Vintage, Sepya, Siyah-Beyaz, Kara Film, Neon), yoğunluk ayarı, film greni, vinyet ve
+2.39:1 sinemaskop bantları. Hepsi tek bir GPU geçişinde (`Assets/Shaders/looks.glsl`, MAIN kancası, videonun kendi
+çözünürlüğünde) çalışır; ayar değiştirmek yalnızca `glsl-shader-opts` uniform'larını günceller, shader yeniden derlenmez.
+Hiçbir filtre açık değilken geçiş hiç yüklenmez. Önce/Sonra karşılaştırmasında filtreler "Sonra" tarafına uygulanır;
+kullanıcı ön ayarları filtreleri de saklar. Renk matematiği `Player.Enhancement/ColorLooks.cs` içinde, CPU ikizi testlerde.
+
+## Windows Gezgini
+
+Kurulum oynatıcıyı video, ses ve çalma listesi için ayrı ProgId'lerle kaydeder. Video ProgId'si Windows'un kendi video
+küçük resim çıkarıcısını (Media Foundation) gösterir; böylece Nuvora varsayılan oynatıcıyken de MKV/WebM/TS dahil
+dosyalar uygulama logosu yerine kare önizlemesiyle görünür. Küçük resim üretilemeyen dosyalar (codec yoksa, liste
+görünümünde) logo yerine `Assets/FileTypes` altındaki belge ikonlarını kullanır (`python scripts/make_file_icons.py`).
 
 ## Mimari
 

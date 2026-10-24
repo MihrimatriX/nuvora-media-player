@@ -49,7 +49,7 @@ public sealed partial class PlayerViewModel : ObservableObject
         ("video-params/dw", PropertyKind.Double), ("video-params/dh", PropertyKind.Double),
         ("audio-device-list", PropertyKind.String), ("metadata/by-key/artist", PropertyKind.String),
         ("current-ao", PropertyKind.String), ("ffmpeg-version", PropertyKind.String),
-        ("frame-drop-count", PropertyKind.Double), ("seeking", PropertyKind.Flag),
+        ("frame-drop-count", PropertyKind.Double), ("seeking", PropertyKind.Flag), ("eof-reached", PropertyKind.Flag),
         ("osd-dimensions/w", PropertyKind.Double), ("osd-dimensions/h", PropertyKind.Double),
     ];
 
@@ -73,7 +73,7 @@ public sealed partial class PlayerViewModel : ObservableObject
     readonly Dictionary<int, Bitmap> _thumbCache = [];
     readonly Dictionary<string, string?> _raw = []; // stream facts for the tech line and OSD stats
     double _position, _width, _height, _sourceFps, _outputFps, _sampleRate;
-    bool _fill;
+    bool _fill, _eofReached;
     string? _path;
     string _abA = "no", _abB = "no";
 
@@ -99,7 +99,7 @@ public sealed partial class PlayerViewModel : ObservableObject
         };
         Channels = CreateChannels();
         BoostEnabled = settings.BoostByDefault || settings.Volume > 100;
-        Volume = settings.Volume;
+        SetVolumeInternal(settings.Volume);
         Gpu = gpu ?? GpuInfo.Detect();
         _vsr = DriverLayer.Detect(Gpu);
         RtxHdr = settings.RtxVideoHdr && HasRtxVideo;
@@ -127,9 +127,11 @@ public sealed partial class PlayerViewModel : ObservableObject
     [ObservableProperty] public partial string? Artist { get; set; }
     [ObservableProperty, NotifyPropertyChangedFor(nameof(DurationText), nameof(RightTimeText))] public partial double Duration { get; set; }
     [ObservableProperty] public partial bool IsPaused { get; set; }
-    [ObservableProperty] public partial bool IsMuted { get; set; }
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(IsSilent), nameof(IsVolumeLow), nameof(IsVolumeHigh), nameof(MuteTip))]
+    public partial bool IsMuted { get; set; }
     [ObservableProperty, NotifyPropertyChangedFor(nameof(ShowTitleBlock), nameof(ShowFileChip))] public partial bool IsIdle { get; set; } = true;
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(BoostText))] public partial double Volume { get; set; }
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(BoostText), nameof(IsSilent), nameof(IsVolumeLow), nameof(IsVolumeHigh))]
+    public partial double Volume { get; set; }
     [ObservableProperty, NotifyPropertyChangedFor(nameof(SpeedText))] public partial double Speed { get; set; } = 1;
     [ObservableProperty] public partial string? ErrorText { get; set; }
     [ObservableProperty] public partial IReadOnlyList<Track> Tracks { get; set; } = [];
@@ -145,6 +147,16 @@ public sealed partial class PlayerViewModel : ObservableObject
     [ObservableProperty] public partial int Rotation { get; set; }
     [ObservableProperty] public partial bool IsMirrored { get; set; }
     [ObservableProperty] public partial bool ShowStats { get; set; }
+    /// <summary>Window state, set by the main window so the bar can show the matching icon.</summary>
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(FullScreenTip))] public partial bool IsFullScreen { get; set; }
+    [ObservableProperty] public partial bool IsMaximized { get; set; }
+
+    // Speaker icon: crossed out when nothing is heard, one wave below half volume, two above.
+    public bool IsSilent => IsMuted || Volume <= 0;
+    public bool IsVolumeLow => !IsSilent && Volume < 50;
+    public bool IsVolumeHigh => !IsSilent && Volume >= 50;
+    public string MuteTip => Loc.T(IsMuted ? "player.unmuteM" : "player.muteM");
+    public string FullScreenTip => Loc.T(IsFullScreen ? "player.exitFullScreenF" : "player.fullScreenF");
 
     public bool IsFilled => _fill;
     public bool HasVideo => _width > 0;
@@ -220,11 +232,48 @@ public sealed partial class PlayerViewModel : ObservableObject
         get => _position;
         set
         {
+            // The seek bar writes every update from mpv straight back; only a moved bar is news.
+            if (value == _position && !IsScrubbing) return;
             _position = value;
+            _shownPosition = value;
             OnPropertyChanged(nameof(PositionText));
             OnPropertyChanged(nameof(RightTimeText));
             if (IsScrubbing) ScrubTo(value);
         }
+    }
+
+    // time-pos arrives once per video frame. The bar moves less than a pixel per frame on anything longer than a
+    // clip, and every notification re-lays out the overlay window and updates the Windows shell, so it is paced:
+    // up to 30 updates a second for short clips, 4 for a film. Seeks and pauses always go through at once.
+    double _shownPosition = double.NaN;
+    TimeSpan _shownAt;
+
+    TimeSpan PositionInterval => TimeSpan.FromSeconds(Math.Clamp(Duration / 2000, 1 / 30.0, 0.25));
+
+    void OnTimePos(double value)
+    {
+        _position = value;
+        var jumped = double.IsNaN(_shownPosition) || Math.Abs(value - _shownPosition) >= 1;
+        if (!jumped && _clock.Elapsed - _shownAt < PositionInterval) return;
+        ShowPosition();
+    }
+
+    void ShowPosition()
+    {
+        var textChanged = double.IsNaN(_shownPosition)
+            || Math.Floor(_shownPosition) != Math.Floor(_position)
+            || Math.Floor(Duration - _shownPosition) != Math.Floor(Duration - _position);
+        _shownPosition = _position;
+        _shownAt = _clock.Elapsed;
+        OnPropertyChanged(nameof(Position));
+        if (!textChanged) return;
+        OnPropertyChanged(nameof(PositionText));
+        OnPropertyChanged(nameof(RightTimeText));
+    }
+
+    partial void OnIsPausedChanged(bool value)
+    {
+        if (_position != _shownPosition) ShowPosition(); // the frame it stopped on, not one 250 ms earlier
     }
 
     public string PositionText => Format(_position);
@@ -253,6 +302,14 @@ public sealed partial class PlayerViewModel : ObservableObject
             return string.Join(" · ", new[] { ResolutionLabel(_height), video, fps, hdr, audio }.Where(s => !string.IsNullOrEmpty(s)));
         }
     }
+
+    /// <summary>The stats card is hidden most of the time; estimated-vf-fps alone changes several times a second.</summary>
+    void NotifyStats()
+    {
+        if (ShowStats) OnPropertyChanged(nameof(StatsSummary));
+    }
+
+    partial void OnShowStatsChanged(bool value) => NotifyStats();
 
     /// <summary>Multi-line technical stats shown by the OSD overlay ('I' key).</summary>
     public string StatsSummary
@@ -507,12 +564,63 @@ public sealed partial class PlayerViewModel : ObservableObject
         _settings.Save();
     }
 
-    /// <summary>Volume up (+1) or down (−1) by the configured step.</summary>
+    /// <summary>Volume up (+1) or down (−1) to the next multiple of the configured step, so a dragged 47 % goes to 50 / 45.
+    /// Computed here rather than with mpv's "add": a held key repeats faster than mpv reports back, and the OSD
+    /// would show the old value.</summary>
     public void StepVolume(int direction)
     {
-        _player.Command("add", "volume", Inv(direction * _settings.VolumeStep));
-        var targetVol = Math.Clamp(Math.Round(Volume + direction * _settings.VolumeStep), 0, VolumeMax);
-        ShowOsd(Loc.F("osd.volume", targetVol));
+        if (direction == 0) return;
+        if (IsMuted) SetMuted(false); // even when the level itself cannot move (already at the top)
+        double step = Math.Max(1, _settings.VolumeStep);
+        var target = direction > 0
+            ? Math.Floor(Volume / step + 1e-6) * step + step
+            : Math.Ceiling(Volume / step - 1e-6) * step - step;
+        Volume = Math.Clamp(target, 0, VolumeMax);
+        ShowOsd(Loc.F("osd.volume", Volume.ToString("0", CultureInfo.InvariantCulture)));
+    }
+
+    // mpv confirms each "set volume" asynchronously. While the slider is being dragged those confirmations are
+    // older than the slider, and applying them would pull it back (and send the old value to mpv again).
+    static readonly TimeSpan VolumeEchoWindow = TimeSpan.FromMilliseconds(600);
+    double? _volumeSent;
+    TimeSpan _volumeSentAt;
+    bool _volumeFromPlayer, _volumeInternal;
+
+    partial void OnVolumeChanged(double value)
+    {
+        if (_volumeFromPlayer) return;
+        _volumeSent = value;
+        _volumeSentAt = _clock.Elapsed;
+        _player.Command("set", "volume", Inv(value));
+        // Turning the volume while muted means "let me hear it".
+        if (IsMuted && !_volumeInternal) SetMuted(false);
+    }
+
+    void OnPlayerVolume(double value)
+    {
+        if (_volumeSent is { } sent)
+        {
+            var stale = Math.Abs(value - sent) > 0.01 && _clock.Elapsed - _volumeSentAt < VolumeEchoWindow;
+            if (stale) return;
+            _volumeSent = null;
+        }
+        _volumeFromPlayer = true;
+        Volume = value;
+        _volumeFromPlayer = false;
+    }
+
+    /// <summary>Volume changes the user did not ask for (start-up, boost switched off) never unmute.</summary>
+    void SetVolumeInternal(double value)
+    {
+        _volumeInternal = true;
+        Volume = value;
+        _volumeInternal = false;
+    }
+
+    public void SetMuted(bool muted)
+    {
+        _player.Command("set", "mute", muted ? "yes" : "no");
+        IsMuted = muted; // the icon follows at once; mpv's "mute" update confirms it
     }
 
     public void HandleWheel(int direction)
@@ -593,6 +701,7 @@ public sealed partial class PlayerViewModel : ObservableObject
     {
         AspectRatio = aspect;
         _player.Command("set", "video-aspect-override", aspect == "auto" ? "-1" : aspect);
+        if (Letterbox) ApplyImage();
         ShowOsd(Loc.F("osd.aspect", aspect));
     }
 
@@ -603,6 +712,7 @@ public sealed partial class PlayerViewModel : ObservableObject
     {
         Rotation = degrees;
         _player.Command("set", "video-rotate", degrees.ToString(CultureInfo.InvariantCulture));
+        if (Letterbox) ApplyImage(); // bars are drawn before rotation, so sideways video goes without
         ShowOsd(Loc.F("osd.rotate", degrees));
     }
 
@@ -679,8 +789,9 @@ public sealed partial class PlayerViewModel : ObservableObject
         OnPropertyChanged(nameof(IsFilled));
     }
 
-    /// <summary>Lift text subtitles above the control bar while it is visible (720p-relative units).</summary>
-    public void SetSubtitleMargin(double scaled) => _player.Command("set", "sub-margin-y", Inv(Math.Round(scaled)));
+    /// <summary>Lift text subtitles above the control bar while it is visible (720p-relative units). Called on every
+    /// mouse move that wakes the controls, so only a changed margin reaches mpv.</summary>
+    public void SetSubtitleMargin(double scaled) => Set("sub-margin-y", Inv(Math.Round(scaled)));
 
     // ---- recents ----
     public RecentItem? Hero => _settings.Recent.FirstOrDefault();
@@ -728,17 +839,69 @@ public sealed partial class PlayerViewModel : ObservableObject
     }
 
     // ---- commands ----
-    [RelayCommand] void TogglePause() => _player.Command("cycle", "pause");
-    public void SetPaused(bool paused) => _player.Command("set", "pause", paused ? "yes" : "no");
+    /// <summary>At the end of a file (keep-open holds the last frame) "play" means "watch it again".</summary>
+    [RelayCommand]
+    void TogglePause()
+    {
+        if (_eofReached) Replay();
+        else _player.Command("cycle", "pause");
+    }
+
+    public void SetPaused(bool paused)
+    {
+        if (!paused && _eofReached) Replay();
+        else _player.Command("set", "pause", paused ? "yes" : "no");
+    }
+
+    void Replay()
+    {
+        _player.Command("seek", "0", "absolute");
+        _player.Command("set", "pause", "no");
+    }
+
     public void SeekTo(double seconds) => _player.Command("seek", Inv(seconds), "absolute");
-    [RelayCommand] void ToggleMute() => _player.Command("cycle", "mute");
-    [RelayCommand] void SeekBack() => _player.Command("seek", Inv(-_settings.SeekStepSeconds), "relative");
-    [RelayCommand] void SeekForward() => _player.Command("seek", Inv(_settings.SeekStepSeconds), "relative");
+
+    [RelayCommand]
+    void ToggleMute()
+    {
+        SetMuted(!IsMuted);
+        ShowOsd(Loc.T(IsMuted ? "osd.muted" : "osd.unmuted"));
+    }
+
+    [RelayCommand] void SeekBack() => SeekRelative(-_settings.SeekStepSeconds);
+    [RelayCommand] void SeekForward() => SeekRelative(_settings.SeekStepSeconds);
     [RelayCommand] void FrameStep() => _player.Command("frame-step");
     [RelayCommand] void FrameBackStep() => _player.Command("frame-back-step");
     [RelayCommand] void Screenshot() => _player.Command("screenshot", "video");
-    [RelayCommand] void Next() { SaveResumePoint(); _player.Command("playlist-next"); }
-    [RelayCommand] void Previous() { SaveResumePoint(); _player.Command("playlist-prev"); }
+    int CurrentPlaylistIndex => Playlist.ToList().FindIndex(e => e.Current);
+
+    /// <summary>On the last file mpv would do nothing; say so instead of a button that seems dead.</summary>
+    [RelayCommand]
+    void Next()
+    {
+        var current = CurrentPlaylistIndex;
+        if (current >= 0 && current == Playlist.Count - 1 && LoopMode != "playlist")
+        {
+            ShowOsd(Loc.T("osd.playlistEnd"));
+            return;
+        }
+        SaveResumePoint();
+        _player.Command("playlist-next");
+    }
+
+    /// <summary>On the first file "previous" goes back to its beginning.</summary>
+    [RelayCommand]
+    void Previous()
+    {
+        if (CurrentPlaylistIndex == 0 && LoopMode != "playlist")
+        {
+            SeekTo(0);
+            ShowOsd(Loc.T("osd.playlistStart"));
+            return;
+        }
+        SaveResumePoint();
+        _player.Command("playlist-prev");
+    }
     [RelayCommand] void TogglePanel() { IsPanelOpen = !IsPanelOpen; IsSettingsOpen = false; IsPlaylistOpen = false; IsSubtitleSearchOpen = false; }
     [RelayCommand] void OpenSettings() { IsSettingsOpen = true; IsPanelOpen = false; IsPlaylistOpen = false; IsSubtitleSearchOpen = false; }
 
@@ -817,19 +980,14 @@ public sealed partial class PlayerViewModel : ObservableObject
         OnPropertyChanged(nameof(IsFilled));
     }
 
-    partial void OnVolumeChanged(double value) => _player.Command("set", "volume", Inv(value));
     void OnPlayerProperty(string name, object? value)
     {
         switch (name)
         {
-            case "time-pos" when !IsScrubbing:
-                _position = value as double? ?? 0;
-                OnPropertyChanged(nameof(Position));
-                OnPropertyChanged(nameof(PositionText));
-                OnPropertyChanged(nameof(RightTimeText));
-                break;
+            case "time-pos" when !IsScrubbing: OnTimePos(value as double? ?? 0); break;
             case "duration": Duration = value as double? ?? 0; break;
-            case "volume": Volume = value as double? ?? Volume; break;
+            case "volume" when value is double v: OnPlayerVolume(v); break;
+            case "eof-reached": _eofReached = value is true; break;
             case "speed": Speed = value as double? ?? 1; break;
             case "pause": IsPaused = value is true; break;
             case "mute": IsMuted = value is true; break;
@@ -842,7 +1000,7 @@ public sealed partial class PlayerViewModel : ObservableObject
                     IsSplitCompare = false;
                 }
                 break;
-            case "media-title": Title = value as string ?? ""; OnPropertyChanged(nameof(FileChip)); OnPropertyChanged(nameof(StatsSummary)); break;
+            case "media-title": Title = value as string ?? ""; OnPropertyChanged(nameof(FileChip)); NotifyStats(); break;
             case "path":
                 _path = value as string;
                 _dw = _dh = 0;
@@ -850,7 +1008,7 @@ public sealed partial class PlayerViewModel : ObservableObject
                 ClearThumbCache();
                 _thumbnailer.SetFile(_path);
                 OnPropertyChanged(nameof(FileChip));
-                OnPropertyChanged(nameof(StatsSummary));
+                NotifyStats();
                 break;
             case "track-list": Tracks = value is string t ? Track.ParseList(t) : []; break;
             case "chapter-list": Chapters = value is string c ? JsonSerializer.Deserialize<List<Chapter>>(c, Json) ?? [] : [];
@@ -890,8 +1048,9 @@ public sealed partial class PlayerViewModel : ObservableObject
                     ApplyDisplayFormat();
                     VideoSizeKnown?.Invoke(_dw, _dh);
                 }
+                if (Letterbox) UpdateShaderOpts(); // the bars depend on the video's shape
                 break;
-            case "width": _width = value as double? ?? 0; OnPropertyChanged(nameof(StatsSummary)); OnPropertyChanged(nameof(HasVideo)); break;
+            case "width": _width = value as double? ?? 0; NotifyStats(); OnPropertyChanged(nameof(HasVideo)); break;
             case "metadata/by-key/artist": Artist = value as string; break;
             case "height":
                 var prevH = _height;
@@ -899,23 +1058,24 @@ public sealed partial class PlayerViewModel : ObservableObject
                 if ((prevH < 1400) != (_height < 1400) && TargetFps > 0) ApplyFps();
                 if (_height > 0 && _height != prevH) { RestartFallback(); ApplyImage(); }
                 OnPropertyChanged(nameof(TechInfo));
-                OnPropertyChanged(nameof(StatsSummary));
+                NotifyStats();
                 break;
-            case "container-fps": _sourceFps = value as double? ?? 0; OnPropertyChanged(nameof(TechInfo)); OnPropertyChanged(nameof(StatsSummary)); break;
-            case "estimated-vf-fps": _outputFps = value as double? ?? 0; OnPropertyChanged(nameof(StatsSummary)); break;
-            case "audio-params/samplerate": _sampleRate = value as double? ?? 0; OnPropertyChanged(nameof(StatsSummary)); break;
+            case "container-fps": _sourceFps = value as double? ?? 0; OnPropertyChanged(nameof(TechInfo)); NotifyStats(); break;
+            case "estimated-vf-fps": _outputFps = value as double? ?? 0; NotifyStats(); break;
+            case "audio-params/samplerate": _sampleRate = value as double? ?? 0; NotifyStats(); break;
             case "audio-params/channel-count":
                 _channelCount = (int)(value as double? ?? 0);
                 OnPropertyChanged(nameof(TechInfo));
-                OnPropertyChanged(nameof(StatsSummary));
+                NotifyStats();
                 OnPropertyChanged(nameof(DownmixTitle));
                 OnPropertyChanged(nameof(DownmixAvailable));
                 ApplyDownmix();
                 break;
             default:
+                if (_raw.TryGetValue(name, out var old) && old == value as string) break;
                 _raw[name] = value as string;
                 OnPropertyChanged(nameof(TechInfo));
-                OnPropertyChanged(nameof(StatsSummary));
+                NotifyStats();
                 OnSystemProperty(name, value);
                 break;
         }

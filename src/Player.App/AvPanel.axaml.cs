@@ -6,6 +6,8 @@ namespace Player.App;
 
 public partial class AvPanel : UserControl
 {
+    readonly WheelSteps _channelWheel = new();
+
     public AvPanel()
     {
         InitializeComponent();
@@ -37,8 +39,11 @@ public partial class AvPanel : UserControl
     void OnChannelWheel(object? sender, PointerWheelEventArgs e)
     {
         if ((sender as Control)?.DataContext is not ChannelGain channel) return;
-        channel.Gain = Math.Clamp(channel.Gain + Math.Sign(e.Delta.Y) * 10, 0, 200);
-        Vm.SelectChannelCommand.Execute(channel);
         e.Handled = true; // don't also change the master volume
+        // Each gain change rebuilds the audio filter chain, so a touchpad's stream of tiny deltas must add up first.
+        var steps = _channelWheel.Take(e.Delta.Y);
+        if (steps == 0) return;
+        channel.Gain = Math.Clamp(channel.Gain + steps * 10, 0, 200);
+        Vm.SelectChannelCommand.Execute(channel);
     }
 }

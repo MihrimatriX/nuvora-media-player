@@ -12,7 +12,8 @@ public sealed record PresetChoice(ImagePreset Preset, bool IsSelected)
 }
 public sealed record FpsChoice(int Value, string Label, bool IsSelected);
 
-/// <summary>"Görüntü" tab: presets, active layer, 60/90/120 FPS motion interpolation, picture adjustments, original-image bypass.</summary>
+/// <summary>"Görüntü" tab: presets, active layer, 60/90/120 FPS motion interpolation, picture adjustments, original-image bypass.
+/// Colour and cinema filters are in .Looks.cs.</summary>
 public sealed partial class PlayerViewModel
 {
     /// <summary>Colour profile ids; the label is Loc "profile.{id}".</summary>
@@ -155,6 +156,7 @@ public sealed partial class PlayerViewModel
         get
         {
             var preset = CurrentPreset.Id == "off" ? Loc.T("preset.balanced") : PresetName;
+            if (HasLook) return $"{preset} · {LookName}";
             if (ProfileName != "default") return $"{preset} · {ProfileLabel}";
             if (Math.Abs(Sharpness) > 0.5 || Math.Abs(Saturation) > 0.5 || Math.Abs(Contrast) > 0.5)
                 return $"{preset} · {Loc.F("badge.sharpness", SharpnessText)}";
@@ -198,7 +200,7 @@ public sealed partial class PlayerViewModel
     {
         SplitRatio = Math.Clamp(windowRatio, 0.04, 0.96);
         _videoSplitRatio = Math.Clamp(videoRatio, 0.0, 1.0);
-        if (IsSplitCompare && !IsBypassed) UpdateCompareShaderOpts();
+        if (IsSplitCompare && !IsBypassed) UpdateShaderOpts();
     }
 
     [RelayCommand]
@@ -220,7 +222,8 @@ public sealed partial class PlayerViewModel
     {
         name = UserPresets.CleanName(name);
         if (name.Length == 0) return false;
-        UserPresets.Save(_settings.UserPresets, new(name, PresetId, Contrast, Saturation, Brightness, Sharpness, Gamma, Hue, TargetFps));
+        UserPresets.Save(_settings.UserPresets, new(name, PresetId, Contrast, Saturation, Brightness, Sharpness, Gamma, Hue, TargetFps,
+            LookId, LookStrength, Grain, Vignette, Letterbox));
         _settings.Save();
         ProfileName = UserPrefix + name;
         return true;
@@ -231,6 +234,7 @@ public sealed partial class PlayerViewModel
         PresetId = ImagePresets.Find(p.BasePreset).Id;
         (Contrast, Saturation, Brightness, Sharpness, Gamma, Hue) = (p.Contrast, p.Saturation, p.Brightness, p.Sharpness, p.Gamma, p.Hue);
         TargetFps = p.TargetFps;
+        (LookId, LookStrength, Grain, Vignette, Letterbox) = (ColorLooks.Find(p.Look).Id, p.LookStrength, p.Grain, p.Vignette, p.Letterbox);
         ProfileName = UserPrefix + p.Name;
     }
 
@@ -274,7 +278,7 @@ public sealed partial class PlayerViewModel
     partial void OnSplitRatioChanged(double value)
     {
         if (Math.Abs(_videoSplitRatio - value) > 0.0001) _videoSplitRatio = value;
-        if (IsSplitCompare && !IsBypassed) UpdateCompareShaderOpts();
+        if (IsSplitCompare && !IsBypassed) UpdateShaderOpts();
     }
     partial void OnTargetFpsChanged(int value) { ApplyFps(); OnPropertyChanged(nameof(TechInfo)); }
     partial void OnContrastChanged(double value) => ApplyImage();
@@ -361,15 +365,18 @@ public sealed partial class PlayerViewModel
             Set("hue", "0");
             Set("sharpen", "0");
 
-            // The split view compares picture adjustments only; CNN layers would land on both halves.
-            SetShaders(File.Exists(CompareShaderPath) ? [CompareShaderPath] : [], null);
-            UpdateCompareShaderOpts();
+            // The split view compares picture adjustments and filters only; CNN layers would land on both halves.
+            SetShaders([.. File.Exists(CompareShaderPath) ? [CompareShaderPath] : Array.Empty<string>(), .. LookShaders()], null);
+            UpdateShaderOpts();
             return;
         }
 
         // Driver VSR already doubled the frame: a shader upscaler on top would only cost GPU time.
         ShaderLayer? layer = null;
-        SetShaders(IsBypassed || DriverLayer.Scales(_driverFilter) ? [] : DesiredShaders(out layer), layer);
+        var upscalers = IsBypassed || DriverLayer.Scales(_driverFilter) ? [] : DesiredShaders(out layer);
+        // Filters go last so they grade the upscaled picture; they also run on top of driver VSR.
+        SetShaders([.. upscalers, .. LookShaders()], layer);
+        UpdateShaderOpts();
 
         var preset = IsBypassed ? ImagePresets.Off : CurrentPreset;
         foreach (var (k, v) in preset.Options) Set(k, v);
@@ -384,14 +391,14 @@ public sealed partial class PlayerViewModel
         Set("sharpen", Inv(sharp));
     }
 
-    void UpdateCompareShaderOpts()
+    /// <summary>compare.glsl's own options; "split" is added by <see cref="UpdateShaderOpts"/>.</summary>
+    string CompareShaderOpts()
     {
         var preset = CurrentPreset.Id == "off" ? ImagePresets.Find("balanced") : CurrentPreset;
         var presetSharp = preset.Id switch { "anime" => 0.85, "max" => 0.70, "balanced" => 0.50, _ => 0.35 };
         var sharp = Math.Clamp(presetSharp + Sharpness / 35.0, -1.5, 3.5);
         var presetBoost = preset.Id switch { "anime" => 0.85, "max" => 0.75, "balanced" => 0.50, _ => 0.25 };
-        var opts = $"split={Inv(_videoSplitRatio)},sharp={Inv(sharp)},cont={Inv(Contrast)},sat={Inv(Saturation)},bright={Inv(Brightness)},gam={Inv(Gamma)},hue_deg={Inv(Hue)},preset_boost={Inv(presetBoost)}";
-        Set("glsl-shader-opts", opts);
+        return $"sharp={Inv(sharp)},cont={Inv(Contrast)},sat={Inv(Saturation)},bright={Inv(Brightness)},gam={Inv(Gamma)},hue_deg={Inv(Hue)},preset_boost={Inv(presetBoost)}";
     }
 
     /// <summary>Files of the chain level the fallback allows; missing files (stripped install) mean built-in.</summary>

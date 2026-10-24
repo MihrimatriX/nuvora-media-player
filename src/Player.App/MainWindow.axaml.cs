@@ -10,6 +10,7 @@ namespace Player.App;
 public partial class MainWindow : Window
 {
     readonly OverlayWindow _overlay = null!;
+    readonly PlayerViewModel? _vm;
     double _videoW = 1280, _videoH = 720;
     IDisposable? _shell;
 
@@ -18,6 +19,7 @@ public partial class MainWindow : Window
     public MainWindow(PlayerViewModel vm, string[] args)
     {
         InitializeComponent();
+        _vm = vm;
         _overlay = new OverlayWindow(vm);
         Topmost = vm.Settings.AlwaysOnTop;
         if (vm.Settings.StartFullscreen) WindowState = WindowState.FullScreen;
@@ -92,6 +94,12 @@ public partial class MainWindow : Window
     {
         base.OnPropertyChanged(change);
         if (change.Property == ClientSizeProperty || change.Property == WindowStateProperty) SyncOverlay();
+        if (change.Property == WindowStateProperty && _vm is not null)
+        {
+            // The bar's full-screen and maximize buttons show what pressing them will do.
+            _vm.IsFullScreen = WindowState == WindowState.FullScreen;
+            _vm.IsMaximized = WindowState == WindowState.Maximized;
+        }
         // A topmost owner climbs above a non-topmost owned window: the controls would hide behind the video.
         if (change.Property == TopmostProperty && _overlay is not null) _overlay.Topmost = Topmost;
     }

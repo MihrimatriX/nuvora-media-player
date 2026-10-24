@@ -223,6 +223,66 @@
                 </StackPanel>
               </Grid>
             </Border>
+
+            <!-- Colour & cinema filters (looks.glsl, one GPU pass at the video's own resolution) -->
+            <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
+              <TextBlock Classes="h3" Text="{app:T panel.looks}" VerticalAlignment="Center" />
+              <Button Grid.Column="1" Classes="link" Content="{app:T panel.reset}" FontSize="12" Command="{Binding ResetLooksCommand}"
+                      IsEnabled="{Binding HasCinemaFilters}" AutomationProperties.Name="{app:T panel.resetLooks}" />
+            </Grid>
+            <ItemsControl ItemsSource="{Binding LookChoices}" Margin="0,0,-8,-8">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate><UniformGrid Columns="4" /></ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="app:LookChoice">
+                  <RadioButton Classes="look" Margin="0,0,8,8" GroupName="look" IsChecked="{Binding IsSelected, Mode=OneWay}"
+                               Command="{Binding $parent[ItemsControl].((app:PlayerViewModel)DataContext).SelectLookCommand}"
+                               CommandParameter="{Binding Id}" ToolTip.Tip="{Binding Description}" AutomationProperties.Name="{Binding Name}">
+                    <StackPanel Spacing="6">
+                      <Border Height="28" CornerRadius="7" Background="{Binding Preview}" BorderBrush="{DynamicResource Line2}" BorderThickness="1" />
+                      <TextBlock Text="{Binding Name}" FontSize="11.5" FontWeight="SemiBold" HorizontalAlignment="Center"
+                                 TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                  </RadioButton>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Border Classes="group" Padding="14,12">
+              <StackPanel Spacing="10">
+                <StackPanel Spacing="4" IsEnabled="{Binding HasLook}">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Text="{app:T panel.lookStrength}" FontSize="13" FontWeight="SemiBold" />
+                    <TextBlock Grid.Column="1" Classes="mono" Text="{Binding LookStrengthText}" Foreground="{DynamicResource Fg2}" />
+                  </Grid>
+                  <Slider Minimum="0" Maximum="100" Value="{Binding LookStrength}" TickFrequency="1" IsSnapToTickEnabled="True"
+                          AutomationProperties.Name="{app:T panel.lookStrength}" />
+                </StackPanel>
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="18">
+                  <StackPanel Spacing="4">
+                    <Grid ColumnDefinitions="*,Auto">
+                      <TextBlock Text="{app:T panel.grain}" FontSize="13" FontWeight="SemiBold" />
+                      <TextBlock Grid.Column="1" Classes="mono" Text="{Binding GrainText}" Foreground="{DynamicResource Fg2}" />
+                    </Grid>
+                    <Slider Minimum="0" Maximum="100" Value="{Binding Grain}" TickFrequency="1" IsSnapToTickEnabled="True"
+                            AutomationProperties.Name="{app:T panel.grain}" ToolTip.Tip="{app:T panel.grainTip}" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="1" Spacing="4">
+                    <Grid ColumnDefinitions="*,Auto">
+                      <TextBlock Text="{app:T panel.vignette}" FontSize="13" FontWeight="SemiBold" />
+                      <TextBlock Grid.Column="1" Classes="mono" Text="{Binding VignetteText}" Foreground="{DynamicResource Fg2}" />
+                    </Grid>
+                    <Slider Minimum="0" Maximum="100" Value="{Binding Vignette}" TickFrequency="1" IsSnapToTickEnabled="True"
+                            AutomationProperties.Name="{app:T panel.vignette}" ToolTip.Tip="{app:T panel.vignetteTip}" />
+                  </StackPanel>
+                </Grid>
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock Text="{app:T panel.letterbox}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" />
+                  <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Letterbox}" AutomationProperties.Name="{app:T panel.letterbox}"
+                                ToolTip.Tip="{app:T panel.letterboxTip}" />
+                </Grid>
+              </StackPanel>
+            </Border>
           </StackPanel>
         </ScrollViewer>
       </DockPanel>
@@ -241,7 +301,8 @@
                     <ToggleButton Grid.Column="2" Classes="switch" IsChecked="{Binding BoostEnabled}" AutomationProperties.Name="{app:T panel.volumeBoost}" />
                   </Grid>
                   <Panel>
-                    <Slider Minimum="0" Maximum="{Binding VolumeMax}" Value="{Binding Volume}" AutomationProperties.Name="{app:T panel.volumeBoostLevel}" />
+                    <Slider Minimum="0" Maximum="{Binding VolumeMax}" Value="{Binding Volume}" TickFrequency="1" IsSnapToTickEnabled="True"
+                            AutomationProperties.Name="{app:T panel.volumeBoostLevel}" />
                     <Border Width="2" Height="10" CornerRadius="1" Background="#66FFFFFF" HorizontalAlignment="Center"
                             IsVisible="{Binding BoostEnabled}" IsHitTestVisible="False" />
                   </Panel>

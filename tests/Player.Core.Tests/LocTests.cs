@@ -58,6 +58,7 @@ public partial class LocTests
         foreach (var id in PlayerViewModel.Profiles) Assert.True(Loc.Has("en", $"profile.{id}"), id);
         foreach (var p in ImagePresets.All) Assert.True(Loc.Has("en", $"preset.{p.Id}") && Loc.Has("en", $"preset.{p.Id}.desc"), p.Id);
         foreach (var lang in new[] { "auto", "tr", "en" }) Assert.True(Loc.Has("en", $"lang.{lang}"), lang);
+        foreach (var l in ColorLooks.All) Assert.True(Loc.Has("en", $"look.{l.Id}") && Loc.Has("en", $"look.{l.Id}.desc"), l.Id);
     }
 
     [Fact]

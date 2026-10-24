@@ -276,19 +276,29 @@
                       ToolTip.Tip="{app:T player.playlist}" AutomationProperties.Name="{app:T player.playlist}">
                 <Viewbox Classes="i19"><Path Data="{StaticResource IcoList}" /></Viewbox>
               </Button>
-              <Button Classes="icon" Command="{Binding ToggleMuteCommand}" ToolTip.Tip="{app:T player.muteM}" AutomationProperties.Name="{app:T player.mute}">
+              <Button x:Name="MuteButton" Classes="icon" Command="{Binding ToggleMuteCommand}" ToolTip.Tip="{Binding MuteTip}"
+                      AutomationProperties.Name="{app:T player.mute}">
                 <Viewbox Classes="i19">
                   <Panel>
                     <Path Data="{StaticResource IcoSpeaker}" />
-                    <Path IsVisible="{Binding !IsMuted}" Data="{StaticResource IcoWaves}" />
-                    <Path IsVisible="{Binding IsMuted}" Data="{StaticResource IcoMuteX}" />
+                    <Path IsVisible="{Binding IsVolumeHigh}" Data="{StaticResource IcoWaves}" />
+                    <Path IsVisible="{Binding IsVolumeLow}" Data="{StaticResource IcoWave1}" />
+                    <Path IsVisible="{Binding IsSilent}" Data="{StaticResource IcoMuteX}" />
                   </Panel>
                 </Viewbox>
               </Button>
-              <Slider x:Name="VolumeSlider" Classes="volume" Width="72" Margin="2,0,6,0" Minimum="0" Maximum="{Binding VolumeMax}" Value="{Binding Volume}"
-                      VerticalAlignment="Center" AutomationProperties.Name="{app:T player.volume}" />
-              <Button Classes="icon" Click="OnFullScreen" ToolTip.Tip="{app:T player.fullScreenF}" AutomationProperties.Name="{app:T player.fullScreen}">
-                <Viewbox Classes="i19"><Path Data="{StaticResource IcoFullscreen}" /></Viewbox>
+              <!-- Whole percents: a drag sends one command per step instead of one per pixel. -->
+              <Slider x:Name="VolumeSlider" Classes="volume" Classes.muted="{Binding IsMuted}" Width="84" Margin="2,0,6,0"
+                      Minimum="0" Maximum="{Binding VolumeMax}" Value="{Binding Volume}" TickFrequency="1" IsSnapToTickEnabled="True"
+                      SmallChange="1" LargeChange="5" VerticalAlignment="Center" ToolTip.Tip="{Binding BoostText}"
+                      AutomationProperties.Name="{app:T player.volume}" />
+              <Button Classes="icon" Click="OnFullScreen" ToolTip.Tip="{Binding FullScreenTip}" AutomationProperties.Name="{app:T player.fullScreen}">
+                <Viewbox Classes="i19">
+                  <Panel>
+                    <Path IsVisible="{Binding !IsFullScreen}" Data="{StaticResource IcoFullscreen}" />
+                    <Path IsVisible="{Binding IsFullScreen}" Data="{StaticResource IcoFullscreenExit}" />
+                  </Panel>
+                </Viewbox>
               </Button>
             </StackPanel>
           </Grid>
@@ -342,7 +352,12 @@
             <Viewbox Classes="i16"><Path Data="{StaticResource IcoMin}" /></Viewbox>
           </Button>
           <Button Classes="win" Click="OnMaximize" ToolTip.Tip="{app:T player.maximizeRestore}" AutomationProperties.Name="{app:T player.maximize}">
-            <Viewbox Classes="i14"><Path Data="{StaticResource IcoMax}" /></Viewbox>
+            <Viewbox Classes="i14">
+              <Panel>
+                <Path IsVisible="{Binding !IsMaximized}" Data="{StaticResource IcoMax}" />
+                <Path IsVisible="{Binding IsMaximized}" Data="{StaticResource IcoRestore}" />
+              </Panel>
+            </Viewbox>
           </Button>
           <Button Classes="win" Click="OnClose" ToolTip.Tip="{app:T player.close}" AutomationProperties.Name="{app:T player.close}">
             <Viewbox Classes="i16"><Path Data="{StaticResource IcoClose}" /></Viewbox>
