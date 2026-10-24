@@ -169,7 +169,8 @@ public sealed partial class PlayerViewModel
             if (ProfileName != "default") return $"{preset} · {ProfileLabel}";
             if (Math.Abs(Sharpness) > 0.5 || Math.Abs(Saturation) > 0.5 || Math.Abs(Contrast) > 0.5)
                 return $"{preset} · {Loc.F("badge.sharpness", SharpnessText)}";
-            return FpsBadge.Length > 0 ? $"{preset} · {FpsBadge}" : $"{preset} · {Engine}";
+            // Nöral Ultra's point is its own pass, not the scaler under it (the split view loads no CNN at all).
+            return FpsBadge.Length > 0 ? $"{preset} · {FpsBadge}" : $"{preset} · {(IsNeural ? Loc.T("layer.neuralPass") : Engine)}";
         }
     }
 

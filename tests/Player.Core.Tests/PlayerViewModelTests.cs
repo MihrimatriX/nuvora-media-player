@@ -383,6 +383,7 @@ public class PlayerViewModelTests
         var opts = _mpv.Named("set").Last(c => c.StartsWith("set glsl-shader-opts"));
         Assert.StartsWith("set glsl-shader-opts split=0.5,sharp=0,", opts);
         Assert.Contains("preset_boost=0,nu_structure=0.6", opts);
+        Assert.Equal("Nöral Ultra · Yapı + Ton", _vm.AfterBadgeText);
     }
 
     [Fact]
