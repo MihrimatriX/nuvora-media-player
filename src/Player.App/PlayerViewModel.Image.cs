@@ -12,7 +12,8 @@ public sealed record PresetChoice(ImagePreset Preset, bool IsSelected)
 }
 public sealed record FpsChoice(int Value, string Label, bool IsSelected);
 
-/// <summary>"Görüntü" tab: presets, active layer, 60/90/120 FPS motion interpolation, picture adjustments, original-image bypass.</summary>
+/// <summary>"Görüntü" tab: presets, active layer, 60/90/120 FPS motion interpolation, picture adjustments, original-image bypass.
+/// Colour and cinema filters are in .Looks.cs.</summary>
 public sealed partial class PlayerViewModel
 {
     /// <summary>Colour profile ids; the label is Loc "profile.{id}".</summary>
@@ -46,8 +47,16 @@ public sealed partial class PlayerViewModel
 
     string Hwdec => !_settings.HardwareDecoding ? "no" : CpuFps ? "auto-copy" : _driverFilter is not null ? "d3d11va" : _settings.HwdecMode;
 
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(PresetChoices), nameof(ActiveLayer), nameof(EnhanceLabel), nameof(PresetName), nameof(AfterBadgeText))]
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(PresetChoices), nameof(ActiveLayer), nameof(EnhanceLabel), nameof(PresetName), nameof(AfterBadgeText), nameof(IsNeural))]
     public partial string PresetId { get; set; } = "balanced";
+
+    // ---- "Nöral Ultra": unofficial DLSS 5-style structure & tone pass (neural.glsl) ----
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(NeuralStructureText))] public partial double NeuralStructure { get; set; } = 60;
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(NeuralToneText))] public partial double NeuralTone { get; set; } = 50;
+    public string NeuralStructureText => $"{NeuralStructure:0}%";
+    public string NeuralToneText => $"{NeuralTone:0}%";
+    /// <summary>The preset runs a reconstruction pass after the upscaler; the panel shows its two sliders.</summary>
+    public bool IsNeural => CurrentPreset.PostShader is not null;
 
     [ObservableProperty, NotifyPropertyChangedFor(nameof(ActiveLayer), nameof(BypassLabel), nameof(EnhanceLabel))]
     public partial bool IsBypassed { get; set; }
@@ -97,7 +106,7 @@ public sealed partial class PlayerViewModel
     static string LayerLabel(ImagePreset preset) => preset.Id == "off" ? Loc.T("preset.off") : Loc.F("preset.layerBuiltIn", preset.Scaler);
 
     ImagePreset CurrentPreset => ImagePresets.Find(PresetId);
-    public IEnumerable<PresetChoice> PresetChoices => ImagePresets.All.Select(p => new PresetChoice(p, p.Id == PresetId));
+    public IEnumerable<PresetChoice> PresetChoices => ImagePresets.All.Where(p => !p.Experimental).Select(p => new PresetChoice(p, p.Id == PresetId));
     public IEnumerable<FpsChoice> FpsChoices => FpsTargets.Select(f => new FpsChoice(f.Value, Loc.T(f.Label), f.Value == TargetFps));
     public string PresetName => PresetLabel(CurrentPreset);
     public string SplitPercentText => $"%{(SplitRatio * 100):0}";
@@ -131,6 +140,7 @@ public sealed partial class PlayerViewModel
                 LayerState.Waiting => Loc.F("layer.waiting", builtIn, _loadedLayer!.Name),
                 _ => builtIn,
             };
+            if (IsNeural) layer += " · " + Loc.T("layer.neuralPass");
             if (DriverLayer.Hdr(_driverFilter)) layer += " · HDR";
             return FpsBadge.Length > 0 ? $"{layer} · {FpsBadge}" : layer;
         }
@@ -155,10 +165,12 @@ public sealed partial class PlayerViewModel
         get
         {
             var preset = CurrentPreset.Id == "off" ? Loc.T("preset.balanced") : PresetName;
+            if (HasLook) return $"{preset} · {LookName}";
             if (ProfileName != "default") return $"{preset} · {ProfileLabel}";
             if (Math.Abs(Sharpness) > 0.5 || Math.Abs(Saturation) > 0.5 || Math.Abs(Contrast) > 0.5)
                 return $"{preset} · {Loc.F("badge.sharpness", SharpnessText)}";
-            return FpsBadge.Length > 0 ? $"{preset} · {FpsBadge}" : $"{preset} · {Engine}";
+            // Nöral Ultra's point is its own pass, not the scaler under it (the split view loads no CNN at all).
+            return FpsBadge.Length > 0 ? $"{preset} · {FpsBadge}" : $"{preset} · {(IsNeural ? Loc.T("layer.neuralPass") : Engine)}";
         }
     }
 
@@ -198,7 +210,7 @@ public sealed partial class PlayerViewModel
     {
         SplitRatio = Math.Clamp(windowRatio, 0.04, 0.96);
         _videoSplitRatio = Math.Clamp(videoRatio, 0.0, 1.0);
-        if (IsSplitCompare && !IsBypassed) UpdateCompareShaderOpts();
+        if (IsSplitCompare && !IsBypassed) UpdateShaderOpts();
     }
 
     [RelayCommand]
@@ -220,7 +232,8 @@ public sealed partial class PlayerViewModel
     {
         name = UserPresets.CleanName(name);
         if (name.Length == 0) return false;
-        UserPresets.Save(_settings.UserPresets, new(name, PresetId, Contrast, Saturation, Brightness, Sharpness, Gamma, Hue, TargetFps));
+        UserPresets.Save(_settings.UserPresets, new(name, PresetId, Contrast, Saturation, Brightness, Sharpness, Gamma, Hue, TargetFps,
+            LookId, LookStrength, Grain, Vignette, Letterbox, NeuralStructure, NeuralTone));
         _settings.Save();
         ProfileName = UserPrefix + name;
         return true;
@@ -231,6 +244,8 @@ public sealed partial class PlayerViewModel
         PresetId = ImagePresets.Find(p.BasePreset).Id;
         (Contrast, Saturation, Brightness, Sharpness, Gamma, Hue) = (p.Contrast, p.Saturation, p.Brightness, p.Sharpness, p.Gamma, p.Hue);
         TargetFps = p.TargetFps;
+        (LookId, LookStrength, Grain, Vignette, Letterbox) = (ColorLooks.Find(p.Look).Id, p.LookStrength, p.Grain, p.Vignette, p.Letterbox);
+        (NeuralStructure, NeuralTone) = (p.NeuralStructure, p.NeuralTone);
         ProfileName = UserPrefix + p.Name;
     }
 
@@ -274,7 +289,7 @@ public sealed partial class PlayerViewModel
     partial void OnSplitRatioChanged(double value)
     {
         if (Math.Abs(_videoSplitRatio - value) > 0.0001) _videoSplitRatio = value;
-        if (IsSplitCompare && !IsBypassed) UpdateCompareShaderOpts();
+        if (IsSplitCompare && !IsBypassed) UpdateShaderOpts();
     }
     partial void OnTargetFpsChanged(int value) { ApplyFps(); OnPropertyChanged(nameof(TechInfo)); }
     partial void OnContrastChanged(double value) => ApplyImage();
@@ -283,6 +298,8 @@ public sealed partial class PlayerViewModel
     partial void OnSharpnessChanged(double value) => ApplyImage();
     partial void OnGammaChanged(double value) => ApplyImage();
     partial void OnHueChanged(double value) => ApplyImage();
+    partial void OnNeuralStructureChanged(double value) => UpdateShaderOpts();
+    partial void OnNeuralToneChanged(double value) => UpdateShaderOpts();
 
     void ApplyFps()
     {
@@ -361,15 +378,19 @@ public sealed partial class PlayerViewModel
             Set("hue", "0");
             Set("sharpen", "0");
 
-            // The split view compares picture adjustments only; CNN layers would land on both halves.
-            SetShaders(File.Exists(CompareShaderPath) ? [CompareShaderPath] : [], null);
-            UpdateCompareShaderOpts();
+            // The split view compares picture adjustments and filters only; CNN layers would land on both halves.
+            SetShaders([.. File.Exists(CompareShaderPath) ? [CompareShaderPath] : Array.Empty<string>(), .. PostShaders(), .. LookShaders()], null);
+            UpdateShaderOpts();
             return;
         }
 
         // Driver VSR already doubled the frame: a shader upscaler on top would only cost GPU time.
         ShaderLayer? layer = null;
-        SetShaders(IsBypassed || DriverLayer.Scales(_driverFilter) ? [] : DesiredShaders(out layer), layer);
+        var upscalers = IsBypassed || DriverLayer.Scales(_driverFilter) ? [] : DesiredShaders(out layer);
+        // The reconstruction pass and the filters follow the upscaler, so they work on the upscaled picture; both also
+        // run on top of driver VSR.
+        SetShaders([.. upscalers, .. PostShaders(), .. LookShaders()], layer);
+        UpdateShaderOpts();
 
         var preset = IsBypassed ? ImagePresets.Off : CurrentPreset;
         foreach (var (k, v) in preset.Options) Set(k, v);
@@ -384,15 +405,20 @@ public sealed partial class PlayerViewModel
         Set("sharpen", Inv(sharp));
     }
 
-    void UpdateCompareShaderOpts()
+    /// <summary>compare.glsl's own options; "split" is added by <see cref="UpdateShaderOpts"/>.</summary>
+    string CompareShaderOpts()
     {
         var preset = CurrentPreset.Id == "off" ? ImagePresets.Find("balanced") : CurrentPreset;
-        var presetSharp = preset.Id switch { "anime" => 0.85, "max" => 0.70, "balanced" => 0.50, _ => 0.35 };
+        // neural.glsl does its own sharpening on the "after" side; compare.glsl adds only the user's sliders there.
+        var presetSharp = preset.Id switch { "anime" => 0.85, "max" => 0.70, "balanced" => 0.50, "neural" => 0, _ => 0.35 };
         var sharp = Math.Clamp(presetSharp + Sharpness / 35.0, -1.5, 3.5);
-        var presetBoost = preset.Id switch { "anime" => 0.85, "max" => 0.75, "balanced" => 0.50, _ => 0.25 };
-        var opts = $"split={Inv(_videoSplitRatio)},sharp={Inv(sharp)},cont={Inv(Contrast)},sat={Inv(Saturation)},bright={Inv(Brightness)},gam={Inv(Gamma)},hue_deg={Inv(Hue)},preset_boost={Inv(presetBoost)}";
-        Set("glsl-shader-opts", opts);
+        var presetBoost = preset.Id switch { "anime" => 0.85, "max" => 0.75, "balanced" => 0.50, "neural" => 0, _ => 0.25 };
+        return $"sharp={Inv(sharp)},cont={Inv(Contrast)},sat={Inv(Saturation)},bright={Inv(Brightness)},gam={Inv(Gamma)},hue_deg={Inv(Hue)},preset_boost={Inv(presetBoost)}";
     }
+
+    /// <summary>The preset's reconstruction pass, unless the original image is being shown.</summary>
+    string[] PostShaders() =>
+        !IsBypassed && CurrentPreset.PostShader is { } post && File.Exists(ShaderPath(post)) ? [ShaderPath(post)] : [];
 
     /// <summary>Files of the chain level the fallback allows; missing files (stripped install) mean built-in.</summary>
     string[] DesiredShaders(out ShaderLayer? layer)

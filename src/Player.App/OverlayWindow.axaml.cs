@@ -18,11 +18,15 @@ public partial class OverlayWindow : Window
 {
     const double ResizeGrip = 7, CornerGrip = 14;
     static readonly Cursor HiddenCursor = new(StandardCursorType.None);
+    // Created once: PointerMoved runs for every mouse move and a Cursor wraps a native handle.
+    static readonly Cursor SizeWestEast = new(StandardCursorType.SizeWestEast), SizeNorthSouth = new(StandardCursorType.SizeNorthSouth),
+        TopLeftCorner = new(StandardCursorType.TopLeftCorner), TopRightCorner = new(StandardCursorType.TopRightCorner);
     static readonly IBrush TickBrush = new SolidColorBrush(Color.Parse("#E60E1016"));
 
     readonly PlayerViewModel _vm = null!;
     readonly DispatcherTimer _hideTimer = new() { Interval = TimeSpan.FromSeconds(2) };
-    DispatcherTimer? _osdTimer;
+    readonly DispatcherTimer _osdTimer = new() { Interval = TimeSpan.FromSeconds(1.8) };
+    readonly WheelSteps _videoWheel = new(), _volumeWheel = new();
     int _lastHoverBucket = -1;
     Point _lastPointer;
     bool _menuOpen;
@@ -89,8 +93,19 @@ public partial class OverlayWindow : Window
             if (Main is { WindowState: WindowState.Normal } main) main.BeginMoveDrag(start);
         };
         HitArea.PointerReleased += (_, _) => _dragStart = null;
-        HitArea.PointerWheelChanged += (_, e) => _vm.HandleWheel(Math.Sign(e.Delta.Y));
-        VolumeSlider.PointerWheelChanged += (_, e) => { _vm.StepVolume(Math.Sign(e.Delta.Y)); e.Handled = true; };
+        HitArea.PointerWheelChanged += (_, e) =>
+        {
+            var steps = _videoWheel.Take(e.Delta.Y);
+            for (var i = 0; i < Math.Abs(steps); i++) _vm.HandleWheel(Math.Sign(steps));
+        };
+        // The wheel over the speaker or the volume slider always means volume, whatever the video area does.
+        VolumeSlider.PointerWheelChanged += OnVolumeWheel;
+        MuteButton.PointerWheelChanged += OnVolumeWheel;
+        _osdTimer.Tick += (_, _) =>
+        {
+            _osdTimer.Stop();
+            OsdPill.IsVisible = false;
+        };
         AddHandler(DragDrop.DropEvent, OnDrop);
         AddHandler(KeyDownEvent, (_, e) => HandleKey(e), RoutingStrategies.Tunnel);
         AddHandler(KeyUpEvent, (_, e) => HandleKeyUp(e), RoutingStrategies.Tunnel);
@@ -98,8 +113,16 @@ public partial class OverlayWindow : Window
         // While the seek bar is held, the view drives the position instead of mpv.
         SeekBar.AddHandler(PointerPressedEvent, (_, _) => _vm.IsScrubbing = true, RoutingStrategies.Tunnel, true);
         SeekBar.AddHandler(PointerReleasedEvent, (_, _) => _vm.IsScrubbing = false, RoutingStrategies.Tunnel, true);
+        // A press that ends without a release on the bar (Alt+Tab, a popup taking the mouse) must not leave the bar
+        // frozen: while scrubbing, mpv's position updates are ignored.
+        Deactivated += (_, _) => _vm.IsScrubbing = false;
+        AddHandler(PointerReleasedEvent, (_, _) => _vm.IsScrubbing = false, RoutingStrategies.Tunnel, true);
         SeekHost.SizeChanged += (_, _) => UpdateSeekDecor();
-        SeekHost.PointerMoved += OnSeekHover;
+        SeekHost.PointerMoved += (s, e) =>
+        {
+            if (_vm.IsScrubbing && !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) _vm.IsScrubbing = false;
+            OnSeekHover(s, e);
+        };
         SeekHost.PointerExited += (_, _) => HoverLine.IsVisible = HoverBubble.IsVisible = HoverTrack.IsVisible = false;
         UpdateStepLabels();
 
@@ -115,6 +138,13 @@ public partial class OverlayWindow : Window
     }
 
     Window? Main => Owner as Window;
+
+    void OnVolumeWheel(object? sender, PointerWheelEventArgs e)
+    {
+        var steps = _volumeWheel.Take(e.Delta.Y);
+        for (var i = 0; i < Math.Abs(steps); i++) _vm.StepVolume(Math.Sign(steps));
+        e.Handled = true;
+    }
 
     // ---------------- interactive before/after split slider ----------------
 
@@ -211,26 +241,14 @@ public partial class OverlayWindow : Window
 
     void UpdateEdgeCursor(Point p)
     {
-        if (_isDraggingSplit)
+        Root.Cursor = _isDraggingSplit ? SizeWestEast : GetResizeEdge(p) switch
         {
-            Root.Cursor = new Cursor(StandardCursorType.SizeWestEast);
-            return;
-        }
-        var edge = GetResizeEdge(p);
-        if (edge is null)
-        {
-            Root.Cursor = _chromeVisible ? Cursor.Default : HiddenCursor;
-            return;
-        }
-        var type = edge.Value switch
-        {
-            WindowEdge.West or WindowEdge.East => StandardCursorType.SizeWestEast,
-            WindowEdge.North or WindowEdge.South => StandardCursorType.SizeNorthSouth,
-            WindowEdge.NorthWest or WindowEdge.SouthEast => StandardCursorType.TopLeftCorner,
-            WindowEdge.NorthEast or WindowEdge.SouthWest => StandardCursorType.TopRightCorner,
-            _ => StandardCursorType.Arrow,
+            null => _chromeVisible ? Cursor.Default : HiddenCursor,
+            WindowEdge.West or WindowEdge.East => SizeWestEast,
+            WindowEdge.North or WindowEdge.South => SizeNorthSouth,
+            WindowEdge.NorthWest or WindowEdge.SouthEast => TopLeftCorner,
+            _ => TopRightCorner,
         };
-        Root.Cursor = new Cursor(type);
     }
 
     void OnRootPointerPressed(object? sender, PointerPressedEventArgs e)
@@ -277,7 +295,10 @@ public partial class OverlayWindow : Window
                 or nameof(PlayerViewModel.AspectRatio) or nameof(PlayerViewModel.Rotation) or nameof(PlayerViewModel.IsFilled):
                 Dispatcher.UIThread.Post(UpdateSplitVisual);
                 break;
-            case nameof(PlayerViewModel.Duration) or nameof(PlayerViewModel.CacheTime) or nameof(PlayerViewModel.Chapters)
+            case nameof(PlayerViewModel.CacheTime):
+                UpdateBuffer();
+                break;
+            case nameof(PlayerViewModel.Duration) or nameof(PlayerViewModel.Chapters)
                 or nameof(PlayerViewModel.AbLoopASeconds) or nameof(PlayerViewModel.AbLoopBSeconds):
                 UpdateSeekDecor();
                 break;
@@ -362,6 +383,7 @@ public partial class OverlayWindow : Window
             case "speed-down": _vm.SpeedDownCommand.Execute(null); break;
             case "speed-up": _vm.SpeedUpCommand.Execute(null); break;
             case "fps-cycle": _vm.CycleFps(); break;
+            case "look-cycle": _vm.CycleLook(); break;
             case "loop": _vm.CycleLoop(); break;
             case "ab-loop": _vm.AbLoop(); break;
             case "aspect": _vm.CycleAspect(); break;
@@ -418,11 +440,20 @@ public partial class OverlayWindow : Window
 
     // ---------------- seek bar decorations ----------------
 
+    /// <summary>Cache time changes several times a second while buffering; only a whole-pixel change re-lays out the bar.</summary>
+    void UpdateBuffer()
+    {
+        var duration = _vm.Duration;
+        var width = duration > 0 ? Math.Round(Math.Clamp(_vm.CacheTime / duration, 0, 1) * SeekHost.Bounds.Width) : 0;
+        if (BufferBar.Width != width) BufferBar.Width = width;
+    }
+
+    /// <summary>Chapter ticks and the A-B bar: rebuilt only when the file, its chapters, the loop or the bar's size change.</summary>
     void UpdateSeekDecor()
     {
         var width = SeekHost.Bounds.Width;
         var duration = _vm.Duration;
-        BufferBar.Width = duration > 0 ? Math.Clamp(_vm.CacheTime / duration, 0, 1) * width : 0;
+        UpdateBuffer();
         Ticks.Children.Clear();
 
         if (_vm.AbLoopASeconds is { } loopA && duration > 0)
@@ -489,13 +520,7 @@ public partial class OverlayWindow : Window
         OsdText.Text = text;
         OsdPill.IsVisible = true;
         OsdPill.Opacity = 1;
-        _osdTimer?.Stop();
-        _osdTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.8) };
-        _osdTimer.Tick += (_, _) =>
-        {
-            _osdTimer.Stop();
-            OsdPill.IsVisible = false;
-        };
+        _osdTimer.Stop(); // restart: a held key keeps the pill up
         _osdTimer.Start();
     }
 
@@ -743,6 +768,16 @@ public partial class OverlayWindow : Window
                 .Select(p => (object)Menus.Item(Loc.T($"profile.{p}"), p == _vm.ProfileName, () => _vm.ApplyProfile(p)))
                 .ToList();
             items.Add(new MenuItem { Header = Loc.F("menu.profileHeader", _vm.ProfileLabel), ItemsSource = profileItems });
+
+            // 4b. Renk ve sinema filtreleri
+            var lookItems = ColorLooks.All
+                .Select(l => (object)Menus.Item(Loc.T($"look.{l.Id}"), l.Id == _vm.LookId, () => _vm.LookId = l.Id))
+                .ToList();
+            lookItems.Add(new Separator());
+            lookItems.Add(Menus.Item(Loc.T("panel.grain"), _vm.Grain > 0, () => _vm.ToggleGrain()));
+            lookItems.Add(Menus.Item(Loc.T("panel.vignette"), _vm.Vignette > 0, () => _vm.ToggleVignette()));
+            lookItems.Add(Menus.Item(Loc.T("panel.letterbox"), _vm.Letterbox, () => _vm.Letterbox = !_vm.Letterbox));
+            items.Add(new MenuItem { Header = Loc.F("menu.lookHeader", _vm.LookName), ItemsSource = lookItems });
 
             // 5. Altyazı parçaları & Ayarlar
             var subList = _vm.Tracks.Where(t => t.Type == "sub").ToList();

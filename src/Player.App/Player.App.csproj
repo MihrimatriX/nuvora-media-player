@@ -24,11 +24,13 @@
 
   <ItemGroup>
     <!-- Fonts: embedded for the UI and copied next to the exe for libass. Shaders (+ their licenses): only copied, libmpv reads them from disk. -->
-    <AvaloniaResource Include="Assets\**" Exclude="Assets\Shaders\**" />
+    <AvaloniaResource Include="Assets\**" Exclude="Assets\Shaders\**;Assets\FileTypes\**" />
     <EmbeddedResource Include="Strings\*.json" LogicalName="Player.App.Strings.%(Filename).json" />
     <None Update="Assets\Fonts\*.ttf" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Assets\Shaders\**\*.glsl;Assets\Shaders\**\LICENSE;Assets\Shaders\**\COPYING*" CopyToOutputDirectory="PreserveNewest" />
     <None Update="Assets\*.ico;Assets\*.png" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Explorer's icons for files associated with the player (FileAssociation); read from disk, never by the UI. -->
+    <None Update="Assets\FileTypes\*.ico" CopyToOutputDirectory="PreserveNewest" />
     <!-- Put libmpv-2.dll into /lib (see README); it is copied next to the exe. -->
     <None Include="..\..\lib\*.dll" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

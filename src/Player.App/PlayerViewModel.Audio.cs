@@ -65,7 +65,7 @@ public sealed partial class PlayerViewModel
     partial void OnBoostEnabledChanged(bool value)
     {
         _player.Command("set", "volume-max", value ? "200" : "100");
-        if (!value && Volume > 100) Volume = 100;
+        if (!value && Volume > 100) SetVolumeInternal(100);
     }
 
     partial void OnNormalizeChanged(bool value) => ApplyAudioFilters();

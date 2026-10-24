@@ -1,8 +1,11 @@
 namespace Player.Enhancement;
 
-/// <summary>A saved "Görüntü" state: a built-in preset plus the picture sliders and the motion target.</summary>
+/// <summary>A saved "Görüntü" state: a built-in preset plus the picture sliders, the motion target and the colour /
+/// cinema filters. The filter fields have defaults so presets saved before they existed still load.</summary>
 public sealed record UserPreset(string Name, string BasePreset, double Contrast, double Saturation, double Brightness,
-    double Sharpness, double Gamma, double Hue, int TargetFps);
+    double Sharpness, double Gamma, double Hue, int TargetFps,
+    string Look = "none", double LookStrength = 100, double Grain = 0, double Vignette = 0, bool Letterbox = false,
+    double NeuralStructure = 60, double NeuralTone = 50);
 
 /// <summary>Names are unique, compared case-insensitively.</summary>
 public static class UserPresets
