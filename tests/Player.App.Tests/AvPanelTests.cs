@@ -47,4 +47,22 @@ public class AvPanelTests
         Assert.Contains(player.Commands, c => c[0] == "change-list" && c[^1].EndsWith("looks.glsl"));
         Assert.Equal("noir", Assert.Single(Tiles(panel), t => t.IsChecked == true).CommandParameter);
     }
+
+    [AvaloniaFact]
+    public void NeuralUltraCard_SelectsThePreset_AndShowsItsSliders()
+    {
+        var (window, panel, vm, _) = Show();
+        var card = panel.GetVisualDescendants().OfType<RadioButton>().Single(r => r.Classes.Contains("neural"));
+        var structure = panel.GetVisualDescendants().OfType<Slider>()
+            .Single(s => Avalonia.Automation.AutomationProperties.GetName(s) == Loc.T("panel.structure"));
+        Assert.False(structure.IsEffectivelyVisible);
+
+        var center = card.TranslatePoint(new Point(card.Bounds.Width / 2, card.Bounds.Height / 2), window)!.Value;
+        window.MouseDown(center, MouseButton.Left);
+        window.MouseUp(center, MouseButton.Left);
+
+        Assert.Equal("neural", vm.PresetId);
+        Assert.True(card.IsChecked);
+        Assert.True(structure.IsEffectivelyVisible);
+    }
 }

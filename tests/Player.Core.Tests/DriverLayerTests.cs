@@ -86,6 +86,17 @@ public class DriverLayerViewModelTests
     }
 
     [Fact]
+    public void NeuralUltra_KeepsItsReconstructionPassOnTopOfRtxVsr()
+    {
+        _vm.PresetId = "neural";
+
+        var list = _mpv.Named("change-list");
+        var appended = list.Skip(list.FindLastIndex(c => c.EndsWith(" clr ")) + 1).ToList();
+        Assert.EndsWith("neural.glsl", Assert.Single(appended)); // VSR upscales; no CNN, but the pass stays
+        Assert.StartsWith("Sürücü · RTX VSR · Yapı + Ton", _vm.ActiveLayer);
+    }
+
+    [Fact]
     public void DriverFailure_FallsBackToShaders()
     {
         _mpv.Commands.Clear();

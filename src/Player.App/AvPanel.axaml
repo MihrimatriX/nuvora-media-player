@@ -104,6 +104,57 @@
               </ItemsControl.ItemTemplate>
             </ItemsControl>
 
+            <!-- Experimental: unofficial DLSS 5-style reconstruction (neural.glsl), apart from the regular presets -->
+            <RadioButton Classes="card neural" GroupName="preset" MinHeight="0" IsChecked="{Binding IsNeural, Mode=OneWay}"
+                         Command="{Binding SelectPresetCommand}" CommandParameter="neural" AutomationProperties.Name="{app:T preset.neural}">
+              <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                <Border Width="40" Height="40" CornerRadius="11" VerticalAlignment="Top">
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                      <GradientStop Color="#8B5CF6" Offset="0" />
+                      <GradientStop Color="#0EA5E9" Offset="1" />
+                    </LinearGradientBrush>
+                  </Border.Background>
+                  <Viewbox Classes="i20"><Path Classes="fill" Data="{StaticResource IcoSparkle}" Fill="White" /></Viewbox>
+                </Border>
+                <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                  <TextBlock Text="{app:T preset.neural}" FontSize="14" FontWeight="Bold" />
+                  <TextBlock Text="{app:T preset.neural.desc}" FontSize="11.5" FontWeight="Normal" Foreground="{DynamicResource Fg3}" TextWrapping="Wrap" />
+                </StackPanel>
+                <Border Grid.Column="2" Padding="8,3" CornerRadius="999" Background="{DynamicResource AccentChip}" VerticalAlignment="Top">
+                  <TextBlock Text="{app:T panel.neuralBadge}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource AccentText}" />
+                </Border>
+              </Grid>
+            </RadioButton>
+            <Border Classes="group" Padding="14,12" IsVisible="{Binding IsNeural}">
+              <StackPanel Spacing="10">
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="18">
+                  <StackPanel Spacing="4">
+                    <Grid ColumnDefinitions="*,Auto">
+                      <TextBlock Text="{app:T panel.structure}" FontSize="13" FontWeight="SemiBold" />
+                      <TextBlock Grid.Column="1" Classes="mono" Text="{Binding NeuralStructureText}" Foreground="{DynamicResource Fg2}" />
+                    </Grid>
+                    <Slider Minimum="0" Maximum="100" Value="{Binding NeuralStructure}" TickFrequency="1" IsSnapToTickEnabled="True"
+                            AutomationProperties.Name="{app:T panel.structure}" ToolTip.Tip="{app:T panel.structureTip}" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="1" Spacing="4">
+                    <Grid ColumnDefinitions="*,Auto">
+                      <TextBlock Text="{app:T panel.tone}" FontSize="13" FontWeight="SemiBold" />
+                      <TextBlock Grid.Column="1" Classes="mono" Text="{Binding NeuralToneText}" Foreground="{DynamicResource Fg2}" />
+                    </Grid>
+                    <Slider Minimum="0" Maximum="100" Value="{Binding NeuralTone}" TickFrequency="1" IsSnapToTickEnabled="True"
+                            AutomationProperties.Name="{app:T panel.tone}" ToolTip.Tip="{app:T panel.toneTip}" />
+                  </StackPanel>
+                </Grid>
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                  <Viewbox Classes="i14" VerticalAlignment="Top" Margin="0,2,0,0">
+                    <Path Data="{StaticResource IcoInfo}" Stroke="{DynamicResource Fg2}" StrokeThickness="1.9" />
+                  </Viewbox>
+                  <TextBlock Grid.Column="1" Text="{app:T panel.neuralNote}" FontSize="12" Foreground="{DynamicResource Fg2}" TextWrapping="Wrap" LineHeight="17" />
+                </Grid>
+              </StackPanel>
+            </Border>
+
             <Border Classes="group" Padding="14,12">
               <StackPanel Spacing="8">
                 <Grid ColumnDefinitions="*,Auto">

@@ -1,6 +1,6 @@
 # Proje Durumu (24.10.2026)
 
-Build temiz (0 uyarı), 125 test geçiyor (libmpv gerektiren 3 test DLL yoksa atlanır). v0.1.0 18.10.2026'da yayınlandı; kurulum Velopack `Setup.exe` + portable zip
+Build temiz (0 uyarı), 131 test geçiyor (bu dalda) (libmpv gerektiren 3 test DLL yoksa atlanır). v0.1.0 18.10.2026'da yayınlandı; kurulum Velopack `Setup.exe` + portable zip
 (`release.yml`), tanıtım sayfası GitHub Pages'te.
 
 ## 22.10.2026'da eklenenler
@@ -24,6 +24,13 @@ Build temiz (0 uyarı), 125 test geçiyor (libmpv gerektiren 3 test DLL yoksa at
   anında); istatistik kartı yalnızca açıkken hesaplanıyor; arabellek çubuğu bölüm işaretlerini her güncellemede yeniden
   kurmuyor; fare hareketi mpv'ye `sub-margin-y` yağdırmıyor; imleçler önbellekte; log yazımı arka plan iş parçacığında.
 - **Windows Gezgini:** video küçük resim sağlayıcısı, `TypeOverlay` (köşede logo yok), PerceivedType, tür başına belge ikonu.
+
+## Ayrı dal: Nöral Ultra (`ccr-c0f5c388-iejlqw-dlss5`)
+- Deneysel "DLSS 5 tarzı, resmi değil" ön ayarı: CNN / sürücü VSR + `neural.glsl` yapı ve ton geçişi, iki kaydırıcı.
+- Linux'ta gerçek mpv 0.37 + libplacebo 6.338 (Vulkan lavapipe) ile render edildi. Aynı sürümün OpenGL arka ucu
+  ArtCNN'i derleyemiyor ("#extension directive ... in the middle of a shader"); Windows'taki sabitlenmiş libmpv'de denenmeli.
+- Ad: arayüzde "Nöral Ultra" + "DLSS 5 tarzı · resmi değil" rozeti. "DLSS" NVIDIA'nın ticari markası; kart adını
+  doğrudan "DLSS 5" yapmak hukuki risk taşır.
 
 ## Açık kalanlar
 - Filtreleri ve Gezgin küçük resimlerini Windows'ta elle doğrula: `looks.glsl` glslang ile derleniyor ama gerçek

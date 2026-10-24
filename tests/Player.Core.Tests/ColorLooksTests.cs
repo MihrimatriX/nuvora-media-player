@@ -108,6 +108,21 @@ public class ColorLooksTests
         }
     }
 
+    [Fact]
+    public void EveryPostShader_ShipsWithTheApp_AndDeclaresItsParameterRanges()
+    {
+        foreach (var preset in ImagePresets.All.Where(p => p.PostShader is not null))
+        {
+            var path = Path.Combine(AppContext.BaseDirectory, "Assets", "Shaders", preset.PostShader!);
+            Assert.True(File.Exists(path), path);
+            var shader = File.ReadAllText(path).ReplaceLineEndings("\n");
+            var parameters = System.Text.RegularExpressions.Regex.Matches(shader, @"//!PARAM (\w+)\n").Count;
+            var ranged = System.Text.RegularExpressions.Regex.Matches(shader, @"//!PARAM \w+\n//!TYPE float\n//!MINIMUM \S+\n//!MAXIMUM \S+\n").Count;
+            Assert.Equal(parameters, ranged);
+            Assert.Contains("//!PARAM split\n", shader); // shares the before/after bar with compare.glsl
+        }
+    }
+
     [Theory]
     [InlineData(16 / 9.0, 0.12808)]
     [InlineData(4 / 3.0, 0.22106)]

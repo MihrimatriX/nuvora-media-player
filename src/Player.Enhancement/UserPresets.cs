@@ -4,7 +4,8 @@ namespace Player.Enhancement;
 /// cinema filters. The filter fields have defaults so presets saved before they existed still load.</summary>
 public sealed record UserPreset(string Name, string BasePreset, double Contrast, double Saturation, double Brightness,
     double Sharpness, double Gamma, double Hue, int TargetFps,
-    string Look = "none", double LookStrength = 100, double Grain = 0, double Vignette = 0, bool Letterbox = false);
+    string Look = "none", double LookStrength = 100, double Grain = 0, double Vignette = 0, bool Letterbox = false,
+    double NeuralStructure = 60, double NeuralTone = 50);
 
 /// <summary>Names are unique, compared case-insensitively.</summary>
 public static class UserPresets

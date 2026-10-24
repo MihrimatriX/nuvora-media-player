@@ -113,15 +113,17 @@ public sealed partial class PlayerViewModel
     partial void OnVignetteChanged(double value) => ApplyImage();
     partial void OnLetterboxChanged(bool value) => ApplyImage();
 
-    /// <summary>One glsl-shader-opts string for every loaded Nuvora shader. "split" is shared: compare.glsl and
-    /// looks.glsl both leave the left side of the bar untouched, so the looks belong to the "after" half.</summary>
+    /// <summary>One glsl-shader-opts string for every loaded Nuvora shader. "split" is shared: compare.glsl,
+    /// neural.glsl and looks.glsl all leave the left side of the bar untouched, so they belong to the "after" half.</summary>
     void UpdateShaderOpts()
     {
         var comparing = IsSplitCompare && !IsBypassed;
         var looks = LooksActive;
-        if (!comparing && !looks) return; // nothing loaded reads the options
+        var neural = PostShaders().Length > 0;
+        if (!comparing && !looks && !neural) return; // nothing loaded reads the options
         var parts = new List<string> { $"split={Inv(comparing ? _videoSplitRatio : 0)}" };
         if (comparing) parts.Add(CompareShaderOpts());
+        if (neural) parts.Add($"nu_structure={Inv(NeuralStructure / 100)},nu_tone={Inv(NeuralTone / 100)}");
         if (looks) parts.Add(ColorLooks.ShaderOptions(CurrentLook, LookStrength / 100, Grain / 100, Vignette / 100, LetterboxBars));
         Set("glsl-shader-opts", string.Join(',', parts));
     }

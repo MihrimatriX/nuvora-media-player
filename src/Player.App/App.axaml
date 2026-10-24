@@ -88,6 +88,26 @@
           <Setter Property="BorderBrush" Value="{DynamicResource Accent}" />
         </Style>
 
+        <!-- The experimental "Nöral Ultra" card: a violet-to-sky outline even when not picked. -->
+        <Style Selector="^.neural">
+          <Setter Property="Padding" Value="12" />
+          <Setter Property="VerticalContentAlignment" Value="Center" />
+          <Setter Property="BorderBrush">
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+              <GradientStop Color="#808B5CF6" Offset="0" />
+              <GradientStop Color="#800EA5E9" Offset="1" />
+            </LinearGradientBrush>
+          </Setter>
+        </Style>
+        <Style Selector="^.neural:checked">
+          <Setter Property="BorderBrush">
+            <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,0%">
+              <GradientStop Color="#8B5CF6" Offset="0" />
+              <GradientStop Color="#0EA5E9" Offset="1" />
+            </LinearGradientBrush>
+          </Setter>
+        </Style>
+
         <!-- Colour filter tiles: swatch + name, compact version of .card. -->
         <Style Selector="^.look">
           <Setter Property="Padding" Value="6,6,6,7" />

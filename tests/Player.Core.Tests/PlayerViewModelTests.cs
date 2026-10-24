@@ -355,6 +355,44 @@ public class PlayerViewModelTests
     }
 
     [Fact]
+    public void NeuralUltra_RunsAfterTheUpscaler_AndItsSlidersOnlyTouchOptions()
+    {
+        _vm.PresetId = "neural";
+        Assert.Equal(["ArtCNN_C4F16.glsl", "neural.glsl"], Shaders());
+        Assert.Contains("nu_structure=0.6,nu_tone=0.5", _mpv.Named("set").Last(c => c.StartsWith("set glsl-shader-opts")));
+        Assert.True(_vm.IsNeural);
+
+        _vm.NeuralTone = 80;
+        Assert.Single(_mpv.Named("change-list"), c => c.Contains("neural.glsl"));
+        Assert.Contains("nu_tone=0.8", _mpv.Named("set").Last(c => c.StartsWith("set glsl-shader-opts")));
+
+        _vm.LookId = "warm"; // filters still come last
+        Assert.Equal(["ArtCNN_C4F16.glsl", "neural.glsl", "looks.glsl"], Shaders());
+
+        _vm.IsBypassed = true;
+        Assert.Empty(Shaders());
+    }
+
+    [Fact]
+    public void NeuralUltra_InSplitCompare_LeavesTheSharpeningToItsOwnPass()
+    {
+        _vm.PresetId = "neural";
+        _vm.IsSplitCompare = true;
+
+        Assert.Equal(["compare.glsl", "neural.glsl"], Shaders());
+        var opts = _mpv.Named("set").Last(c => c.StartsWith("set glsl-shader-opts"));
+        Assert.StartsWith("set glsl-shader-opts split=0.5,sharp=0,", opts);
+        Assert.Contains("preset_boost=0,nu_structure=0.6", opts);
+    }
+
+    [Fact]
+    public void NeuralUltra_IsNotOneOfTheRegularPresetCards()
+    {
+        Assert.DoesNotContain(_vm.PresetChoices, c => c.Preset.Id == "neural");
+        Assert.Contains(Player.Enhancement.ImagePresets.All, p => p.Id == "neural" && p.Experimental);
+    }
+
+    [Fact]
     public void SpeedUp_StepsThroughThePresetList()
     {
         _mpv.Raise("speed", 1.0);

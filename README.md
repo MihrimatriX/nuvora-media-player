@@ -78,6 +78,19 @@ Technicolor, Ağartılmış, Mat Film, Vintage, Sepya, Siyah-Beyaz, Kara Film, N
 Hiçbir filtre açık değilken geçiş hiç yüklenmez. Önce/Sonra karşılaştırmasında filtreler "Sonra" tarafına uygulanır;
 kullanıcı ön ayarları filtreleri de saklar. Renk matematiği `Player.Enhancement/ColorLooks.cs` içinde, CPU ikizi testlerde.
 
+## Nöral Ultra (deneysel, DLSS 5 tarzı, resmi değil)
+
+Görüntü panelinde ayrı bir kart. **NVIDIA DLSS değildir ve NVIDIA ile bağlantısı yoktur.** DLSS 5 oyun motorundan
+geometri ve hareket vektörü alır; video oynatıcıda bunlar yok. Bu mod yalnızca DLSS 5'in iki sanatçı kontrolünü
+(Structure / Tone Intensity) ve karakter/bitki örtüsünü ayrı ele alma fikrini taklit eder:
+
+1. Ölçekleme: RTX kartta sürücü VSR'ı, diğerlerinde Maksimum'un CNN zinciri (ArtCNN → FSRCNNX, otomatik düşüşle).
+2. `Assets/Shaders/neural.glsl`, OUTPUT kancasında (ekran çözünürlüğü), 13 doku okuması:
+   - **Yapı:** RCAS benzeri, taşma yapamayan keskinleştirme (gürültüyü ayırt eder) + yerel kontrast (netlik / AO benzeri derinlik).
+   - **Ton:** filmik S-eğrisi, açılmış gölgeler, canlılık; ten tonu maskesinde yumuşatma ve sıcaklık (yüzey altı saçılma
+     etkisi), yeşil baskın bölgelerde ek netlik.
+3. Yapı ve Ton kaydırıcıları yalnızca uniform günceller; Önce/Sonra çubuğunda yalnızca "Sonra" tarafına uygulanır.
+
 ## Windows Gezgini
 
 Kurulum oynatıcıyı video, ses ve çalma listesi için ayrı ProgId'lerle kaydeder. Video ProgId'si Windows'un kendi video

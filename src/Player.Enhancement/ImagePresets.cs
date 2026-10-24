@@ -5,8 +5,12 @@ namespace Player.Enhancement;
 /// <paramref name="Shaders"/> is ordered heaviest first; <see cref="LayerFallback"/> walks it down and
 /// ends on the built-in scaler in <paramref name="Scaler"/>.
 /// </summary>
+/// <param name="PostShader">A pass in Assets/Shaders that runs after whatever upscaled the picture (a shader layer,
+/// driver VSR or the built-in scaler). The fallback never drops it.</param>
+/// <param name="Experimental">Shown apart from the regular presets in the panel.</param>
 public sealed record ImagePreset(string Id, string Name, string Description, string Scaler,
-    IReadOnlyDictionary<string, string> Options, IReadOnlyList<ShaderLayer> Shaders);
+    IReadOnlyDictionary<string, string> Options, IReadOnlyList<ShaderLayer> Shaders,
+    string? PostShader = null, bool Experimental = false);
 
 public static class ImagePresets
 {
@@ -23,6 +27,11 @@ public static class ImagePresets
             Opts("ewa_lanczossharp", "spline36", "mitchell", deband: true, hq: true), [ShaderLayers.Anime4KFast, ShaderLayers.Anime4KLite]),
         new("max", "Maksimum", "En yüksek kalite, ArtCNN", "ewa_lanczossharp",
             Opts("ewa_lanczossharp", "ewa_lanczossharp", "mitchell", deband: true, hq: true), [ShaderLayers.ArtCnn, ShaderLayers.Fsrcnnx]),
+        // Unofficial "DLSS 5-style" mode, not NVIDIA DLSS: Maksimum's CNN chain (or driver VSR on RTX cards), then
+        // neural.glsl's structure & tone reconstruction at display resolution.
+        new("neural", "Nöral Ultra", "DLSS 5 tarzı yapı ve ton", "ewa_lanczossharp",
+            Opts("ewa_lanczossharp", "ewa_lanczossharp", "mitchell", deband: true, hq: true), [ShaderLayers.ArtCnn, ShaderLayers.Fsrcnnx],
+            PostShader: "neural.glsl", Experimental: true),
     ];
 
     public static ImagePreset Off => All[0];
