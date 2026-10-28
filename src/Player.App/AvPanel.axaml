@@ -1,0 +1,441 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:app="using:Player.App"
+             x:Class="Player.App.AvPanel"
+             x:DataType="app:PlayerViewModel">
+  <UserControl.Styles>
+    <Style Selector="Border#Sheet">
+      <Setter Property="Width" Value="464" />
+      <Setter Property="VerticalAlignment" Value="Stretch" />
+    </Style>
+    <Style Selector="Border#Sheet.audio">
+      <Setter Property="Width" Value="700" />
+      <Setter Property="VerticalAlignment" Value="Top" />
+    </Style>
+  </UserControl.Styles>
+
+  <UserControl.Resources>
+    <DataTemplate x:Key="ChannelTemplate" x:DataType="app:ChannelGain">
+      <Button Classes="channel" Classes.on="{Binding IsSelected}" PointerWheelChanged="OnChannelWheel"
+              ToolTip.Tip="{app:T panel.selectAndAdjustWithThe}" AutomationProperties.Name="{Binding Label}"
+              Command="{Binding $parent[UserControl].((app:PlayerViewModel)DataContext).SelectChannelCommand}" CommandParameter="{Binding}">
+        <StackPanel Spacing="4">
+          <TextBlock Text="{Binding Label}" FontSize="12" Foreground="{DynamicResource Fg3}" HorizontalAlignment="Center" />
+          <TextBlock Classes="mono" Text="{Binding Gain}" FontSize="13" HorizontalAlignment="Center" />
+        </StackPanel>
+      </Button>
+    </DataTemplate>
+  </UserControl.Resources>
+
+  <Border Name="Sheet" Classes.audio="{Binding IsAudioTab}" HorizontalAlignment="Right" Margin="16"
+          Padding="16,14,16,16" CornerRadius="20" Background="#EB0E1016" BorderBrush="{DynamicResource Line2}" BorderThickness="1"
+          BoxShadow="0 20 50 0 #66000000">
+    <DockPanel>
+      <!-- Header -->
+      <Grid DockPanel.Dock="Top" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+        <TextBlock Text="{app:T panel.pictureSound}" FontSize="15" FontWeight="Bold" VerticalAlignment="Center" />
+        <Button Grid.Column="1" Classes="drop round" Click="OnProfiles">
+          <StackPanel Orientation="Horizontal" Spacing="6">
+            <TextBlock Text="{Binding ProfileLabel}" VerticalAlignment="Center" />
+            <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+          </StackPanel>
+        </Button>
+        <Button Grid.Column="2" Classes="close" Command="{Binding TogglePanelCommand}" AutomationProperties.Name="{app:T panel.closePanel}">
+          <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoClose}" /></Viewbox>
+        </Button>
+      </Grid>
+
+      <!-- Tabs -->
+      <Border DockPanel.Dock="Top" Margin="0,10,0,0" Padding="4" CornerRadius="12" Background="{DynamicResource Fill3}">
+        <UniformGrid Columns="2">
+          <RadioButton Classes="tab" IsChecked="{Binding IsImageTab}" Margin="0,0,2,0">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Viewbox Classes="i16"><Path Data="{StaticResource IcoScreen}" StrokeThickness="1.9" /></Viewbox>
+              <TextBlock Text="{app:T panel.picture}" VerticalAlignment="Center" />
+            </StackPanel>
+          </RadioButton>
+          <RadioButton Classes="tab" IsChecked="{Binding IsAudioTab}" Margin="2,0,0,0">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+              <Viewbox Classes="i16">
+                <Panel>
+                  <Path Data="{StaticResource IcoSpeaker}" StrokeThickness="1.9" />
+                  <Path Data="{StaticResource IcoWave1}" StrokeThickness="1.9" />
+                </Panel>
+              </Viewbox>
+              <TextBlock Text="{app:T panel.sound}" VerticalAlignment="Center" />
+            </StackPanel>
+          </RadioButton>
+        </UniformGrid>
+      </Border>
+
+      <!-- ============ Görüntü ============ -->
+      <DockPanel IsVisible="{Binding IsImageTab}" Margin="0,10,0,0">
+        <Grid DockPanel.Dock="Bottom" ColumnDefinitions="*,Auto" Margin="0,12,0,0">
+          <Border Height="1" Background="{DynamicResource Line}" VerticalAlignment="Top" Grid.ColumnSpan="2" Margin="0,-12,0,0" />
+          <StackPanel Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+            <Border Padding="8,2" CornerRadius="6" Background="{DynamicResource Fill5}">
+              <TextBlock Classes="mono" Text="{Binding CompareKeyText}" />
+            </Border>
+            <TextBlock Text="{app:T panel.holdOriginal}" FontSize="12" Foreground="{DynamicResource Fg3}" VerticalAlignment="Center" />
+          </StackPanel>
+          <Button Grid.Column="1" Classes="outline" Classes.on="{Binding IsSplitCompare}"
+                  Content="{Binding BypassLabel}" Command="{Binding ToggleSplitCompareCommand}" />
+        </Grid>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Padding="0,0,4,0">
+          <StackPanel Spacing="10">
+            <TextBlock Classes="h3" Text="{app:T panel.enhancement}" Margin="0,4,0,0" />
+            <ItemsControl ItemsSource="{Binding PresetChoices}" Margin="0,0,-8,0">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate><UniformGrid Columns="4" /></ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="app:PresetChoice">
+                  <RadioButton Classes="card" Margin="0,0,8,0" GroupName="preset" IsChecked="{Binding IsSelected, Mode=OneWay}"
+                               Command="{Binding $parent[ItemsControl].((app:PlayerViewModel)DataContext).SelectPresetCommand}"
+                               CommandParameter="{Binding Preset.Id}">
+                    <StackPanel Spacing="4">
+                      <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="Bold" />
+                      <TextBlock Text="{Binding Description}" FontSize="11.5" FontWeight="Normal" Foreground="{DynamicResource Fg3}"
+                                 TextWrapping="Wrap" LineHeight="15" />
+                    </StackPanel>
+                  </RadioButton>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <!-- Experimental: unofficial DLSS 5-style reconstruction (neural.glsl), apart from the regular presets -->
+            <RadioButton Classes="card neural" GroupName="preset" MinHeight="0" IsChecked="{Binding IsNeural, Mode=OneWay}"
+                         Command="{Binding SelectPresetCommand}" CommandParameter="neural" AutomationProperties.Name="{app:T preset.neural}">
+              <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                <Border Width="40" Height="40" CornerRadius="11" VerticalAlignment="Top">
+                  <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
+                      <GradientStop Color="#8B5CF6" Offset="0" />
+                      <GradientStop Color="#0EA5E9" Offset="1" />
+                    </LinearGradientBrush>
+                  </Border.Background>
+                  <Viewbox Classes="i20"><Path Classes="fill" Data="{StaticResource IcoSparkle}" Fill="White" /></Viewbox>
+                </Border>
+                <StackPanel Grid.Column="1" Spacing="3" VerticalAlignment="Center">
+                  <TextBlock Text="{app:T preset.neural}" FontSize="14" FontWeight="Bold" />
+                  <TextBlock Text="{app:T preset.neural.desc}" FontSize="11.5" FontWeight="Normal" Foreground="{DynamicResource Fg3}" TextWrapping="Wrap" />
+                </StackPanel>
+                <Border Grid.Column="2" Padding="8,3" CornerRadius="999" Background="{DynamicResource AccentChip}" VerticalAlignment="Top">
+                  <TextBlock Text="{app:T panel.neuralBadge}" FontSize="10" FontWeight="Bold" Foreground="{DynamicResource AccentText}" />
+                </Border>
+              </Grid>
+            </RadioButton>
+            <Border Classes="group" Padding="14,12" IsVisible="{Binding IsNeural}">
+              <StackPanel Spacing="10">
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="18">
+                  <StackPanel Spacing="4">
+                    <Grid ColumnDefinitions="*,Auto">
+                      <TextBlock Text="{app:T panel.structure}" FontSize="13" FontWeight="SemiBold" />
+                      <TextBlock Grid.Column="1" Classes="mono" Text="{Binding NeuralStructureText}" Foreground="{DynamicResource Fg2}" />
+                    </Grid>
+                    <Slider Minimum="0" Maximum="100" Value="{Binding NeuralStructure}" TickFrequency="1" IsSnapToTickEnabled="True"
+                            AutomationProperties.Name="{app:T panel.structure}" ToolTip.Tip="{app:T panel.structureTip}" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="1" Spacing="4">
+                    <Grid ColumnDefinitions="*,Auto">
+                      <TextBlock Text="{app:T panel.tone}" FontSize="13" FontWeight="SemiBold" />
+                      <TextBlock Grid.Column="1" Classes="mono" Text="{Binding NeuralToneText}" Foreground="{DynamicResource Fg2}" />
+                    </Grid>
+                    <Slider Minimum="0" Maximum="100" Value="{Binding NeuralTone}" TickFrequency="1" IsSnapToTickEnabled="True"
+                            AutomationProperties.Name="{app:T panel.tone}" ToolTip.Tip="{app:T panel.toneTip}" />
+                  </StackPanel>
+                </Grid>
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                  <Viewbox Classes="i14" VerticalAlignment="Top" Margin="0,2,0,0">
+                    <Path Data="{StaticResource IcoInfo}" Stroke="{DynamicResource Fg2}" StrokeThickness="1.9" />
+                  </Viewbox>
+                  <TextBlock Grid.Column="1" Text="{app:T panel.neuralNote}" FontSize="12" Foreground="{DynamicResource Fg2}" TextWrapping="Wrap" LineHeight="17" />
+                </Grid>
+              </StackPanel>
+            </Border>
+
+            <Border Classes="group" Padding="14,12">
+              <StackPanel Spacing="8">
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock Text="{app:T panel.activeLayer}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource Fg3}" VerticalAlignment="Center" />
+                  <Border Grid.Column="1" Padding="10,3" CornerRadius="999" Background="{DynamicResource AccentChip}">
+                    <TextBlock Classes="mono" Text="{Binding ActiveLayer}" />
+                  </Border>
+                </Grid>
+                <Grid ColumnDefinitions="Auto,*">
+                  <TextBlock Text="GPU" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource Fg3}" VerticalAlignment="Center" />
+                  <TextBlock Grid.Column="1" Text="{Binding GpuName}" FontSize="13" FontWeight="SemiBold" HorizontalAlignment="Right"
+                             TextTrimming="CharacterEllipsis" Margin="12,0,0,0" />
+                </Grid>
+                <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                  <Viewbox Classes="i14" VerticalAlignment="Top" Margin="0,2,0,0">
+                    <Path Data="{StaticResource IcoInfo}" Stroke="{DynamicResource Fg2}" StrokeThickness="1.9" />
+                  </Viewbox>
+                  <TextBlock Grid.Column="1" Text="{Binding GpuNote}" FontSize="12" Foreground="{DynamicResource Fg2}" TextWrapping="Wrap" LineHeight="17" />
+                </Grid>
+              </StackPanel>
+            </Border>
+
+            <TextBlock Classes="h3" Text="{app:T panel.frameRateFPSAndMotion}" Margin="0,4,0,0" />
+            <Border Classes="group">
+              <StackPanel>
+                <Border Classes="row" Padding="14,10">
+                  <StackPanel Spacing="8">
+                    <Grid ColumnDefinitions="*,Auto">
+                      <TextBlock Classes="label" Text="{app:T panel.targetFrameRate2460}" FontSize="13" />
+                      <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding SmoothMotion}" AutomationProperties.Name="{app:T panel.smoothMotion}"
+                                    ToolTip.Tip="{app:T panel.highFPSSmoothMotionThrough}" />
+                    </Grid>
+                    <ItemsControl ItemsSource="{Binding FpsChoices}" Margin="0,0,-4,0">
+                      <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate><UniformGrid Columns="5" /></ItemsPanelTemplate>
+                      </ItemsControl.ItemsPanel>
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="app:FpsChoice">
+                          <RadioButton Classes="tab" Height="30" Margin="0,0,4,0" GroupName="fpstarget" IsChecked="{Binding IsSelected, Mode=OneWay}"
+                                       Command="{Binding $parent[ItemsControl].((app:PlayerViewModel)DataContext).SelectFpsCommand}"
+                                       CommandParameter="{Binding Value}">
+                            <TextBlock Classes="mono" Text="{Binding Label}" FontSize="11.5" VerticalAlignment="Center" />
+                          </RadioButton>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </StackPanel>
+                </Border>
+                <Border Classes="row" MinHeight="42" Padding="14,0">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <TextBlock Classes="label" Text="{app:T panel.rtxVideoHDR}" Foreground="{DynamicResource Fg3}" />
+                      <Border Padding="8,2" CornerRadius="999" Background="{DynamicResource Fill3}" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                          <Viewbox Width="12" Height="12">
+                            <Path Data="{StaticResource IcoLock}" Stroke="{DynamicResource Fg3}" StrokeThickness="2" />
+                          </Viewbox>
+                          <TextBlock Text="{Binding RtxBadge}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource Fg3}" />
+                        </StackPanel>
+                      </Border>
+                    </StackPanel>
+                    <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding RtxHdr}" IsEnabled="{Binding RtxHdrAvailable}"
+                                  AutomationProperties.Name="{app:T panel.rtxVideoHDR}"
+                                  ToolTip.Tip="{Binding RtxHdrTip}" ToolTip.ShowOnDisabled="True" />
+                  </Grid>
+                </Border>
+              </StackPanel>
+            </Border>
+
+            <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
+              <TextBlock Classes="h3" Text="{app:T panel.sharpnessAndColor}" VerticalAlignment="Center" />
+              <Button Grid.Column="1" Classes="link" Content="{app:T panel.reset}" FontSize="12" Command="{Binding ResetPictureCommand}" />
+            </Grid>
+            <Border Classes="group" Padding="14,12">
+              <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="18" RowSpacing="10">
+                <StackPanel Spacing="4">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Text="{app:T panel.sharpness}" FontSize="13" FontWeight="SemiBold" />
+                    <TextBlock Grid.Column="1" Classes="mono" Text="{Binding SharpnessText}" Foreground="{DynamicResource Fg2}" />
+                  </Grid>
+                  <Slider Minimum="-50" Maximum="100" Value="{Binding Sharpness}" TickFrequency="1" IsSnapToTickEnabled="True" AutomationProperties.Name="{app:T panel.sharpness}" />
+                </StackPanel>
+                <StackPanel Grid.Column="1" Spacing="4">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Text="{app:T panel.saturationColor}" FontSize="13" FontWeight="SemiBold" />
+                    <TextBlock Grid.Column="1" Classes="mono" Text="{Binding SaturationText}" Foreground="{DynamicResource Fg2}" />
+                  </Grid>
+                  <Slider Minimum="-50" Maximum="50" Value="{Binding Saturation}" TickFrequency="1" IsSnapToTickEnabled="True" AutomationProperties.Name="{app:T panel.saturation}" />
+                </StackPanel>
+                <StackPanel Grid.Row="1" Spacing="4">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Text="{app:T panel.contrast}" FontSize="13" FontWeight="SemiBold" />
+                    <TextBlock Grid.Column="1" Classes="mono" Text="{Binding ContrastText}" Foreground="{DynamicResource Fg2}" />
+                  </Grid>
+                  <Slider Minimum="-50" Maximum="50" Value="{Binding Contrast}" TickFrequency="1" IsSnapToTickEnabled="True" AutomationProperties.Name="{app:T panel.contrast}" />
+                </StackPanel>
+                <StackPanel Grid.Row="1" Grid.Column="1" Spacing="4">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Text="{app:T panel.brightness}" FontSize="13" FontWeight="SemiBold" />
+                    <TextBlock Grid.Column="1" Classes="mono" Text="{Binding BrightnessText}" Foreground="{DynamicResource Fg2}" />
+                  </Grid>
+                  <Slider Minimum="-50" Maximum="50" Value="{Binding Brightness}" TickFrequency="1" IsSnapToTickEnabled="True" AutomationProperties.Name="{app:T panel.brightness}" />
+                </StackPanel>
+                <StackPanel Grid.Row="2" Spacing="4">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Text="{app:T panel.gamma}" FontSize="13" FontWeight="SemiBold" />
+                    <TextBlock Grid.Column="1" Classes="mono" Text="{Binding GammaText}" Foreground="{DynamicResource Fg2}" />
+                  </Grid>
+                  <Slider Minimum="-50" Maximum="50" Value="{Binding Gamma}" TickFrequency="1" IsSnapToTickEnabled="True" AutomationProperties.Name="{app:T panel.gamma}" />
+                </StackPanel>
+                <StackPanel Grid.Row="2" Grid.Column="1" Spacing="4">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Text="{app:T panel.hue}" FontSize="13" FontWeight="SemiBold" />
+                    <TextBlock Grid.Column="1" Classes="mono" Text="{Binding HueText}" Foreground="{DynamicResource Fg2}" />
+                  </Grid>
+                  <Slider Minimum="-50" Maximum="50" Value="{Binding Hue}" TickFrequency="1" IsSnapToTickEnabled="True" AutomationProperties.Name="{app:T panel.hue}" />
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <!-- Colour & cinema filters (looks.glsl, one GPU pass at the video's own resolution) -->
+            <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0">
+              <TextBlock Classes="h3" Text="{app:T panel.looks}" VerticalAlignment="Center" />
+              <Button Grid.Column="1" Classes="link" Content="{app:T panel.reset}" FontSize="12" Command="{Binding ResetLooksCommand}"
+                      IsEnabled="{Binding HasCinemaFilters}" AutomationProperties.Name="{app:T panel.resetLooks}" />
+            </Grid>
+            <ItemsControl ItemsSource="{Binding LookChoices}" Margin="0,0,-8,-8">
+              <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate><UniformGrid Columns="4" /></ItemsPanelTemplate>
+              </ItemsControl.ItemsPanel>
+              <ItemsControl.ItemTemplate>
+                <DataTemplate x:DataType="app:LookChoice">
+                  <RadioButton Classes="look" Margin="0,0,8,8" GroupName="look" IsChecked="{Binding IsSelected, Mode=OneWay}"
+                               Command="{Binding $parent[ItemsControl].((app:PlayerViewModel)DataContext).SelectLookCommand}"
+                               CommandParameter="{Binding Id}" ToolTip.Tip="{Binding Description}" AutomationProperties.Name="{Binding Name}">
+                    <StackPanel Spacing="6">
+                      <Border Height="28" CornerRadius="7" Background="{Binding Preview}" BorderBrush="{DynamicResource Line2}" BorderThickness="1" />
+                      <TextBlock Text="{Binding Name}" FontSize="11.5" FontWeight="SemiBold" HorizontalAlignment="Center"
+                                 TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                  </RadioButton>
+                </DataTemplate>
+              </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Border Classes="group" Padding="14,12">
+              <StackPanel Spacing="10">
+                <StackPanel Spacing="4" IsEnabled="{Binding HasLook}">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Text="{app:T panel.lookStrength}" FontSize="13" FontWeight="SemiBold" />
+                    <TextBlock Grid.Column="1" Classes="mono" Text="{Binding LookStrengthText}" Foreground="{DynamicResource Fg2}" />
+                  </Grid>
+                  <Slider Minimum="0" Maximum="100" Value="{Binding LookStrength}" TickFrequency="1" IsSnapToTickEnabled="True"
+                          AutomationProperties.Name="{app:T panel.lookStrength}" />
+                </StackPanel>
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="18">
+                  <StackPanel Spacing="4">
+                    <Grid ColumnDefinitions="*,Auto">
+                      <TextBlock Text="{app:T panel.grain}" FontSize="13" FontWeight="SemiBold" />
+                      <TextBlock Grid.Column="1" Classes="mono" Text="{Binding GrainText}" Foreground="{DynamicResource Fg2}" />
+                    </Grid>
+                    <Slider Minimum="0" Maximum="100" Value="{Binding Grain}" TickFrequency="1" IsSnapToTickEnabled="True"
+                            AutomationProperties.Name="{app:T panel.grain}" ToolTip.Tip="{app:T panel.grainTip}" />
+                  </StackPanel>
+                  <StackPanel Grid.Column="1" Spacing="4">
+                    <Grid ColumnDefinitions="*,Auto">
+                      <TextBlock Text="{app:T panel.vignette}" FontSize="13" FontWeight="SemiBold" />
+                      <TextBlock Grid.Column="1" Classes="mono" Text="{Binding VignetteText}" Foreground="{DynamicResource Fg2}" />
+                    </Grid>
+                    <Slider Minimum="0" Maximum="100" Value="{Binding Vignette}" TickFrequency="1" IsSnapToTickEnabled="True"
+                            AutomationProperties.Name="{app:T panel.vignette}" ToolTip.Tip="{app:T panel.vignetteTip}" />
+                  </StackPanel>
+                </Grid>
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock Text="{app:T panel.letterbox}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" />
+                  <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Letterbox}" AutomationProperties.Name="{app:T panel.letterbox}"
+                                ToolTip.Tip="{app:T panel.letterboxTip}" />
+                </Grid>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </ScrollViewer>
+      </DockPanel>
+
+      <!-- ============ Ses ============ -->
+      <Grid IsVisible="{Binding IsAudioTab}" ColumnDefinitions="*,*" ColumnSpacing="20" Margin="0,12,0,0">
+        <StackPanel Spacing="10">
+          <TextBlock Classes="h3" Text="{app:T panel.soundControls}" />
+          <Border Classes="group">
+            <StackPanel>
+              <Border Classes="row" Padding="14,12,14,14">
+                <StackPanel Spacing="12">
+                  <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="10">
+                    <TextBlock Classes="label" Text="{app:T panel.volumeBoost}" />
+                    <TextBlock Grid.Column="1" Classes="mono" Text="{Binding BoostText}" Foreground="{DynamicResource Fg2}" VerticalAlignment="Center" />
+                    <ToggleButton Grid.Column="2" Classes="switch" IsChecked="{Binding BoostEnabled}" AutomationProperties.Name="{app:T panel.volumeBoost}" />
+                  </Grid>
+                  <Panel>
+                    <Slider Minimum="0" Maximum="{Binding VolumeMax}" Value="{Binding Volume}" TickFrequency="1" IsSnapToTickEnabled="True"
+                            AutomationProperties.Name="{app:T panel.volumeBoostLevel}" />
+                    <Border Width="2" Height="10" CornerRadius="1" Background="#66FFFFFF" HorizontalAlignment="Center"
+                            IsVisible="{Binding BoostEnabled}" IsHitTestVisible="False" />
+                  </Panel>
+                </StackPanel>
+              </Border>
+              <Border Classes="row" MinHeight="48" Padding="14,0">
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock Classes="label" Text="{app:T panel.loudnessNormalization}" />
+                  <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Normalize}" AutomationProperties.Name="{app:T panel.loudnessNormalization}"
+                                ToolTip.Tip="{app:T panel.dynaudnormEvensOutQuietAnd}" />
+                </Grid>
+              </Border>
+              <Border Classes="row" Padding="14,0">
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock Classes="label" Text="{app:T panel.ac3DRC}" />
+                  <Button Grid.Column="1" Classes="drop" Click="OnDrc" ToolTip.Tip="{app:T panel.dolbyDynamicRangeCompressionA}">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <TextBlock Text="{Binding DrcLabel}" VerticalAlignment="Center" />
+                      <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                    </StackPanel>
+                  </Button>
+                </Grid>
+              </Border>
+            </StackPanel>
+          </Border>
+
+          <TextBlock Classes="h3" Text="{app:T panel.sync}" Margin="0,6,0,0" />
+          <Border Classes="group">
+            <StackPanel>
+              <Border Classes="row">
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock Classes="label" Text="{app:T panel.audioDelay}" />
+                  <Border Grid.Column="1" CornerRadius="17" Background="{DynamicResource Fill4}" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                      <Button Classes="step" Content="−" Command="{Binding AudioDelayDownCommand}" AutomationProperties.Name="{app:T panel.decreaseAudioDelay}" />
+                      <TextBlock Classes="mono" Width="72" TextAlignment="Center" VerticalAlignment="Center" Text="{Binding AudioDelayText}" />
+                      <Button Classes="step" Content="+" Command="{Binding AudioDelayUpCommand}" AutomationProperties.Name="{app:T panel.increaseAudioDelay}" />
+                    </StackPanel>
+                  </Border>
+                </Grid>
+              </Border>
+              <Border Classes="row">
+                <Grid ColumnDefinitions="*,Auto">
+                  <TextBlock Classes="label" Text="{app:T panel.subtitleDelay}" />
+                  <Border Grid.Column="1" CornerRadius="17" Background="{DynamicResource Fill4}" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                      <Button Classes="step" Content="−" Command="{Binding SubDelayDownCommand}" AutomationProperties.Name="{app:T panel.decreaseSubtitleDelay}" />
+                      <TextBlock Classes="mono" Width="72" TextAlignment="Center" VerticalAlignment="Center" Text="{Binding SubDelayText}" />
+                      <Button Classes="step" Content="+" Command="{Binding SubDelayUpCommand}" AutomationProperties.Name="{app:T panel.increaseSubtitleDelay}" />
+                    </StackPanel>
+                  </Border>
+                </Grid>
+              </Border>
+            </StackPanel>
+          </Border>
+        </StackPanel>
+
+        <StackPanel Grid.Column="1" Spacing="10">
+          <Grid ColumnDefinitions="*,Auto">
+            <TextBlock Classes="h3" Text="{Binding DownmixTitle}" VerticalAlignment="Center" />
+            <Button Grid.Column="1" Classes="link" Content="{app:T panel.reset}" FontSize="12" Command="{Binding ResetDownmixCommand}" />
+          </Grid>
+          <Border Height="312" CornerRadius="16" Background="{DynamicResource Fill1}" BorderBrush="{DynamicResource Line}" BorderThickness="1"
+                  ClipToBounds="True" IsEnabled="{Binding DownmixAvailable}">
+            <Panel>
+              <Ellipse Width="180" Height="180" Stroke="{DynamicResource Line}" StrokeThickness="1" />
+              <Ellipse Width="112" Height="112" Stroke="{DynamicResource Line2}" StrokeThickness="1" />
+              <Border Width="52" Height="52" CornerRadius="26" Background="{DynamicResource Fill5}">
+                <Viewbox Classes="i22"><Path Data="{StaticResource IcoPerson}" Stroke="{DynamicResource Fg2}" StrokeThickness="1.8" /></Viewbox>
+              </Border>
+              <ContentControl Content="{Binding Channels[0]}" ContentTemplate="{StaticResource ChannelTemplate}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="14" />
+              <ContentControl Content="{Binding Channels[1]}" ContentTemplate="{StaticResource ChannelTemplate}" HorizontalAlignment="Center" VerticalAlignment="Top" Margin="14" />
+              <ContentControl Content="{Binding Channels[2]}" ContentTemplate="{StaticResource ChannelTemplate}" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="14" />
+              <ContentControl Content="{Binding Channels[3]}" ContentTemplate="{StaticResource ChannelTemplate}" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="14" />
+              <ContentControl Content="{Binding Channels[4]}" ContentTemplate="{StaticResource ChannelTemplate}" HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="14" />
+              <ContentControl Content="{Binding Channels[5]}" ContentTemplate="{StaticResource ChannelTemplate}" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="14" />
+            </Panel>
+          </Border>
+          <TextBlock Text="{app:T panel.raiseCenterToBringDialogue}" FontSize="12"
+                     Foreground="{DynamicResource Fg3}" TextWrapping="Wrap" LineHeight="18" />
+        </StackPanel>
+      </Grid>
+    </DockPanel>
+  </Border>
+</UserControl>

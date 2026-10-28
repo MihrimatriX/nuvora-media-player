@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Explorer thumbnail provider: a COM in-proc server that Windows' thumbnail host (dllhost) loads to draw a frame of
+       each video. NativeAOT: a plain DLL needs no .NET runtime on the machine, and the player ships self-contained.
+       Release publishes it (dotnet publish -r win-x64) next to NuvoraPlayer.exe and libmpv-2.dll; FileAssociation
+       registers it when it is there. A plain build only compiles it. -->
+  <PropertyGroup>
+    <AssemblyName>NuvoraThumbnails</AssemblyName>
+    <PublishAot>true</PublishAot>
+    <NativeLib>Shared</NativeLib>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <UseSystemResourceKeys>true</UseSystemResourceKeys>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,250 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:app="using:Player.App"
+             x:Class="Player.App.StartView"
+             x:DataType="app:PlayerViewModel">
+  <Panel>
+    <!-- Ambient background: the design's blurred dusk sky at 42 % brightness. -->
+    <Border>
+      <Border.Background>
+        <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+          <GradientStop Color="#090B16" Offset="0" />
+          <GradientStop Color="#171930" Offset="0.38" />
+          <GradientStop Color="#352536" Offset="0.62" />
+          <GradientStop Color="#523A33" Offset="0.8" />
+          <GradientStop Color="#1E1A2A" Offset="1" />
+        </LinearGradientBrush>
+      </Border.Background>
+    </Border>
+    <Border>
+      <Border.Background>
+        <RadialGradientBrush Center="70%,62%" GradientOrigin="70%,62%" RadiusX="38%" RadiusY="48%">
+          <GradientStop Color="#4DB98F66" Offset="0" />
+          <GradientStop Color="#00B98F66" Offset="1" />
+        </RadialGradientBrush>
+      </Border.Background>
+    </Border>
+
+    <Grid Margin="36,50,36,24" RowDefinitions="*,Auto,Auto" ColumnDefinitions="*,340" RowSpacing="18" ColumnSpacing="20">
+      <!-- Continue watching -->
+      <Border CornerRadius="24" ClipToBounds="True" MinHeight="300" BoxShadow="0 30 70 0 #73000000">
+        <Panel>
+          <Border>
+            <Border.Background>
+              <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                <GradientStop Color="#151B33" Offset="0" />
+                <GradientStop Color="#3B3D6B" Offset="0.45" />
+                <GradientStop Color="#9A6A86" Offset="0.72" />
+                <GradientStop Color="#2E2A4A" Offset="1" />
+              </LinearGradientBrush>
+            </Border.Background>
+          </Border>
+          <Image Source="{Binding Hero.Thumbnail}" Stretch="UniformToFill" IsVisible="{Binding Hero.HasThumbnail, FallbackValue=False}" />
+          <Border Height="230" VerticalAlignment="Bottom">
+            <Border.Background>
+              <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                <GradientStop Color="#0006070C" Offset="0" />
+                <GradientStop Color="#D906070C" Offset="1" />
+              </LinearGradientBrush>
+            </Border.Background>
+          </Border>
+          <Border BorderBrush="{DynamicResource Line2}" BorderThickness="1" CornerRadius="24" />
+
+          <StackPanel Margin="28,0,28,26" VerticalAlignment="Bottom" Spacing="10">
+            <Border HorizontalAlignment="Left" Padding="10,4" CornerRadius="999" Background="#24FFFFFF">
+              <TextBlock Text="{Binding HasHero, Converter={x:Static app:StartView.PillText}}" FontSize="12" FontWeight="Bold" />
+            </Border>
+            <TextBlock Text="{Binding Hero.Title, FallbackValue='Nuvora Player'}" FontSize="34" FontWeight="Bold" LetterSpacing="-0.5"
+                       TextTrimming="CharacterEllipsis" />
+            <TextBlock Text="{Binding HeroSubtitle}"
+                       FontSize="14" Foreground="#D2D7DE" />
+            <ProgressBar Classes="thin" Maximum="1" Value="{Binding Hero.Progress, FallbackValue=0}" Margin="0,4,0,6"
+                         IsVisible="{Binding HasHero}" />
+            <StackPanel Orientation="Horizontal" Spacing="10">
+              <Button Classes="pill white" Command="{Binding OpenRecentCommand}" CommandParameter="{Binding Hero}" IsVisible="{Binding HasHero}">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <Viewbox Classes="i18"><Path Classes="fill" Data="{StaticResource IcoPlay}" /></Viewbox>
+                  <TextBlock Text="{app:T start.continue}" VerticalAlignment="Center" />
+                </StackPanel>
+              </Button>
+              <Button Classes="pill glass" Content="{app:T start.startOver}" Command="{Binding PlayFromStartCommand}" CommandParameter="{Binding Hero}"
+                      IsVisible="{Binding HasHero}" />
+            </StackPanel>
+          </StackPanel>
+        </Panel>
+      </Border>
+
+      <!-- Drop zone -->
+      <Panel Grid.Column="1">
+        <Border CornerRadius="24" Background="#730E1016" />
+        <Rectangle RadiusX="24" RadiusY="24" Stroke="#33FFFFFF" StrokeThickness="1.5" StrokeDashArray="3,3" />
+        <StackPanel VerticalAlignment="Center" Margin="24" Spacing="14">
+          <Border Width="64" Height="64" CornerRadius="20" HorizontalAlignment="Center" Background="{DynamicResource AccentSoft}"
+                  BorderBrush="{DynamicResource AccentHalo}" BorderThickness="1">
+            <Viewbox Classes="i28">
+              <Path Data="{StaticResource IcoUpload}" Stroke="White" StrokeThickness="1.7" />
+            </Viewbox>
+          </Border>
+          <TextBlock Text="{app:T start.dragAndDrop}" FontSize="19" FontWeight="Bold" HorizontalAlignment="Center" />
+          <TextBlock Text="{app:T start.mkvMP4AVIMTSWebM}" TextAlignment="Center"
+                     FontSize="13" LineHeight="20" Foreground="#B8BFC9" />
+          <TextBlock Text="{Binding ErrorText}" IsVisible="{Binding ErrorText, Converter={x:Static ObjectConverters.IsNotNull}}"
+                     TextAlignment="Center" TextWrapping="Wrap" Foreground="{DynamicResource Danger}" FontSize="12" />
+          <StackPanel Spacing="8" Margin="0,6,0,0">
+            <Button Classes="pill accent" HorizontalAlignment="Stretch" Click="OnOpenFile">
+              <StackPanel Orientation="Horizontal" Spacing="10">
+                <TextBlock Text="{app:T start.openFile}" VerticalAlignment="Center" />
+                <Border Padding="7,1" CornerRadius="6" Background="#33FFFFFF" VerticalAlignment="Center">
+                  <TextBlock Classes="mono" Text="{Binding OpenKeyText}" FontSize="11.5" />
+                </Border>
+              </StackPanel>
+            </Button>
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+              <Button Classes="pill" HorizontalAlignment="Stretch" Content="{app:T start.openFolder}" Click="OnOpenFolder" />
+              <Button Grid.Column="1" Classes="pill" HorizontalAlignment="Stretch" Content="{app:T start.openUrl}" Click="OnOpenUrl" />
+            </Grid>
+          </StackPanel>
+        </StackPanel>
+      </Panel>
+
+      <!-- System cards: values come from mpv and DXGI (PlayerViewModel.System.cs) -->
+      <UniformGrid Grid.Row="1" Grid.ColumnSpan="2" Columns="4" Margin="0,0,-16,0">
+        <UniformGrid.Styles>
+          <Style Selector="Border.stat">
+            <Setter Property="Margin" Value="0,0,16,0" />
+            <Setter Property="Padding" Value="16,12" />
+            <Setter Property="CornerRadius" Value="16" />
+            <Setter Property="Background" Value="#730E1016" />
+            <Setter Property="BorderBrush" Value="{DynamicResource Line2}" />
+            <Setter Property="BorderThickness" Value="1" />
+          </Style>
+          <Style Selector="Border.statIcon">
+            <Setter Property="Width" Value="40" />
+            <Setter Property="Height" Value="40" />
+            <Setter Property="CornerRadius" Value="12" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+          </Style>
+          <Style Selector="TextBlock.statLabel">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="{DynamicResource Fg4}" />
+          </Style>
+          <Style Selector="TextBlock.statValue">
+            <Setter Property="FontSize" Value="13.5" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+          </Style>
+          <Style Selector="TextBlock.statDetail">
+            <Setter Property="FontSize" Value="11" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+          </Style>
+        </UniformGrid.Styles>
+        <Border Classes="stat">
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+            <Border Classes="statIcon" Background="{DynamicResource AccentTint}" BorderBrush="{DynamicResource Accent}">
+              <Viewbox Classes="i18"><Path Data="{StaticResource IcoPlay}" Fill="{DynamicResource Accent}" /></Viewbox>
+            </Border>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+              <TextBlock Classes="statLabel" Text="{app:T start.totalWatch}" />
+              <TextBlock Classes="statValue" Text="{Binding TotalWatchTimeText}" />
+              <TextBlock Classes="mono statDetail" Text="{Binding TotalRecentCount, StringFormat='{}{0} medya dosyası'}" Foreground="{DynamicResource Accent}" />
+            </StackPanel>
+          </Grid>
+        </Border>
+        <Border Classes="stat" ToolTip.Tip="{Binding HwdecDetail}">
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+            <Border Classes="statIcon" Background="#1A06B6D4" BorderBrush="#06B6D4">
+              <Viewbox Classes="i18"><Path Data="{StaticResource IcoScreen}" Stroke="#06B6D4" /></Viewbox>
+            </Border>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+              <TextBlock Classes="statLabel" Text="{app:T start.hwAccel}" />
+              <TextBlock Classes="statValue" Text="{Binding GpuDisplayName}" />
+              <TextBlock Classes="mono statDetail" Text="{Binding HwdecDisplayName}" Foreground="#06B6D4" />
+            </StackPanel>
+          </Grid>
+        </Border>
+        <Border Classes="stat">
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+            <Border Classes="statIcon" Background="#1A10B981" BorderBrush="#10B981">
+              <Viewbox Classes="i18"><Path Data="{StaticResource IcoWaves}" Stroke="#10B981" /></Viewbox>
+            </Border>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+              <TextBlock Classes="statLabel" Text="{app:T start.audioOutput}" />
+              <TextBlock Classes="statValue" Text="{Binding AudioBackendDisplayName}" />
+              <TextBlock Classes="mono statDetail" Text="{Binding AudioDeviceDisplayName}" Foreground="#10B981" />
+            </StackPanel>
+          </Grid>
+        </Border>
+        <Border Classes="stat">
+          <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+            <Border Classes="statIcon" Background="#1AF59E0B" BorderBrush="#F59E0B">
+              <Viewbox Classes="i18"><Path Data="{StaticResource IcoGear}" Stroke="#F59E0B" /></Viewbox>
+            </Border>
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="2">
+              <TextBlock Classes="statLabel" Text="{app:T start.engine}" />
+              <TextBlock Classes="statValue" Text="{Binding MpvEngineDisplayName}" />
+              <TextBlock Classes="mono statDetail" Text="{Binding FfmpegDisplayName}" Foreground="#F59E0B" />
+            </StackPanel>
+          </Grid>
+        </Border>
+      </UniformGrid>
+
+      <!-- Recently played -->
+      <StackPanel Grid.Row="2" Grid.ColumnSpan="2" Spacing="14" IsVisible="{Binding HasRecentCards}">
+        <Grid ColumnDefinitions="*,Auto">
+          <TextBlock Text="{app:T start.recentlyPlayed}" FontSize="16" FontWeight="Bold" VerticalAlignment="Center" />
+          <Button Grid.Column="1" Classes="link" Content="{app:T start.seeAll}" Click="OnAllRecents" IsVisible="{Binding HasMoreRecents}" />
+        </Grid>
+        <ItemsControl ItemsSource="{Binding RecentCards}" Margin="0,0,-20,0">
+          <ItemsControl.ItemsPanel>
+            <ItemsPanelTemplate><UniformGrid Columns="3" /></ItemsPanelTemplate>
+          </ItemsControl.ItemsPanel>
+          <ItemsControl.ItemTemplate>
+            <DataTemplate x:DataType="app:RecentItem">
+              <Button Margin="0,0,20,0" Padding="8" CornerRadius="18" Background="#730E1016" BorderBrush="#12FFFFFF" BorderThickness="1"
+                      HorizontalAlignment="Stretch" HorizontalContentAlignment="Left"
+                      Command="{Binding $parent[ItemsControl].((app:PlayerViewModel)DataContext).OpenRecentCommand}" CommandParameter="{Binding}">
+                <Grid ColumnDefinitions="150,*" ColumnSpacing="14">
+                  <Border Width="150" Height="84" CornerRadius="12" ClipToBounds="True" Background="#2A2F38">
+                    <Panel>
+                      <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" />
+                      <ProgressBar Classes="thin" Height="3" MinHeight="3" Maximum="1" Value="{Binding Progress}" Background="#80000000"
+                                   VerticalAlignment="Bottom" Margin="6" />
+                    </Panel>
+                  </Border>
+                  <StackPanel Grid.Column="1" VerticalAlignment="Center" Spacing="4">
+                    <TextBlock Text="{Binding Title}" FontSize="14" FontWeight="Bold" TextTrimming="CharacterEllipsis" />
+                    <TextBlock Text="{Binding Subtitle}" FontSize="12" FontWeight="Normal" Foreground="{DynamicResource Fg3}" />
+                  </StackPanel>
+                </Grid>
+              </Button>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+      </StackPanel>
+
+      <!-- Supported Formats pill banner when no recent cards exist -->
+      <Border Grid.Row="2" Grid.ColumnSpan="2" Padding="20,14" CornerRadius="16" Background="#4D0E1016"
+              BorderBrush="{DynamicResource Line}" BorderThickness="1" IsVisible="{Binding !HasRecentCards}">
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="16">
+          <TextBlock Text="DESTEKLENEN FORMATLAR" Classes="mono" FontSize="11" FontWeight="Bold"
+                     Foreground="{DynamicResource Fg4}" VerticalAlignment="Center" />
+          <WrapPanel Grid.Column="1" VerticalAlignment="Center">
+            <Border Margin="0,2,8,2" Padding="8,3" CornerRadius="6" Background="#14FFFFFF"><TextBlock Classes="mono" Text="MKV" FontSize="11" Foreground="{DynamicResource Fg2}" /></Border>
+            <Border Margin="0,2,8,2" Padding="8,3" CornerRadius="6" Background="#14FFFFFF"><TextBlock Classes="mono" Text="MP4" FontSize="11" Foreground="{DynamicResource Fg2}" /></Border>
+            <Border Margin="0,2,8,2" Padding="8,3" CornerRadius="6" Background="#14FFFFFF"><TextBlock Classes="mono" Text="HEVC (H.265)" FontSize="11" Foreground="{DynamicResource Accent}" /></Border>
+            <Border Margin="0,2,8,2" Padding="8,3" CornerRadius="6" Background="#14FFFFFF"><TextBlock Classes="mono" Text="AV1" FontSize="11" Foreground="{DynamicResource Accent}" /></Border>
+            <Border Margin="0,2,8,2" Padding="8,3" CornerRadius="6" Background="#14FFFFFF"><TextBlock Classes="mono" Text="HDR10" FontSize="11" Foreground="#06B6D4" /></Border>
+            <Border Margin="0,2,8,2" Padding="8,3" CornerRadius="6" Background="#14FFFFFF"><TextBlock Classes="mono" Text="FLAC" FontSize="11" Foreground="#10B981" /></Border>
+            <Border Margin="0,2,8,2" Padding="8,3" CornerRadius="6" Background="#14FFFFFF"><TextBlock Classes="mono" Text="DTS-HD" FontSize="11" Foreground="{DynamicResource Fg2}" /></Border>
+            <Border Margin="0,2,8,2" Padding="8,3" CornerRadius="6" Background="#14FFFFFF"><TextBlock Classes="mono" Text="Dolby Atmos" FontSize="11" Foreground="#F59E0B" /></Border>
+            <Border Margin="0,2,8,2" Padding="8,3" CornerRadius="6" Background="#14FFFFFF"><TextBlock Classes="mono" Text="WebM" FontSize="11" Foreground="{DynamicResource Fg2}" /></Border>
+            <Border Margin="0,2,8,2" Padding="8,3" CornerRadius="6" Background="#14FFFFFF"><TextBlock Classes="mono" Text="TS / MTS" FontSize="11" Foreground="{DynamicResource Fg2}" /></Border>
+            <Border Margin="0,2,8,2" Padding="8,3" CornerRadius="6" Background="#14FFFFFF"><TextBlock Classes="mono" Text="AVI" FontSize="11" Foreground="{DynamicResource Fg2}" /></Border>
+          </WrapPanel>
+        </Grid>
+      </Border>
+    </Grid>
+  </Panel>
+</UserControl>

@@ -1,0 +1,800 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:app="using:Player.App"
+             x:Class="Player.App.SettingsView"
+             x:DataType="app:SettingsViewModel">
+  <UserControl.Styles>
+    <Style Selector="RadioButton.nav > StackPanel > TextBlock">
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.row">
+      <Setter Property="MinHeight" Value="48" />
+      <Setter Property="Padding" Value="16,8" />
+    </Style>
+  </UserControl.Styles>
+
+  <!-- The control itself inherits PlayerViewModel; Root gets its own SettingsViewModel in code-behind. -->
+  <Panel x:Name="Root">
+    <Border Background="#9905060A" PointerPressed="OnBackdrop" />
+    <Viewbox StretchDirection="DownOnly" Margin="24,60,24,24">
+      <Border Width="920" Height="580" CornerRadius="22" Background="{DynamicResource Sheet}" BorderBrush="{DynamicResource Line2}"
+              BorderThickness="1" BoxShadow="0 30 80 0 #99000000" ClipToBounds="True">
+        <Grid ColumnDefinitions="212,*">
+          <!-- Navigation -->
+          <Border Background="{DynamicResource SheetNav}" BorderBrush="{DynamicResource Line}" BorderThickness="0,0,1,0" Padding="12,20">
+            <StackPanel Spacing="4">
+              <TextBlock Text="{app:T player.settings}" FontSize="16" FontWeight="Bold" Margin="12,0,12,12" />
+              <RadioButton Classes="nav" IsChecked="{Binding Page, Converter={x:Static app:EqualsConverter.Instance}, ConverterParameter=genel}">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <Viewbox Classes="i18"><Path Data="{StaticResource IcoGear}" StrokeThickness="2" /></Viewbox>
+                  <TextBlock Text="{app:T settings.general}" />
+                </StackPanel>
+              </RadioButton>
+              <RadioButton Classes="nav" IsChecked="{Binding Page, Converter={x:Static app:EqualsConverter.Instance}, ConverterParameter=video}">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <Viewbox Classes="i18"><Path Data="{StaticResource IcoScreen}" StrokeThickness="1.8" /></Viewbox>
+                  <TextBlock Text="{app:T settings.videoFPS}" />
+                </StackPanel>
+              </RadioButton>
+              <RadioButton Classes="nav" IsChecked="{Binding Page, Converter={x:Static app:EqualsConverter.Instance}, ConverterParameter=ses}">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <Viewbox Classes="i18">
+                    <Panel>
+                      <Path Data="{StaticResource IcoSpeaker}" StrokeThickness="1.8" />
+                      <Path Data="{StaticResource IcoWave1}" StrokeThickness="1.8" />
+                    </Panel>
+                  </Viewbox>
+                  <TextBlock Text="{app:T panel.sound}" />
+                </StackPanel>
+              </RadioButton>
+              <RadioButton Classes="nav" IsChecked="{Binding Page, Converter={x:Static app:EqualsConverter.Instance}, ConverterParameter=altyazi}">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <Viewbox Classes="i18"><Path Data="{StaticResource IcoSubs}" StrokeThickness="1.8" /></Viewbox>
+                  <TextBlock Text="{app:T settings.subtitles}" />
+                </StackPanel>
+              </RadioButton>
+              <RadioButton Classes="nav" IsChecked="{Binding Page, Converter={x:Static app:EqualsConverter.Instance}, ConverterParameter=disaaktar}">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <Viewbox Classes="i18"><Path Data="{StaticResource IcoUpload}" StrokeThickness="1.8" /></Viewbox>
+                  <TextBlock Text="{app:T settings.export}" />
+                </StackPanel>
+              </RadioButton>
+              <RadioButton Classes="nav" IsChecked="{Binding Page, Converter={x:Static app:EqualsConverter.Instance}, ConverterParameter=kisayollar}">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <Viewbox Classes="i18"><Path Data="{StaticResource IcoKeyboard}" StrokeThickness="1.8" /></Viewbox>
+                  <TextBlock Text="{app:T settings.shortcuts}" />
+                </StackPanel>
+              </RadioButton>
+              <RadioButton Classes="nav" IsChecked="{Binding Page, Converter={x:Static app:EqualsConverter.Instance}, ConverterParameter=hakkinda}">
+                <StackPanel Orientation="Horizontal" Spacing="10">
+                  <Viewbox Classes="i18"><Path Data="{StaticResource IcoInfo}" StrokeThickness="1.8" /></Viewbox>
+                  <TextBlock Text="{app:T settings.about}" />
+                </StackPanel>
+              </RadioButton>
+            </StackPanel>
+          </Border>
+
+          <!-- Content -->
+          <DockPanel Grid.Column="1">
+            <Grid DockPanel.Dock="Top" Height="64" ColumnDefinitions="*,Auto" Margin="28,0,18,0">
+              <TextBlock Text="{Binding PageTitle}" FontSize="20" FontWeight="Bold" VerticalAlignment="Center" />
+              <Button Grid.Column="1" Classes="close" Width="34" Height="34" CornerRadius="17" Command="{Binding CancelCommand}"
+                      AutomationProperties.Name="{app:T settings.closeSettings}">
+                <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoClose}" /></Viewbox>
+              </Button>
+            </Grid>
+            <Border DockPanel.Dock="Bottom" Height="64" BorderBrush="{DynamicResource Line}" BorderThickness="0,1,0,0" Padding="28,0">
+              <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <Button Classes="pill small" Padding="20,0" Content="{app:T settings.cancel}" Background="{DynamicResource Fill5}" Command="{Binding CancelCommand}" />
+                <Button Classes="pill small accent" Padding="24,0" Content="{app:T settings.save}" Command="{Binding SaveCommand}" />
+              </StackPanel>
+            </Border>
+
+            <!-- Spacing is the content's Margin: ScrollViewer.Padding clips the content but is left out of the scroll extent. -->
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+              <Panel Margin="28,0,28,24">
+                <!-- ================= GENEL ================= -->
+                <StackPanel Spacing="14" IsVisible="{Binding Page, Converter={x:Static app:EqualsConverter.Instance}, ConverterParameter=genel}">
+                  <TextBlock Classes="h3" Text="{app:T settings.generalSettings}" />
+                  <Border Classes="group">
+                    <StackPanel>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.appLanguage}" />
+                          <Button Grid.Column="1" Classes="drop" Click="OnLanguage">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <TextBlock Text="{Binding LanguageName}" VerticalAlignment="Center" />
+                              <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                            </StackPanel>
+                          </Button>
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="14">
+                          <TextBlock Classes="label" Text="{app:T settings.themeAndAccentColor}" />
+                          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                            <StackPanel Name="Swatches" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center" />
+                            <Button Classes="drop" Click="OnTheme">
+                              <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="{Binding ThemeText}" VerticalAlignment="Center" />
+                                <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                              </StackPanel>
+                            </Button>
+                          </StackPanel>
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.keepTheAppWindowAlways}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.AlwaysOnTop}" AutomationProperties.Name="{app:T settings.windowAlwaysOnTop}" />
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.smartseekInstantPreviewOnThe}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.SmartSeek}" AutomationProperties.Name="{app:T settings.smartseek}" />
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.startTheAppInFull}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.StartFullscreen}" AutomationProperties.Name="{app:T settings.startInFullScreen}" />
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.hideTheTopTitleBar}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.HideTopBar}" AutomationProperties.Name="{app:T settings.hideTopBar}" />
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.checkForUpdatesAutomatically}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.CheckUpdates}" AutomationProperties.Name="{app:T settings.checkForUpdates}" />
+                        </Grid>
+                      </Border>
+                    </StackPanel>
+                  </Border>
+
+                  <TextBlock Classes="h3" Text="{app:T settings.playbackSettings}" Margin="0,4,0,0" />
+                  <Border Classes="group">
+                    <StackPanel>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.automaticallyOpenTheNextFile}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.AutoNext}" AutomationProperties.Name="{app:T settings.autoOpenNextFile}" />
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.automaticallyResumePlaybackWhereIt}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.Resume}" AutomationProperties.Name="{app:T settings.resumeWhereLeftOff}" />
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.switchToFullScreenWhen}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.PlayInFullscreen}" AutomationProperties.Name="{app:T settings.fullScreenWhenAVideo}" />
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.fitTheWindowToThe}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.FitWindowToVideo}" AutomationProperties.Name="{app:T settings.fitWindowToVideo}" />
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.seekStepForwardBack}" />
+                          <Button Grid.Column="1" Classes="drop" Click="OnSeekStep">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <TextBlock Classes="mono" Text="{Binding SeekStepText}" VerticalAlignment="Center" />
+                              <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                            </StackPanel>
+                          </Button>
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.defaultRepeatMode}" />
+                          <Button Grid.Column="1" Classes="drop" Click="OnLoopMode">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <TextBlock Text="{Binding LoopModeText}" VerticalAlignment="Center" />
+                              <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                            </StackPanel>
+                          </Button>
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.mouseWheelActionOverVideo}" />
+                          <Button Grid.Column="1" Classes="drop" Click="OnWheelAction">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <TextBlock Text="{Binding WheelActionText}" VerticalAlignment="Center" />
+                              <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                            </StackPanel>
+                          </Button>
+                        </Grid>
+                      </Border>
+                    </StackPanel>
+                  </Border>
+
+                  <TextBlock Classes="h3" Text="{app:T settings.frameCaptureAndHistory}" Margin="0,4,0,0" />
+                  <Border Classes="group">
+                    <StackPanel>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                          <TextBlock Classes="label" Text="{app:T settings.frameCaptureFolder}" />
+                          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <TextBox Classes="field" Width="280" Text="{Binding Draft.ScreenshotDirectory}" AutomationProperties.Name="{app:T settings.frameCaptureFolder}" />
+                            <Button Classes="drop" Width="36" Height="36" Padding="0" Click="OnPickFolder" ToolTip.Tip="{app:T settings.chooseFolder}" AutomationProperties.Name="{app:T settings.chooseFolder}">
+                              <Viewbox Classes="i16"><Path Data="{StaticResource IcoFolder}" StrokeThickness="1.9" /></Viewbox>
+                            </Button>
+                          </StackPanel>
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.recentlyPlayedHistory}" />
+                          <Button Grid.Column="1" Classes="outline" Content="{app:T settings.clearHistory}" Command="{Binding ClearHistoryCommand}" />
+                        </Grid>
+                      </Border>
+                    </StackPanel>
+                  </Border>
+
+                  <TextBlock Classes="h3" Text="{app:T settings.windowsDefaultPlayerAndFile}" Margin="0,4,0,0" IsVisible="{Binding CanRegisterDefault}" />
+                  <Border Classes="group" Padding="16,14" IsVisible="{Binding CanRegisterDefault}">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                      <StackPanel Spacing="4" VerticalAlignment="Center">
+                        <TextBlock Text="{app:T settings.associateWithAllMediaFormats}" FontSize="13.5" FontWeight="SemiBold" />
+                        <TextBlock Text="{Binding DefaultStatus}" FontSize="12" Foreground="{DynamicResource Fg3}" TextWrapping="Wrap" LineHeight="17" />
+                      </StackPanel>
+                      <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                        <Button Classes="link" Content="{app:T settings.unregister}" FontSize="12" Padding="8,0"
+                                Command="{Binding UnregisterDefaultCommand}" IsVisible="{Binding IsDefaultRegistered}" />
+                        <Button Classes="outline" Content="{app:T settings.makeDefaultPlayer}" Command="{Binding RegisterDefaultCommand}" />
+                      </StackPanel>
+                    </Grid>
+                  </Border>
+                </StackPanel>
+
+                <!-- ================= VIDEO & FPS ================= -->
+                <StackPanel Spacing="14" IsVisible="{Binding Page, Converter={x:Static app:EqualsConverter.Instance}, ConverterParameter=video}">
+                  <TextBlock Classes="h3" Text="{app:T settings.hardwareAccelerationAndDeinterlacing}" />
+                  <Border Classes="group">
+                    <StackPanel>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <StackPanel Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="label" Text="{app:T settings.useHardwareAccelerationGPUZero}" />
+                            <TextBlock Text="{app:T settings.lowestCPUUsageWithNVIDIA}" FontSize="11.5" Foreground="{DynamicResource Fg3}" />
+                          </StackPanel>
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.HardwareDecoding}" AutomationProperties.Name="{app:T settings.hardwareAcceleratedDecoding}" />
+                        </Grid>
+                      </Border>
+                      <Border Classes="row" IsEnabled="{Binding Draft.HardwareDecoding}">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.hardwareDecoderMode}" />
+                          <Button Grid.Column="1" Classes="drop" Click="OnHwdecMode">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <TextBlock Text="{Binding HwdecModeText}" VerticalAlignment="Center" />
+                              <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                            </StackPanel>
+                          </Button>
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.deinterlacing}" />
+                          <Button Grid.Column="1" Classes="drop" Click="OnDeinterlaceMode">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <TextBlock Text="{Binding DeinterlaceModeText}" VerticalAlignment="Center" />
+                              <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                            </StackPanel>
+                          </Button>
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.videoOutputDriver}" />
+                          <Button Grid.Column="1" Classes="drop" Click="OnVideoOutput">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <TextBlock Text="{Binding VideoOutputText}" VerticalAlignment="Center" />
+                              <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                            </StackPanel>
+                          </Button>
+                        </Grid>
+                      </Border>
+                    </StackPanel>
+                  </Border>
+
+                  <TextBlock Classes="h3" Text="{app:T settings.motionAndHighFrameRate}" Margin="0,4,0,0" />
+                  <Border Classes="group">
+                    <StackPanel>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <StackPanel Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="label" Text="{app:T settings.defaultTargetFrameRateFPS}" />
+                            <TextBlock Text="{app:T settings.turns242530FPS}" FontSize="11.5" Foreground="{DynamicResource Fg3}" />
+                          </StackPanel>
+                          <Button Grid.Column="1" Classes="drop" Click="OnTargetFps">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <TextBlock Classes="mono" Text="{Binding TargetFpsText}" VerticalAlignment="Center" />
+                              <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                            </StackPanel>
+                          </Button>
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <StackPanel Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="label" Text="{app:T settings.motionUHD4KHighFrame}" />
+                            <TextBlock Text="{app:T settings.generatesSmoothFramesOn4K}" FontSize="11.5" Foreground="{DynamicResource Fg3}" />
+                          </StackPanel>
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.Motion2Uhd4K}" AutomationProperties.Name="{app:T settings.motionUHD4K}" />
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.automaticInterlaceDetection}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.AutoInterlaceDetection}" AutomationProperties.Name="{app:T settings.automaticInterlaceDetection2}" />
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.motionSmoothingAlgorithmTscale}" />
+                          <Button Grid.Column="1" Classes="drop" Click="OnMotionScaler">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <TextBlock Text="{Binding MotionScalerText}" VerticalAlignment="Center" />
+                              <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                            </StackPanel>
+                          </Button>
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.defaultImageScalerAndSharpness}" />
+                          <Button Grid.Column="1" Classes="drop" Click="OnDefaultPreset">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <TextBlock Text="{Binding DefaultPresetText}" VerticalAlignment="Center" />
+                              <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                            </StackPanel>
+                          </Button>
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <StackPanel Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="label" Text="{app:T settings.driverLayer}" />
+                            <TextBlock Text="{app:T settings.driverLayerDesc}" FontSize="11.5" Foreground="{DynamicResource Fg3}" TextWrapping="Wrap" />
+                          </StackPanel>
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.DriverUpscaling}" AutomationProperties.Name="{app:T settings.driverLayer}" />
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <StackPanel Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="label" Text="{app:T settings.shaderLayer}" />
+                            <TextBlock Text="{app:T settings.shaderLayerDesc}" FontSize="11.5" Foreground="{DynamicResource Fg3}" />
+                          </StackPanel>
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.ShaderUpscaling}" AutomationProperties.Name="{app:T settings.shaderLayer}" />
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <StackPanel Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="label" Text="{app:T settings.autoFallback}" />
+                            <TextBlock Text="{app:T settings.autoFallbackDesc}" FontSize="11.5" Foreground="{DynamicResource Fg3}" />
+                          </StackPanel>
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.AutoFallback}" AutomationProperties.Name="{app:T settings.autoFallback}" />
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.hdrToneMapping}" />
+                          <Button Grid.Column="1" Classes="drop" Click="OnToneMapping">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <TextBlock Text="{Binding ToneMappingText}" VerticalAlignment="Center" />
+                              <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                            </StackPanel>
+                          </Button>
+                        </Grid>
+                      </Border>
+                    </StackPanel>
+                  </Border>
+
+                  <TextBlock Classes="h3" Text="{app:T settings.fullScreenAndDisplayFormat}" Margin="0,4,0,0" />
+                  <Border Classes="group">
+                    <StackPanel>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.screenFormat}" />
+                          <Button Grid.Column="1" Classes="drop" Click="OnScreenFormat">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <TextBlock Classes="mono" Text="{Binding ScreenFormatText}" VerticalAlignment="Center" />
+                              <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                            </StackPanel>
+                          </Button>
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.43VideoDisplay}" />
+                          <Button Grid.Column="1" Classes="drop" Click="OnDisplayFormat43">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <TextBlock Text="{Binding DisplayFormat43Text}" VerticalAlignment="Center" />
+                              <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                            </StackPanel>
+                          </Button>
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.169VideoDisplay}" />
+                          <Button Grid.Column="1" Classes="drop" Click="OnDisplayFormat169">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <TextBlock Text="{Binding DisplayFormat169Text}" VerticalAlignment="Center" />
+                              <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                            </StackPanel>
+                          </Button>
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.cinematic219VideoDisplay}" />
+                          <Button Grid.Column="1" Classes="drop" Click="OnDisplayFormatCinematic">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <TextBlock Text="{Binding DisplayFormatCinematicText}" VerticalAlignment="Center" />
+                              <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                            </StackPanel>
+                          </Button>
+                        </Grid>
+                      </Border>
+                    </StackPanel>
+                  </Border>
+                </StackPanel>
+
+                <!-- ================= SES ================= -->
+                <StackPanel Spacing="14" IsVisible="{Binding Page, Converter={x:Static app:EqualsConverter.Instance}, ConverterParameter=ses}">
+                  <TextBlock Classes="h3" Text="{app:T settings.audioOutputModeChannelLayout}" />
+                  <Border Classes="group">
+                    <StackPanel>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                          <StackPanel Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="label" Text="{app:T settings.audioOutputModeChannelsAnd}" />
+                            <TextBlock Text="{app:T settings.stereoStereoSurround51}" FontSize="11.5" Foreground="{DynamicResource Fg3}" />
+                          </StackPanel>
+                          <Button Grid.Column="1" Classes="drop" Click="OnAudioOutputMode">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <TextBlock Text="{Binding AudioOutputModeText}" VerticalAlignment="Center" />
+                              <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                            </StackPanel>
+                          </Button>
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                          <TextBlock Classes="label" Text="{app:T settings.mainAudioOutputDevice}" />
+                          <Button Grid.Column="1" Classes="drop" MaxWidth="320" Click="OnAudioDevice">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <TextBlock Text="{Binding AudioDeviceText}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="270" />
+                              <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                            </StackPanel>
+                          </Button>
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                          <TextBlock Classes="label" Text="{app:T settings.sPDIFBitstreamOutputDevice}" />
+                          <Button Grid.Column="1" Classes="drop" MaxWidth="320" Click="OnSpdifDevice">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <TextBlock Text="{Binding SpdifDeviceText}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="270" />
+                              <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                            </StackPanel>
+                          </Button>
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                          <TextBlock Classes="label" Text="{app:T settings.hdmiBitstreamOutputDeviceTrueHD}" />
+                          <Button Grid.Column="1" Classes="drop" MaxWidth="320" Click="OnHdmiDevice">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <TextBlock Text="{Binding HdmiDeviceText}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="270" />
+                              <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                            </StackPanel>
+                          </Button>
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.exclusiveAudioModeWASAPIExclusive}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.AudioExclusive}" AutomationProperties.Name="{app:T settings.exclusiveMode}" />
+                        </Grid>
+                      </Border>
+                    </StackPanel>
+                  </Border>
+
+                  <TextBlock Classes="h3" Text="{app:T settings.lipSyncAdjustment}" Margin="0,4,0,0" />
+                  <Border Classes="group" Padding="16,14">
+                    <StackPanel Spacing="10">
+                      <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="12">
+                        <StackPanel Spacing="2" VerticalAlignment="Center">
+                          <TextBlock Classes="label" Text="{app:T settings.audioDelayLipSync}" />
+                          <TextBlock Text="{app:T settings.adjustsTheOffsetBetweenSound}" FontSize="11.5" Foreground="{DynamicResource Fg3}" />
+                        </StackPanel>
+                        <TextBlock Grid.Column="1" Classes="mono" Text="{Binding LipsyncText}" FontSize="13" Foreground="{DynamicResource AccentText}" VerticalAlignment="Center" />
+                        <Button Grid.Column="2" Classes="link" Content="{app:T panel.reset}" FontSize="12" Command="{Binding ResetLipsyncCommand}" VerticalAlignment="Center" />
+                      </Grid>
+                      <Slider Minimum="-500" Maximum="500" Value="{Binding LipsyncValue}" SmallChange="10" LargeChange="50"
+                              AutomationProperties.Name="{app:T settings.audioDelayMs}" />
+                    </StackPanel>
+                  </Border>
+
+                  <TextBlock Classes="h3" Text="{app:T settings.soundEnhancementAndLanguagePreferences}" Margin="0,4,0,0" />
+                  <Border Classes="group">
+                    <StackPanel>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.volumeStep}" />
+                          <Button Grid.Column="1" Classes="drop" Click="OnVolumeStep">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <TextBlock Classes="mono" Text="{Binding VolumeStepText}" VerticalAlignment="Center" />
+                              <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                            </StackPanel>
+                          </Button>
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.startWithVolumeBoost200}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.BoostByDefault}" AutomationProperties.Name="{app:T settings.startWithVolumeBoostOn}" />
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.startWithLoudnessNormalizationDynaudnorm}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.NormalizeByDefault}" AutomationProperties.Name="{app:T settings.startWithLoudnessNormalizationOn}" />
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                          <StackPanel Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="label" Text="{app:T settings.preferredAudioLanguages}" />
+                            <TextBlock Text="{app:T settings.commaSeparatedISOLanguageCodes}" FontSize="11.5" Foreground="{DynamicResource Fg3}" />
+                          </StackPanel>
+                          <TextBox Grid.Column="1" Classes="field" Width="220" Text="{Binding Draft.AudioLanguages}" Watermark="tur,eng,jpn" AutomationProperties.Name="{app:T settings.preferredAudioLanguages}" />
+                        </Grid>
+                      </Border>
+                    </StackPanel>
+                  </Border>
+                </StackPanel>
+
+                <!-- ================= ALTYAZI ================= -->
+                <StackPanel Spacing="14" IsVisible="{Binding Page, Converter={x:Static app:EqualsConverter.Instance}, ConverterParameter=altyazi}">
+                  <TextBlock Classes="h3" Text="{app:T settings.subtitleAppearanceAndLanguagePreferences}" />
+                  <Border Classes="group">
+                    <StackPanel>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                          <StackPanel Spacing="2" VerticalAlignment="Center">
+                            <TextBlock Classes="label" Text="{app:T settings.preferredSubtitleLanguages}" />
+                            <TextBlock Text="{app:T settings.commaSeparatedISOLanguageCodes2}" FontSize="11.5" Foreground="{DynamicResource Fg3}" />
+                          </StackPanel>
+                          <TextBox Grid.Column="1" Classes="field" Width="220" Text="{Binding Draft.SubtitleLanguages}" Watermark="tur,eng" AutomationProperties.Name="{app:T settings.preferredSubtitleLanguages}" />
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.subtitleSize}" />
+                          <Button Grid.Column="1" Classes="drop" Click="OnSubtitleScale">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <TextBlock Classes="mono" Text="{Binding SubtitleScaleText}" VerticalAlignment="Center" />
+                              <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                            </StackPanel>
+                          </Button>
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.subtitleColor}" />
+                          <Button Grid.Column="1" Classes="drop" Click="OnSubtitleColor">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <TextBlock Text="{Binding SubtitleColorText}" VerticalAlignment="Center" />
+                              <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                            </StackPanel>
+                          </Button>
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.subtitleVerticalPosition}" />
+                          <Button Grid.Column="1" Classes="drop" Click="OnSubtitlePos">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <TextBlock Text="{Binding SubtitlePosText}" VerticalAlignment="Center" />
+                              <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                            </StackPanel>
+                          </Button>
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.semiTransparentBackgroundBox}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.SubtitleBackground}" AutomationProperties.Name="{app:T settings.semiTransparentBackgroundBox}" />
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.overrideASSSSASubtitleStyles}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.OverrideAssStyles}" AutomationProperties.Name="{app:T settings.overrideASSSubtitleStyles}" />
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.automaticallyLoadMatchingSubtitleFiles}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.AutoLoadSubtitles}" AutomationProperties.Name="{app:T settings.autoLoadSubtitles}" />
+                        </Grid>
+                      </Border>
+                    </StackPanel>
+                  </Border>
+                </StackPanel>
+
+                <!-- ================= DIŞA AKTAR (EXPORT) ================= -->
+                <StackPanel Spacing="14" IsVisible="{Binding Page, Converter={x:Static app:EqualsConverter.Instance}, ConverterParameter=disaaktar}">
+                  <TextBlock Classes="h3" Text="{app:T settings.hardwareAcceleration}" />
+                  <Border Classes="group">
+                    <StackPanel>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.useHardwareAccelerationForVideo}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.ExportHwDecode}" AutomationProperties.Name="{app:T settings.exportHardwareDecoding}" />
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.useHardwareAccelerationForVideo2}" />
+                          <ToggleButton Grid.Column="1" Classes="switch" IsChecked="{Binding Draft.ExportHwEncode}" AutomationProperties.Name="{app:T settings.exportHardwareEncoding}" />
+                        </Grid>
+                      </Border>
+                      <Border Classes="row" IsEnabled="{Binding Draft.ExportHwEncode}">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.hardwareVideoEncoder}" />
+                          <Button Grid.Column="1" Classes="drop" Click="OnExportEncoder">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <TextBlock Text="{Binding ExportEncoderText}" VerticalAlignment="Center" />
+                              <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                            </StackPanel>
+                          </Button>
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.exportDeinterlacing}" />
+                          <Button Grid.Column="1" Classes="drop" Click="OnExportDeinterlace">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <TextBlock Text="{Binding ExportDeinterlaceText}" VerticalAlignment="Center" />
+                              <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                            </StackPanel>
+                          </Button>
+                        </Grid>
+                      </Border>
+                    </StackPanel>
+                  </Border>
+
+                  <TextBlock Classes="h3" Text="{app:T settings.exportFolderAndOutputSettings}" Margin="0,4,0,0" />
+                  <Border Classes="group">
+                    <StackPanel>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto" ColumnSpacing="16">
+                          <TextBlock Classes="label" Text="{app:T settings.exportOutputFolder}" />
+                          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <TextBox Classes="field" Width="280" Text="{Binding Draft.ExportDirectory}" AutomationProperties.Name="{app:T settings.exportFolder}" />
+                            <Button Classes="drop" Width="36" Height="36" Padding="0" Click="OnPickExportFolder" ToolTip.Tip="{app:T settings.chooseFolder}" AutomationProperties.Name="{app:T settings.chooseExportFolder}">
+                              <Viewbox Classes="i16"><Path Data="{StaticResource IcoFolder}" StrokeThickness="1.9" /></Viewbox>
+                            </Button>
+                          </StackPanel>
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.frameExportFileFormat}" />
+                          <Button Grid.Column="1" Classes="drop" Click="OnScreenshotFormat">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                              <TextBlock Classes="mono" Text="{Binding ScreenshotFormatText}" VerticalAlignment="Center" />
+                              <Viewbox Classes="i14"><Path Classes="bold" Data="{StaticResource IcoChevron}" /></Viewbox>
+                            </StackPanel>
+                          </Button>
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="*,Auto">
+                          <TextBlock Classes="label" Text="{app:T settings.quickActions}" />
+                          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
+                            <Button Classes="outline" Content="{app:T settings.openOutputFolder}" Command="{Binding Player.OpenExportFolderCommand}" />
+                            <Button Classes="outline on" Content="{app:T settings.exportCurrentFrame}" Command="{Binding Player.ExportCurrentFrameCommand}"
+                                    IsEnabled="{Binding !Player.IsIdle}" />
+                          </StackPanel>
+                        </Grid>
+                      </Border>
+                    </StackPanel>
+                  </Border>
+                </StackPanel>
+
+                <!-- ================= KISAYOLLAR ================= -->
+                <StackPanel Spacing="12" IsVisible="{Binding Page, Converter={x:Static app:EqualsConverter.Instance}, ConverterParameter=kisayollar}">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Classes="h3" Text="{app:T settings.keyboardShortcuts}" VerticalAlignment="Center" />
+                    <Button Grid.Column="1" Classes="link" Content="{app:T settings.resetToDefaults}" FontSize="12" Command="{Binding ResetShortcutsCommand}" />
+                  </Grid>
+                  <Border Classes="group" Padding="4">
+                    <ItemsControl ItemsSource="{Binding ShortcutItems}">
+                      <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate><UniformGrid Columns="2" /></ItemsPanelTemplate>
+                      </ItemsControl.ItemsPanel>
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="app:ShortcutItem">
+                          <Border Padding="12,0" Height="40" CornerRadius="8">
+                            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                              <TextBlock Text="{Binding Label}" FontSize="13" FontWeight="SemiBold" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" />
+                              <Button Grid.Column="1" Classes="chip" Classes.on="{Binding IsCapturing}" VerticalAlignment="Center" Content="{Binding KeyText}"
+                                      Command="{Binding #Root.((app:SettingsViewModel)DataContext).StartCaptureCommand}"
+                                      CommandParameter="{Binding}" />
+                            </Grid>
+                          </Border>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </Border>
+                  <TextBlock Text="{app:T settings.clickAKeyBoxTo}"
+                             FontSize="12" Foreground="{DynamicResource Fg3}" />
+                </StackPanel>
+
+                <!-- ================= HAKKINDA ================= -->
+                <StackPanel Spacing="14" IsVisible="{Binding Page, Converter={x:Static app:EqualsConverter.Instance}, ConverterParameter=hakkinda}">
+                  <Border Classes="group" Padding="18,16">
+                    <StackPanel Orientation="Horizontal" Spacing="14">
+                      <Border Width="48" Height="48" CornerRadius="14" Background="{DynamicResource Accent}">
+                        <Path Data="M24 13L34 31H14Z" Stroke="White" StrokeThickness="3" StrokeJoin="Round" />
+                      </Border>
+                      <StackPanel VerticalAlignment="Center" Spacing="2">
+                        <TextBlock Text="Nuvora Player" FontSize="18" FontWeight="Bold" />
+                        <TextBlock Classes="mono" Text="{Binding VersionLine}" Foreground="{DynamicResource Fg3}" />
+                      </StackPanel>
+                    </StackPanel>
+                  </Border>
+                  <Border Classes="group">
+                    <StackPanel>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="Auto,*">
+                          <TextBlock Classes="label" Text="{app:T settings.playbackEngine}" />
+                          <TextBlock Grid.Column="1" Classes="mono" Text="{Binding Player.MpvVersion}" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                     TextTrimming="CharacterEllipsis" Margin="12,0,0,0" />
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="Auto,*">
+                          <TextBlock Classes="label" Text="{app:T settings.activeGraphicsProcessorGPU}" />
+                          <TextBlock Grid.Column="1" Text="{Binding Player.GpuName}" FontSize="13" FontWeight="SemiBold" HorizontalAlignment="Right" VerticalAlignment="Center"
+                                     TextTrimming="CharacterEllipsis" Margin="12,0,0,0" />
+                        </Grid>
+                      </Border>
+                      <Border Classes="row">
+                        <Grid ColumnDefinitions="Auto,*">
+                          <TextBlock Classes="label" Text="{app:T settings.supportedFormats}" />
+                          <TextBlock Grid.Column="1" Classes="mono" Text="{Binding FormatCountText}"
+                                     HorizontalAlignment="Right" VerticalAlignment="Center" Margin="12,0,0,0" />
+                        </Grid>
+                      </Border>
+                    </StackPanel>
+                  </Border>
+                  <TextBlock FontSize="12" Foreground="{DynamicResource Fg3}" TextWrapping="Wrap" LineHeight="18"
+                             Text="{app:T settings.builtOnLibmpvFFmpegAvalonia}" />
+                </StackPanel>
+              </Panel>
+            </ScrollViewer>
+          </DockPanel>
+        </Grid>
+      </Border>
+    </Viewbox>
+  </Panel>
+</UserControl>

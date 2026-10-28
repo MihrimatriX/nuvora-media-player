@@ -1,0 +1,121 @@
+name: Release
+
+# A v* tag builds the Velopack installer (Setup.exe, full + delta nupkg) and a portable zip, and publishes them
+# as a GitHub release (installed copies pick it up as an update). Other triggers are dry runs: same build,
+# packages uploaded as workflow artifacts only.
+on:
+  push:
+    tags: ['v*']
+  pull_request:
+    paths:
+      - .github/workflows/release.yml
+      - scripts/**
+      - src/Player.App/Player.App.csproj
+      - src/Player.Thumbnails/**
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version for the dry-run build (SemVer, e.g. 0.1.0-test.1; must be >= 0.0.1)
+        default: 0.0.1-dryrun
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+  VPK_VERSION: 1.2.161
+  REPO_URL: https://github.com/${{ github.repository }}
+
+jobs:
+  release:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Resolve version
+        id: version
+        run: |
+          $v = if ('${{ github.ref_type }}' -eq 'tag') { '${{ github.ref_name }}'.TrimStart('v') }
+               elseif ('${{ inputs.version }}') { '${{ inputs.version }}' }
+               else { '0.0.1-pr.${{ github.run_number }}' }
+          if ($v -notmatch '^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$') { throw "Not a SemVer version: $v" }
+          "value=$v" >> $env:GITHUB_OUTPUT
+          "publish=$('${{ github.ref_type }}' -eq 'tag')".ToLower() >> $env:GITHUB_OUTPUT
+
+      - name: Download libmpv (pinned LGPL build)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: ./scripts/get-libmpv.ps1 -RequirePin
+
+      - name: Test
+        run: dotnet test NuvoraPlayer.slnx -c Release
+
+      - name: Publish (self-contained win-x64)
+        run: |
+          dotnet publish src/Player.App/Player.App.csproj -c Release -r win-x64 --self-contained `
+            -p:Version=${{ steps.version.outputs.value }} -o publish
+          # Explorer thumbnail provider (NativeAOT DLL, needs the runner's MSVC linker); loads libmpv-2.dll beside it.
+          dotnet publish src/Player.Thumbnails/Player.Thumbnails.csproj -c Release -r win-x64 `
+            -p:Version=${{ steps.version.outputs.value }} -o thumbnails
+          if ($LASTEXITCODE -ne 0) { throw "thumbnail provider publish failed" }
+          Copy-Item thumbnails/NuvoraThumbnails.dll publish/
+          # LGPL: the user may replace libmpv-2.dll; ship the notices and say which build it is.
+          New-Item -ItemType Directory publish/licenses -Force | Out-Null
+          Copy-Item THIRD_PARTY.md publish/licenses/
+          Copy-Item scripts/libmpv.json publish/licenses/libmpv-build.json
+          Copy-Item licenses/LGPL-2.1.txt publish/licenses/ # vendored: gnu.org times out from runners
+
+      - name: Portable zip
+        run: |
+          # A "portable" folder next to the exe keeps settings beside it (AppSettings.ConfigDir); no auto-update.
+          $stage = "portable-stage/NuvoraPlayer"
+          New-Item -ItemType Directory $stage -Force | Out-Null
+          Copy-Item publish/* $stage -Recurse
+          New-Item -ItemType Directory "$stage/portable" -Force | Out-Null
+          Set-Content "$stage/portable/README.txt" "Ayarlar ve kaldığın yer bilgileri bu klasörde tutulur."
+          New-Item -ItemType Directory Releases -Force | Out-Null
+          Compress-Archive "$stage" "Releases/NuvoraPlayer-${{ steps.version.outputs.value }}-win-x64-portable.zip"
+
+      - name: Install vpk
+        run: dotnet tool install -g vpk --version $env:VPK_VERSION
+
+      - name: Fetch previous release (for delta packages)
+        if: steps.version.outputs.publish == 'true'
+        continue-on-error: true # first release has nothing to diff against
+        run: vpk download github --repoUrl $env:REPO_URL --token ${{ github.token }} -o Releases
+
+      - name: Pack installer
+        run: |
+          $icon = 'src/Player.App/Assets/app.ico'
+          $iconArgs = if (Test-Path $icon) { @('--icon', $icon) } else { @() } # Setup.exe falls back to Velopack's icon
+          vpk pack --packId NuvoraPlayer --packVersion ${{ steps.version.outputs.value }} `
+            --packDir publish --mainExe NuvoraPlayer.exe --packTitle "Nuvora Player" --packAuthors "AFU" `
+            @iconArgs --noPortable -o Releases
+          if ($LASTEXITCODE -ne 0) { throw "vpk pack failed" }
+
+      - name: Upload to draft GitHub release
+        if: steps.version.outputs.publish == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $v = '${{ steps.version.outputs.value }}'
+          vpk upload github --repoUrl $env:REPO_URL --token $env:GH_TOKEN -o Releases `
+            --releaseName "Nuvora Player $v" --tag "v$v" --merge --publish
+          if ($LASTEXITCODE -ne 0) { throw "vpk upload failed" }
+          gh release upload "v$v" "Releases/NuvoraPlayer-$v-win-x64-portable.zip" --clobber
+
+      - name: Upload packages (dry run)
+        if: steps.version.outputs.publish != 'true'
+        uses: actions/upload-artifact@v5
+        with:
+          name: nuvora-${{ steps.version.outputs.value }}
+          path: Releases/

@@ -1,0 +1,232 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- Design tokens (Media Player Tasarımı.html). Accent brushes are replaced at runtime by App.SetAccent. -->
+  <SolidColorBrush x:Key="Accent" Color="#6D5AE6" />
+  <SolidColorBrush x:Key="AccentTint" Color="#2E6D5AE6" />   <!-- 18 %: selected cards -->
+  <SolidColorBrush x:Key="AccentChip" Color="#3D6D5AE6" />   <!-- 24 %: chips -->
+  <SolidColorBrush x:Key="AccentSoft" Color="#476D5AE6" />   <!-- 28 %: icon tiles -->
+  <SolidColorBrush x:Key="AccentPress" Color="#4D6D5AE6" />  <!-- 30 %: pressed buttons -->
+  <SolidColorBrush x:Key="AccentHalo" Color="#596D5AE6" />   <!-- 35 %: seek thumb halo -->
+  <SolidColorBrush x:Key="AccentText" Color="#8373EA" />     <!-- accent as text, >= 4.5:1 on Sheet (ColorContrast.Lighten) -->
+  <SolidColorBrush x:Key="FocusRing" Color="#8373EA" />      <!-- keyboard focus outline -->
+  <SolidColorBrush x:Key="OnAccent" Color="#FFFFFF" />       <!-- text on an accent fill -->
+
+  <SolidColorBrush x:Key="Bg" Color="#0B0C12" />
+  <SolidColorBrush x:Key="Surface" Color="#0E1014" />
+  <SolidColorBrush x:Key="HeaderBg" Color="#111318" />
+  <SolidColorBrush x:Key="Sheet" Color="#16191F" />
+  <SolidColorBrush x:Key="SheetNav" Color="#121419" />
+  <SolidColorBrush x:Key="Panel" Color="#B80E1016" />
+  <SolidColorBrush x:Key="Glass" Color="#990E1016" />
+  <SolidColorBrush x:Key="Tab" Color="#2A2F38" />
+
+  <SolidColorBrush x:Key="Fg" Color="#ECEEF2" />
+  <SolidColorBrush x:Key="Fg2" Color="#C2C8D0" />
+  <SolidColorBrush x:Key="Fg3" Color="#A4ABB6" />
+  <SolidColorBrush x:Key="Fg4" Color="#8E96A2" />
+  <SolidColorBrush x:Key="Danger" Color="#FF8A80" />
+
+  <SolidColorBrush x:Key="Line" Color="#0FFFFFFF" />
+  <SolidColorBrush x:Key="Line2" Color="#14FFFFFF" />
+  <SolidColorBrush x:Key="Line3" Color="#1AFFFFFF" />
+  <SolidColorBrush x:Key="Fill1" Color="#08FFFFFF" />
+  <SolidColorBrush x:Key="Fill2" Color="#0AFFFFFF" />
+  <SolidColorBrush x:Key="Fill3" Color="#0DFFFFFF" />
+  <SolidColorBrush x:Key="Fill4" Color="#12FFFFFF" />
+  <SolidColorBrush x:Key="Fill5" Color="#14FFFFFF" />
+  <SolidColorBrush x:Key="Fill6" Color="#1AFFFFFF" />
+  <SolidColorBrush x:Key="Fill8" Color="#29FFFFFF" />
+
+  <!-- Menu & Flyout Theme Resources for FluentTheme overrides -->
+  <SolidColorBrush x:Key="MenuFlyoutPresenterBackground" Color="#F214171F" />
+  <SolidColorBrush x:Key="MenuFlyoutPresenterBorderBrush" Color="#24FFFFFF" />
+  <Thickness x:Key="MenuFlyoutPresenterBorderThickness">1</Thickness>
+  <CornerRadius x:Key="OverlayCornerRadius">14</CornerRadius>
+  <Thickness x:Key="MenuFlyoutPresenterThemePadding">6</Thickness>
+
+  <FontFamily x:Key="ContentControlThemeFontFamily">fonts:Nuvora#Manrope</FontFamily>
+  <FontFamily x:Key="Mono">fonts:Nuvora#IBM Plex Mono</FontFamily>
+
+  <!-- Icons: 24x24 stroke paths copied from the design. -->
+  <StreamGeometry x:Key="IcoFolder">M3 8a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z</StreamGeometry>
+  <StreamGeometry x:Key="IcoSubs">M6 5h12a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V8a3 3 0 0 1 3-3z M7 13h4 M13 13h4 M7 16h7</StreamGeometry>
+  <StreamGeometry x:Key="IcoTune">M4 7h10 M18 7h2 M4 17h4 M12 17h8 M14 7a2 2 0 1 0 4 0a2 2 0 1 0-4 0 M8 17a2 2 0 1 0 4 0a2 2 0 1 0-4 0</StreamGeometry>
+  <StreamGeometry x:Key="IcoCamera">M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9a1 1 0 0 1 1-1z M8.5 13a3.5 3.5 0 1 0 7 0a3.5 3.5 0 1 0-7 0</StreamGeometry>
+  <StreamGeometry x:Key="IcoBack">M4 12a8 8 0 1 0 2.5-5.8 M4 4v4.5h4.5</StreamGeometry>
+  <StreamGeometry x:Key="IcoFwd">M20 12a8 8 0 1 1-2.5-5.8 M20 4v4.5h-4.5</StreamGeometry>
+  <StreamGeometry x:Key="IcoPrev">M6.2 5a1.2 1.2 0 0 1 1.2 1.2v11.6a1.2 1.2 0 0 1-2.4 0V6.2A1.2 1.2 0 0 1 6.2 5z M18.5 6.4v11.2a1 1 0 0 1-1.55 0.83L9.2 13.2a1.5 1.5 0 0 1 0-2.4l7.75-5.23a1 1 0 0 1 1.55 0.83z</StreamGeometry>
+  <StreamGeometry x:Key="IcoNext">M17.8 5a1.2 1.2 0 0 1 1.2 1.2v11.6a1.2 1.2 0 0 1-2.4 0V6.2A1.2 1.2 0 0 1 17.8 5z M5.5 6.4v11.2a1 1 0 0 0 1.55 0.83l7.75-5.23a1.5 1.5 0 0 0 0-2.4L7.05 5.57A1 1 0 0 0 5.5 6.4z</StreamGeometry>
+  <StreamGeometry x:Key="IcoPause">M8.1 5h0.8a1.6 1.6 0 0 1 1.6 1.6v10.8a1.6 1.6 0 0 1-1.6 1.6h-0.8a1.6 1.6 0 0 1-1.6-1.6V6.6A1.6 1.6 0 0 1 8.1 5z M15.1 5h0.8a1.6 1.6 0 0 1 1.6 1.6v10.8a1.6 1.6 0 0 1-1.6 1.6h-0.8a1.6 1.6 0 0 1-1.6-1.6V6.6A1.6 1.6 0 0 1 15.1 5z</StreamGeometry>
+  <StreamGeometry x:Key="IcoPlay">M7 5.6v12.8a1 1 0 0 0 1.52 0.85l10.4-6.4a1 1 0 0 0 0-1.7L8.52 4.75A1 1 0 0 0 7 5.6z</StreamGeometry>
+  <StreamGeometry x:Key="IcoList">M9 6h11 M9 12h11 M9 18h11 M4.5 6h0.01 M4.5 12h0.01 M4.5 18h0.01</StreamGeometry>
+  <StreamGeometry x:Key="IcoSpeaker">M4 9.5a1 1 0 0 1 1-1h3l4.5-3.6a0.6 0.6 0 0 1 1 0.5v13.2a0.6 0.6 0 0 1-1 0.5L8 15.5H5a1 1 0 0 1-1-1z</StreamGeometry>
+  <StreamGeometry x:Key="IcoWaves">M16.5 8.5a5 5 0 0 1 0 7 M19 6a8.5 8.5 0 0 1 0 12</StreamGeometry>
+  <StreamGeometry x:Key="IcoWave1">M16.5 8.5a5 5 0 0 1 0 7</StreamGeometry>
+  <StreamGeometry x:Key="IcoMuteX">M16 9l5 6 M21 9l-5 6</StreamGeometry>
+  <StreamGeometry x:Key="IcoFullscreen">M4 9V6a2 2 0 0 1 2-2h3 M20 9V6a2 2 0 0 0-2-2h-3 M4 15v3a2 2 0 0 0 2 2h3 M20 15v3a2 2 0 0 1-2 2h-3</StreamGeometry>
+  <StreamGeometry x:Key="IcoFullscreenExit">M9 4v3a2 2 0 0 1-2 2H4 M15 4v3a2 2 0 0 0 2 2h3 M9 20v-3a2 2 0 0 0-2-2H4 M15 20v-3a2 2 0 0 1 2-2h3</StreamGeometry>
+  <StreamGeometry x:Key="IcoMin">M5 12h14</StreamGeometry>
+  <StreamGeometry x:Key="IcoMax">M8 4h8a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V8a4 4 0 0 1 4-4z</StreamGeometry>
+  <StreamGeometry x:Key="IcoRestore">M6.5 8h7a2.5 2.5 0 0 1 2.5 2.5v7a2.5 2.5 0 0 1-2.5 2.5h-7A2.5 2.5 0 0 1 4 17.5v-7A2.5 2.5 0 0 1 6.5 8z M8 4.8A2.5 2.5 0 0 1 10.5 4h7A2.5 2.5 0 0 1 20 6.5v7a2.5 2.5 0 0 1-0.8 1.8</StreamGeometry>
+  <StreamGeometry x:Key="IcoClose">M6 6l12 12 M18 6L6 18</StreamGeometry>
+  <StreamGeometry x:Key="IcoGear">M9 12a3 3 0 1 0 6 0a3 3 0 1 0-6 0 M12 3v2.5 M12 18.5V21 M3 12h2.5 M18.5 12H21 M5.6 5.6l1.8 1.8 M16.6 16.6l1.8 1.8 M5.6 18.4l1.8-1.8 M16.6 7.4l1.8-1.8</StreamGeometry>
+  <StreamGeometry x:Key="IcoUpload">M12 15V4 M7.5 8.5L12 4l4.5 4.5 M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4</StreamGeometry>
+  <StreamGeometry x:Key="IcoChevron">M6 9l6 6 6-6</StreamGeometry>
+  <StreamGeometry x:Key="IcoScreen">M4 5h16a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z M8 20h8 M12 18v2 M10 9.5l5 2.5-5 2.5z</StreamGeometry>
+  <StreamGeometry x:Key="IcoInfo">M3 12a9 9 0 1 0 18 0a9 9 0 1 0-18 0 M12 11v5 M12 8h0.01</StreamGeometry>
+  <StreamGeometry x:Key="IcoLock">M7 11h10a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2z M8 11V8a4 4 0 0 1 8 0v3</StreamGeometry>
+  <StreamGeometry x:Key="IcoPerson">M8.5 8a3.5 3.5 0 1 0 7 0a3.5 3.5 0 1 0-7 0 M5 20a7 7 0 0 1 14 0</StreamGeometry>
+  <StreamGeometry x:Key="IcoKeyboard">M6 6h12a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3V9a3 3 0 0 1 3-3z M7 10h0.01 M11 10h0.01 M15 10h0.01 M7 14h10</StreamGeometry>
+  <StreamGeometry x:Key="IcoRepeat">M17 2l4 4-4 4 M3 11V9a4 4 0 0 1 4-4h14 M7 22l-4-4 4-4 M21 13v2a4 4 0 0 1-4 4H3</StreamGeometry>
+  <StreamGeometry x:Key="IcoFit">M4 8V6a2 2 0 0 1 2-2h2 M4 16v2a2 2 0 0 0 2 2h2 M16 4h2a2 2 0 0 1 2 2v2 M16 20h2a2 2 0 0 0 2-2v-2 M9 9h6v6H9z</StreamGeometry>
+  <StreamGeometry x:Key="IcoCompare">M12 3v18 M8 9.5L5.5 12 8 14.5 M16 9.5l2.5 2.5-2.5 2.5 M5 5h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z</StreamGeometry>
+  <StreamGeometry x:Key="IcoSplitArrows">M9.5 8l-4 4 4 4 M14.5 8l4 4-4 4</StreamGeometry>
+  <StreamGeometry x:Key="IcoShuffle">M16 3h5v5 M4 20L21 3 M21 16v5h-5 M15 15l6 6 M4 4l5 5</StreamGeometry>
+  <StreamGeometry x:Key="IcoPlus">M12 5v14 M5 12h14</StreamGeometry>
+  <StreamGeometry x:Key="IcoTrash">M4 7h16 M10 11v6 M14 11v6 M6 7l1 12a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-12 M9 7V4h6v3</StreamGeometry>
+  <StreamGeometry x:Key="IcoUp">M6 15l6-6 6 6</StreamGeometry>
+  <StreamGeometry x:Key="IcoSparkle">M10 3l1.9 5.1L17 10l-5.1 1.9L10 17l-1.9-5.1L3 10l5.1-1.9z M18 14l0.9 2.1L21 17l-2.1 0.9L18 20l-0.9-2.1L15 17l2.1-0.9z</StreamGeometry>
+  <StreamGeometry x:Key="IcoLogo">M11 6L16 15H6Z</StreamGeometry>
+
+  <!-- Toggle switch: 40x24 track, accent when on, knob slides in 160 ms. -->
+  <ControlTheme x:Key="Switch" TargetType="ToggleButton">
+    <Setter Property="FocusAdorner" Value="{x:Null}" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="Background" Value="{DynamicResource Fill8}" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border Name="track" Width="40" Height="24" CornerRadius="12" Padding="3" Background="{TemplateBinding Background}"
+                BorderBrush="{DynamicResource FocusRing}" BorderThickness="0">
+          <Border Name="knob" Width="18" Height="18" CornerRadius="9" Background="White" HorizontalAlignment="Left"
+                  BoxShadow="0 1 3 0 #4D000000" RenderTransform="translateX(0px)">
+            <Border.Transitions>
+              <Transitions>
+                <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.16" />
+              </Transitions>
+            </Border.Transitions>
+          </Border>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:checked">
+      <Setter Property="Background" Value="{DynamicResource Accent}" />
+    </Style>
+    <Style Selector="^:focus-visible /template/ Border#track">
+      <Setter Property="BorderThickness" Value="2" />
+      <Setter Property="Padding" Value="1" />
+    </Style>
+    <Style Selector="^:checked /template/ Border#knob">
+      <Setter Property="RenderTransform" Value="translateX(16px)" />
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Opacity" Value="0.6" />
+      <Setter Property="Background" Value="{DynamicResource Fill6}" />
+    </Style>
+    <Style Selector="^:disabled /template/ Border#knob">
+      <Setter Property="Background" Value="#8A929C" />
+    </Style>
+  </ControlTheme>
+
+  <!-- Slider parts -->
+  <ControlTheme x:Key="SliderFill" TargetType="RepeatButton">
+    <Setter Property="Focusable" Value="False" />
+    <Setter Property="Template">
+      <!-- Slider only jumps to the click point when the press lands on these buttons, so they span the slider's full
+           height (transparent hit area); MinHeight is the visible fill thickness. -->
+      <ControlTemplate>
+        <Panel Background="Transparent">
+          <Border Height="{TemplateBinding MinHeight}" VerticalAlignment="Center" CornerRadius="3" Background="{TemplateBinding Background}" />
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="Knob" TargetType="Thumb">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border CornerRadius="99" Background="White" BoxShadow="0 2 6 0 #66000000"
+                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="2" />
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+  <ControlTheme x:Key="KnobHalo" TargetType="Thumb">
+    <Setter Property="ClipToBounds" Value="False" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Panel Width="24" Height="24">
+          <Border Width="24" Height="24" CornerRadius="99" Background="{DynamicResource AccentHalo}" />
+          <Border Width="14" Height="14" CornerRadius="99" Background="White" BoxShadow="0 2 6 0 #66000000"
+                  BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="2" />
+        </Panel>
+      </ControlTemplate>
+    </Setter>
+  </ControlTheme>
+
+  <!-- Thin slider: 4 px rail, accent fill, 12 px white knob. Classes: seek (6 px, halo), volume (white fill).
+       The Track keeps the knob inside its bounds, so the knob's centre runs from 6 px to width-6 px. The rail is inset
+       by that much and the fill reaches the knob's centre: full at maximum even where the knob is hidden (volume). -->
+  <ControlTheme x:Key="{x:Type Slider}" TargetType="Slider">
+    <Setter Property="FocusAdorner" Value="{x:Null}" />
+    <Setter Property="Foreground" Value="{DynamicResource Accent}" />
+    <Setter Property="Height" Value="18" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Grid Background="Transparent">
+          <Border Name="rail" Height="4" Margin="6,0" CornerRadius="2" Background="#24FFFFFF" VerticalAlignment="Center" />
+          <Track Name="PART_Track" Orientation="Horizontal"
+                 Minimum="{TemplateBinding Minimum}" Maximum="{TemplateBinding Maximum}"
+                 Value="{TemplateBinding Value, Mode=TwoWay}" IsDirectionReversed="{TemplateBinding IsDirectionReversed}">
+            <Track.DecreaseButton>
+              <RepeatButton Name="PART_DecreaseButton" Theme="{StaticResource SliderFill}" MinHeight="4" Margin="6,0,-6,0"
+                            Background="{TemplateBinding Foreground}" />
+            </Track.DecreaseButton>
+            <Track.IncreaseButton>
+              <RepeatButton Name="PART_IncreaseButton" Theme="{StaticResource SliderFill}" MinHeight="4" Background="Transparent" />
+            </Track.IncreaseButton>
+            <Thumb Name="thumb" Width="12" Height="12" Theme="{StaticResource Knob}" />
+          </Track>
+        </Grid>
+      </ControlTemplate>
+    </Setter>
+    <Style Selector="^:focus-visible /template/ Thumb#thumb">
+      <Setter Property="BorderBrush" Value="{DynamicResource FocusRing}" />
+    </Style>
+    <Style Selector="^.volume:focus-visible /template/ Thumb#thumb">
+      <Setter Property="Opacity" Value="1" />
+    </Style>
+    <Style Selector="^.seek">
+      <Setter Property="Height" Value="24" />
+      <Setter Property="ClipToBounds" Value="False" />
+    </Style>
+    <Style Selector="^.seek /template/ Border#rail">
+      <Setter Property="IsVisible" Value="False" />
+    </Style>
+    <!-- The seek bar's rail, buffer and hover tracks live in OverlayWindow and span the full width. -->
+    <Style Selector="^.seek /template/ RepeatButton">
+      <Setter Property="MinHeight" Value="6" />
+      <Setter Property="Margin" Value="0" />
+    </Style>
+    <Style Selector="^.seek /template/ Thumb#thumb">
+      <Setter Property="Theme" Value="{StaticResource KnobHalo}" />
+      <Setter Property="Width" Value="24" />
+      <Setter Property="Height" Value="24" />
+      <Setter Property="ClipToBounds" Value="False" />
+    </Style>
+    <Style Selector="^.volume">
+      <Setter Property="Foreground" Value="{DynamicResource Fg}" />
+    </Style>
+    <Style Selector="^.volume /template/ Thumb#thumb">
+      <Setter Property="Opacity" Value="0" />
+    </Style>
+    <Style Selector="^.volume:pointerover /template/ Thumb#thumb">
+      <Setter Property="Opacity" Value="1" />
+    </Style>
+    <!-- Muted: the level is kept but dimmed, so it reads as "not playing at this volume". -->
+    <Style Selector="^.volume.muted /template/ RepeatButton#PART_DecreaseButton">
+      <Setter Property="Opacity" Value="0.35" />
+    </Style>
+    <Style Selector="^:disabled">
+      <Setter Property="Opacity" Value="0.45" />
+    </Style>
+  </ControlTheme>
+</ResourceDictionary>

@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- Windows SDK projection for SystemMediaTransportControls (Player.Windows); 1809 is the oldest Windows it supports. -->
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+    <AssemblyName>NuvoraPlayer</AssemblyName>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.22" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.22" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.22" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.13" />
+    <PackageReference Include="Velopack" Version="1.2.161" />
+    <ProjectReference Include="..\Player.Core\Player.Core.csproj" />
+    <ProjectReference Include="..\Player.Enhancement\Player.Enhancement.csproj" />
+    <ProjectReference Include="..\Player.Windows\Player.Windows.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Fonts: embedded for the UI and copied next to the exe for libass. Shaders (+ their licenses): only copied, libmpv reads them from disk. -->
+    <AvaloniaResource Include="Assets\**" Exclude="Assets\Shaders\**;Assets\FileTypes\**" />
+    <EmbeddedResource Include="Strings\*.json" LogicalName="Player.App.Strings.%(Filename).json" />
+    <None Update="Assets\Fonts\*.ttf" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Assets\Shaders\**\*.glsl;Assets\Shaders\**\LICENSE;Assets\Shaders\**\COPYING*" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Assets\*.ico;Assets\*.png" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Explorer's icons for files associated with the player (FileAssociation); read from disk, never by the UI. -->
+    <None Update="Assets\FileTypes\*.ico" CopyToOutputDirectory="PreserveNewest" />
+    <!-- Put libmpv-2.dll into /lib (see README); it is copied next to the exe. -->
+    <None Include="..\..\lib\*.dll" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>
